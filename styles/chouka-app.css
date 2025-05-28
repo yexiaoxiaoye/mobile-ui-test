@@ -1,0 +1,75 @@
+/* 抽卡应用样式 */
+
+/* 抽卡界面容器 */
+.chouka-interface {
+    /* 抽卡界面基础样式 */
+}
+
+/* 抽卡统计区域 */
+.chouka-stats {
+    /* 统计区域样式 */
+}
+
+/* 抽卡统计项 */
+.chouka-stat-item {
+    /* 统计项样式 */
+}
+
+/* 抽卡按钮 */
+.chouka-draw-btn {
+    /* 抽卡按钮样式 */
+}
+
+.chouka-draw-btn.single {
+    /* 单抽按钮样式 */
+}
+
+.chouka-draw-btn.multi {
+    /* 十连抽按钮样式 */
+}
+
+/* 抽卡结果区域 */
+.chouka-results {
+    /* 结果区域样式 */
+}
+
+/* 抽卡结果项 */
+.chouka-result-item {
+    /* 结果项基础样式 */
+}
+
+.chouka-result-item.n {
+    /* N卡样式 */
+}
+
+.chouka-result-item.r {
+    /* R卡样式 */
+}
+
+.chouka-result-item.sr {
+    /* SR卡样式 */
+}
+
+.chouka-result-item.ssr {
+    /* SSR卡样式 */
+}
+
+/* 卡片图标 */
+.chouka-card-icon {
+    /* 卡片图标样式 */
+}
+
+/* 卡片名称 */
+.chouka-card-name {
+    /* 卡片名称样式 */
+}
+
+/* 抽卡历史 */
+.chouka-history {
+    /* 历史记录样式 */
+}
+
+/* 抽卡历史项 */
+.chouka-history-item {
+    /* 历史记录项样式 */
+} 

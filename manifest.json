@@ -1,0 +1,12 @@
+{
+    "display_name": "外置手机重置版",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "styles/main.css",
+    "author": "qaq",
+    "version": "1",
+    "homePage": "https://gitee.com/huaqing1122/mobile-ui-test.git",
+    "description": "移动端UI扩展，提供QQ消息应用等功能"
+}

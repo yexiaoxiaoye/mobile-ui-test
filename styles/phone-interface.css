@@ -1,0 +1,386 @@
+/* 手机界面样式 */
+
+/* 手机按钮 */
+.mobile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #ff9ad5 0%, #a88beb 100%);
+  border-radius: 12px;
+  cursor: pointer;
+  margin-left: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 手机界面容器 */
+.phone-interface {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 375px;
+  height: 812px;
+  border-radius: 60px;
+  border: 8px solid white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 1000;
+  background: white;
+  display: none;
+}
+
+.phone-interface.show {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 手机屏幕 */
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  background: url('https://files.catbox.moe/wh4joi.jpg') center center / cover no-repeat;
+}
+
+/* 手机背景 */
+.phone-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+}
+
+/* 装饰元素 */
+.decorative-element {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 简约星星装饰 */
+.star-decoration {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  animation: pulse 3s infinite;
+}
+
+.heart-decoration {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  animation: bounce 3s infinite;
+}
+
+.sparkle-decoration {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  animation: pulse 2.5s infinite;
+}
+
+/* 动态岛 */
+.dynamic-island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: black;
+  border-radius: 20px;
+  z-index: 50;
+}
+
+/* 手机状态栏 */
+.phone-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px 4px;
+  position: relative;
+  z-index: 40;
+}
+
+.status-time {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* 主屏幕 */
+.phone-home-screen {
+  position: relative;
+  padding: 20px;
+  height: calc(100% - 60px);
+}
+
+/* 时间显示 */
+.home-time {
+  text-align: center;
+  margin: 20px 0 40px;
+  color: white;
+}
+
+.home-time-main {
+  font-size: 42px;
+  font-weight: 400;
+  margin-bottom: 5px;
+  color: white;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.7);
+}
+
+.home-time-date {
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* 欢迎消息 */
+.welcome-message {
+  margin: 10px auto 30px;
+  max-width: 90%;
+  background: linear-gradient(to right, #ff75a6, #a181e6);
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  animation: float 3s ease-in-out infinite;
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.welcome-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.welcome-content {
+  color: white;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.welcome-content-item {
+  margin: 8px 0;
+}
+
+.welcome-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.welcome-btn {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.welcome-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* 装饰元素动画 */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* 应用图标网格 */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.app-grid-row2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 0 30px;
+}
+
+/* 应用图标 */
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.app-icon:hover {
+  transform: scale(1.1);
+}
+
+.app-icon-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.app-icon:hover .app-icon-img {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.app-icon-inner {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 简约图标样式 */
+.simple-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 应用名称 */
+.app-name {
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* 手机底部导航 */
+.phone-dock {
+  position: absolute;
+  bottom: 15px;
+  left: 30px;
+  right: 30px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-indicator {
+  width: 80px;
+  height: 2px;
+  background: white;
+  opacity: 0.4;
+  border-radius: 1px;
+}
+
+/* Home Indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: black;
+  border-radius: 2.5px;
+  z-index: 60;
+}
+
+/* 手机关闭按钮 */
+.phone-close-btn {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 30px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  z-index: 70;
+  transition: background 0.2s ease;
+}
+
+.phone-close-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+ 

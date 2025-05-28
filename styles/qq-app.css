@@ -1,0 +1,1226 @@
+/* QQ应用样式 */
+
+/* SillyTavern环境样式强化 */
+body #chat_history_dialog,
+body .chat-page,
+body .qq-app-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+body #chat_history_dialog > div,
+body .chat-page::after,
+body .qq-app-container > div {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* 强制白色背景，不受主题影响 */
+#chat_history_dialog > div,
+.chat-page::after,
+.qq-app-container > div {
+    background: rgb(255, 255, 255) !important;
+    background-color: rgb(255, 255, 255) !important;
+}
+
+/* QQ应用容器样式 - 在手机界面内显示时 */
+.qq-app-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+    border-radius: 50px !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    position: relative !important;
+}
+
+.qq-app-container > div {
+    width: 100% !important;
+    height: 100% !important;
+    background: #ffffff !important;
+    border-radius: 50px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    opacity: 1 !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* QQ应用容器内的 Dynamic Island */
+.qq-app-container::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: black;
+    border-radius: 20px;
+    z-index: 100;
+}
+
+/* QQ对话框样式 */
+#chat_history_dialog {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    width: 375px !important;
+    height: 812px !important;
+    background: transparent !important;
+    border-radius: 60px !important;
+    padding: 8px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+    opacity: 1 !important;
+}
+
+#chat_history_dialog > div {
+    width: 100% !important;
+    height: 100% !important;
+    background: #ffffff !important;
+    border-radius: 50px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    opacity: 1 !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dynamic Island */
+#chat_history_dialog::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: black;
+    border-radius: 20px;
+    z-index: 100;
+}
+
+/* 状态栏 - 时间、电量、信号 */
+.qq-status-bar {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 37px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    color: black;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 15;
+    pointer-events: none;
+}
+
+.qq-status-time {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.qq-status-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qq-signal-icon, .qq-battery-icon {
+    width: 18px;
+    height: 12px;
+    border: 1px solid black;
+    border-radius: 2px;
+    position: relative;
+}
+
+.qq-signal-icon::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: black;
+    border-radius: 1px;
+}
+
+.qq-battery-icon::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 4px;
+    bottom: 2px;
+    background: black;
+    border-radius: 1px;
+}
+
+.qq-battery-icon::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 0px;
+    width: 2px;
+    height: 4px;
+    background: black;
+    border-radius: 0 1px 1px 0;
+}
+
+/* QQ主页状态栏 */
+.dialog-head {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    padding: 48px 24px 12px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
+
+.dialog-head h3 {
+    margin: 0 !important;
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    color: black !important;
+    text-shadow: none !important;
+}
+
+/* 小房子按钮样式 */
+.home-btn {
+    background: none !important;
+    color: black !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+    transition: transform 0.2s ease !important;
+    flex-shrink: 0 !important;
+    user-select: none !important;
+    padding: 0 !important;
+}
+
+.home-btn:hover {
+    transform: scale(1.1) !important;
+    background: none !important;
+}
+
+.home-btn:active {
+    transform: scale(0.9) !important;
+    background: none !important;
+}
+
+/* 创建群组按钮优化 */
+#create_group_btn {
+    background: none !important;
+    color: black !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    font-size: 28px !important;
+    cursor: pointer !important;
+    transition: none !important;
+    box-shadow: none !important;
+    font-weight: normal !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+#create_group_btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+#create_group_btn:active {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 主页内容区域 */
+#history_content {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    background: white !important;
+    position: relative !important;
+    padding: 0 !important;
+}
+
+/* 可爱背景 */
+#history_content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.95;
+    z-index: 0;
+}
+
+/* QQ联系人包装容器样式 */
+.qq-contact-wrapper {
+    position: relative;
+    z-index: 10;
+    padding: 18px 16px !important;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(200, 200, 200, 0.2) !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.qq-contact-wrapper:hover,
+.qq-contact-wrapper:active {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* QQ群包装容器样式 */
+.qq-group-wrapper {
+    position: relative;
+    z-index: 10;
+    padding: 18px 16px !important;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(200, 200, 200, 0.2) !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.qq-group-wrapper:hover,
+.qq-group-wrapper:active {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 联系人和群组信息显示样式 */
+.contact-summary,
+.group-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+    position: relative;
+}
+
+.contact-header,
+.group-header {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 头像容器样式 */
+.contact-avatar-wrapper {
+    position: relative;
+    pointer-events: auto;
+    flex-shrink: 0;
+}
+
+.custom-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(255, 255, 255, 0.5) !important;
+    transition: transform 0.2s ease, border-color 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    cursor: pointer !important;
+}
+
+.custom-avatar:hover {
+    transform: scale(1.05) !important;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* 群组图标标识 */
+.qq-group-wrapper .contact-avatar-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #4A90E2;
+    border-radius: 50%;
+    border: 2px solid white;
+    z-index: 1;
+}
+
+.qq-group-wrapper .contact-avatar-wrapper::before {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.contact-info,
+.group-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-right: 12px;
+}
+
+.contact-name,
+.group-name {
+    font-weight: 600;
+    color: black !important;
+    font-size: 17px !important;
+    margin-bottom: 4px !important;
+    text-shadow: none !important;
+}
+
+.contact-number,
+.group-id {
+    color: #666;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.contact-time,
+.group-time {
+    color: #555 !important;
+    font-size: 14px !important;
+    text-shadow: none !important;
+    flex-shrink: 0 !important;
+    font-weight: normal !important;
+    margin-left: 8px !important;
+}
+
+.last-message {
+    color: #333 !important;
+    font-size: 16px !important;
+    text-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    margin-top: 4px !important;
+}
+
+/* 原有QQ联系人样式保持兼容 */
+.custom-qqhao {
+    display: block;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+
+/* .custom-qqhao.sel 选中状态样式已移除 */
+
+/* 原有QQ群组样式保持兼容 */
+.custom-qq-qun {
+    display: block;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+
+/* .custom-qq-qun.sel 选中状态样式已移除 */
+
+/* 消息容器样式 */
+.custom-qq-cont,
+.custom-qun-cont {
+    position: relative;
+    z-index: 10;
+    padding: 16px;
+    display: block;
+    max-height: none;
+    margin: 0;
+    background: transparent;
+}
+
+/* 消息样式 */
+.custom-message {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 15px !important;
+    clear: both;
+    gap: 8px;
+    position: relative;
+    z-index: 5;
+}
+
+.custom-message.custom-sent {
+    justify-content: flex-end;
+    flex-direction: row;
+}
+
+.custom-message.custom-received {
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+/* 消息气泡统一样式 */
+.message-bubble {
+    max-width: calc(100% - 40px - 8px);
+    padding: 10px 14px !important;
+    border-radius: 18px !important;
+    word-wrap: break-word;
+    position: relative;
+    font-size: 17px !important;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+    text-shadow: none !important;
+}
+
+.custom-sent .message-bubble {
+    background: #007bff !important;
+    color: white !important;
+    border-bottom-right-radius: 6px !important;
+}
+
+.custom-received .message-bubble {
+    background: #f0f0f0 !important;
+    color: black !important;
+    border-bottom-left-radius: 6px !important;
+}
+
+/* 消息头像 */
+.message-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold;
+    overflow: hidden;
+    text-shadow: none !important;
+    color: black !important;
+}
+
+.message-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sent-avatar {
+    background-color: #007bff !important;
+    color: white !important;
+    font-size: 16px !important;
+}
+
+.received-avatar {
+    background-color: #e9e9eb !important;
+    font-size: 16px !important;
+    color: #555 !important;
+}
+
+.group-avatar {
+    background-color: #ddd !important;
+    font-size: 16px !important;
+    color: #444 !important;
+}
+
+/* 消息内时间戳 */
+.message-bubble .message-time {
+    font-size: 11px !important;
+    opacity: 0.8;
+    margin-top: 5px;
+    text-align: right;
+    display: block;
+    clear: both;
+    text-shadow: none !important;
+}
+.custom-sent .message-bubble .message-time {
+    color: rgba(255,255,255,0.8) !important;
+}
+.custom-received .message-bubble .message-time {
+    color: #777 !important;
+}
+
+/* 群聊消息发送者名称 */
+.message-bubble .sender-name {
+    color: #007bff !important;
+    font-weight: 600;
+    margin-bottom: 3px;
+    font-size: 14px !important;
+    display: block;
+    text-shadow: none !important;
+}
+
+/* 群聊消息项样式 */
+.custom-qun-cont-item {
+    margin-bottom: 12px;
+    clear: both;
+    position: relative;
+    z-index: 10;
+}
+
+.custom-qun-cont-item .sender-name {
+    color: #007bff !important;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 17px !important;
+    text-shadow: none !important;
+}
+
+.custom-qun-cont-item .message-content {
+    display: inline-block;
+    background: white;
+    color: black !important;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    max-width: 70%;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 17px !important;
+}
+
+.custom-qun-cont-item .message-time {
+    font-size: 12px !important;
+    opacity: 0.7;
+    color: #777 !important;
+    margin-top: 4px;
+    text-shadow: none !important;
+}
+
+/* 消息输入区域样式 */
+.chat-input-area {
+    padding: 12px 16px 32px !important;
+    background: white !important;
+    border-top: 1px solid #e0e0e0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    gap: 12px !important;
+}
+
+.message-input {
+    flex: 1 !important;
+    padding: 10px 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 20px !important;
+    background: #f9fafb !important;
+    outline: none !important;
+    font-size: 16px !important;
+    transition: border-color 0.2s ease, background-color 0.2s ease !important;
+    height: 40px !important;
+    box-sizing: border-box !important;
+}
+
+.message-input:focus {
+    border-color: #4A90E2 !important;
+    background: white !important;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
+}
+
+.send-btn {
+    background: #4A90E2 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    background: #357ABD !important;
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+/* 联系人和群组信息显示样式 - v0风格 */
+.contact-summary,
+.group-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.contact-header,
+.group-header {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 头像容器样式 - v0风格 */
+.contact-avatar-wrapper {
+    position: relative;
+    pointer-events: auto;
+    flex-shrink: 0;
+}
+
+.custom-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(255, 255, 255, 0.5) !important;
+    transition: transform 0.2s ease, border-color 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    cursor: pointer !important;
+}
+
+.custom-avatar:hover {
+    transform: scale(1.05) !important;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* 群组图标标识 */
+.qq-group-wrapper .contact-avatar-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #4A90E2;
+    border-radius: 50%;
+    border: 2px solid white;
+    z-index: 1;
+}
+
+.qq-group-wrapper .contact-avatar-wrapper::before {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.contact-info,
+.group-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    margin-right: 8px !important;
+}
+
+.contact-name-text,
+.group-name-text {
+    font-weight: 600 !important;
+    color: black !important;
+    font-size: 19px !important;
+    text-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+}
+
+/* 聊天页面样式 - v0风格 */
+.chat-page {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 375px !important;
+    height: 812px !important;
+    background: transparent !important;
+    z-index: 10001 !important;
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    border-radius: 60px !important;
+    padding: 8px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+    transform: translate(-50%, -50%) !important;
+    opacity: 1 !important;
+}
+
+.chat-page::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    background: #ffffff !important;
+    border-radius: 50px !important;
+    z-index: -1;
+    opacity: 1 !important;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+}
+
+.chat-page > .chat-header,
+.chat-page > .chat-messages,
+.chat-page > .chat-input-area {
+    position: relative;
+    z-index: 1;
+}
+
+.chat-page.show {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 聊天页面 Dynamic Island */
+.chat-page::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: black;
+    border-radius: 20px;
+    z-index: 100;
+}
+
+/* 聊天页面状态栏 */
+.chat-page .qq-status-bar {
+    position: absolute;
+    top: 18px;
+    left: 8px;
+    right: 8px;
+    height: 37px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    color: black;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 25;
+    pointer-events: none;
+}
+
+/* 聊天头部样式 - v0风格 */
+.chat-header {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    padding: 80px 16px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    flex-shrink: 0 !important;
+    justify-content: space-between !important;
+    position: relative;
+}
+
+/* 返回QQ主列表的箭头按钮 */
+.back-to-main-list-btn {
+    background: none !important;
+    border: none !important;
+    color: black !important;
+    font-size: 28px !important;
+    font-weight: bold;
+    cursor: pointer !important;
+    padding: 0 !important;
+    transition: transform 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    user-select: none !important;
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.back-to-main-list-btn:hover {
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+.back-to-main-list-btn:active {
+    transform: translateY(-50%) scale(0.9) !important;
+}
+
+/* 聊天详情页的小房子按钮特定样式调整 */
+.chat-home-btn {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.chat-title {
+    flex: 1;
+    text-align: center;
+    color: black !important;
+    text-shadow: none !important;
+    margin: 0 40px;
+}
+
+.chat-title > div:first-child {
+    font-weight: 600 !important;
+    font-size: 19px !important;
+    margin-bottom: 2px !important;
+    color: black !important;
+    text-shadow: none !important;
+}
+
+.chat-title > div:last-child {
+    font-size: 14px !important;
+    opacity: 0.8 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: #555 !important;
+    text-shadow: none !important;
+}
+
+.chat-title > div:last-child::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* 聊天消息区域样式 - v0风格 */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    min-height: 0;
+    padding: 10px 16px !important;
+    z-index: 1;
+}
+
+/* 聊天背景 - 固定不动，只在消息区域显示 */
+.chat-messages {
+    background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    opacity: 0.95 !important;
+}
+
+.chat-messages::before {
+    display: none;
+}
+
+/* 群聊消息项样式 - v0风格 */
+.custom-qun-cont-item {
+    margin-bottom: 12px;
+    clear: both;
+    position: relative;
+    z-index: 10;
+}
+
+.custom-qun-cont-item .sender-name {
+    color: #007bff !important;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 17px !important;
+    text-shadow: none !important;
+}
+
+.custom-qun-cont-item .message-content {
+    display: inline-block;
+    background: white;
+    color: black !important;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    max-width: 70%;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 17px !important;
+}
+
+.custom-qun-cont-item .message-time {
+    font-size: 12px !important;
+    opacity: 0.7;
+    color: #777 !important;
+    margin-top: 4px;
+    text-shadow: none !important;
+}
+
+/* 消息输入区域样式 - v0风格 */
+.chat-input-area {
+    padding: 12px 16px 32px !important;
+    background: white !important;
+    border-top: 1px solid #e0e0e0 !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    gap: 12px !important;
+}
+
+.message-input {
+    flex: 1 !important;
+    padding: 10px 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 20px !important;
+    background: #f9fafb !important;
+    outline: none !important;
+    font-size: 16px !important;
+    transition: border-color 0.2s ease, background-color 0.2s ease !important;
+    height: 40px !important;
+    box-sizing: border-box !important;
+}
+
+.message-input:focus {
+    border-color: #4A90E2 !important;
+    background: white !important;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
+}
+
+.send-btn {
+    background: #4A90E2 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    background: #357ABD !important;
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+/* 移除旧的选中状态样式 */
+.custom-qqhao,
+.custom-qq-qun {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    display: block !important;
+}
+
+/* 消息时间样式 */
+.message-time {
+    font-size: 12px !important;
+    opacity: 0.7;
+    margin-top: 4px;
+    text-shadow: none !important;
+    color: #777 !important;
+}
+
+/* 群聊消息发送者名称样式 */
+.sender-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 15px !important;
+    text-shadow: none !important;
+}
+
+/* 群聊消息内容样式 */
+.message-content {
+    color: black !important;
+    font-size: 17px !important;
+}
+
+/* 添加群员按钮样式 */
+.add-member-btn {
+    background: #4A90E2 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.add-member-btn:hover {
+    background: #357ABD !important;
+}
+
+/* 滚动条样式优化 */
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+#history_content::-webkit-scrollbar {
+    width: 4px;
+}
+
+#history_content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#history_content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+}
+
+#history_content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Home Indicator */
+.chat-page .chat-input-area::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: black;
+    border-radius: 2px;
+    z-index: 100;
+}
+
+/* 确保按钮文字不被选中 */
+.back-btn,
+.send-btn,
+.add-member-btn {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+/* 优化联系人布局 */
+.contact-name,
+.group-name {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-bottom: 4px !important;
+}
+
+.contact-name-text,
+.group-name-text {
+    font-weight: 600 !important;
+    color: black !important;
+    font-size: 19px !important;
+    text-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+}
+
+.contact-time,
+.group-time {
+    color: #555 !important;
+    font-size: 14px !important;
+    text-shadow: none !important;
+    flex-shrink: 0 !important;
+    font-weight: normal !important;
+    margin-left: 8px !important;
+}
+
+/* 隐藏QQ号显示 */
+.contact-number,
+.group-id {
+    display: none !important;
+}
+
+/* 最后消息样式优化 */
+.last-message {
+    color: #333 !important;
+    font-size: 16px !important;
+    text-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    margin-top: 4px !important;
+}
+
+/* 联系人信息区域优化 */
+.contact-info,
+.group-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    margin-right: 8px !important;
+}
+
+/* 通用文字阴影去除 */
+* {
+    text-shadow: none !important;
+}
+
+/* 确保图标无阴影 - 特别是状态栏图标 */
+.qq-status-icons div,
+.qq-signal-icon::before,
+.qq-battery-icon::before,
+.qq-battery-icon::after,
+.home-btn,
+.back-to-main-list-btn,
+#create_group_btn {
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* 聊天标题状态文字（QQ号/群号） */
+.contact-status-qq {
+    font-size: 14px !important;
+    opacity: 0.8 !important;
+    color: #555 !important;
+    text-shadow: none !important;
+    margin-top: 2px;
+}
+
+.chat-title > div:last-child::before {
+    content: '' !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: none !important;
+    border-radius: 0 !important;
+    display: none !important;
+}

@@ -1,0 +1,70 @@
+/* 背包应用样式 */
+
+/* 背包界面容器 */
+.backpack-interface {
+    /* 背包界面基础样式 */
+}
+
+/* 背包物品网格 */
+.backpack-grid {
+    /* 物品网格样式 */
+}
+
+/* 背包物品槽 */
+.backpack-slot {
+    /* 物品槽基础样式 */
+}
+
+.backpack-slot.empty {
+    /* 空物品槽样式 */
+}
+
+.backpack-slot.filled {
+    /* 有物品的槽样式 */
+}
+
+/* 背包物品 */
+.backpack-item {
+    /* 物品基础样式 */
+}
+
+.backpack-item.common {
+    /* 普通物品样式 */
+}
+
+.backpack-item.rare {
+    /* 稀有物品样式 */
+}
+
+.backpack-item.epic {
+    /* 史诗物品样式 */
+}
+
+.backpack-item.legendary {
+    /* 传说物品样式 */
+}
+
+/* 物品图标 */
+.backpack-item-icon {
+    /* 物品图标样式 */
+}
+
+/* 物品名称 */
+.backpack-item-name {
+    /* 物品名称样式 */
+}
+
+/* 物品数量 */
+.backpack-item-count {
+    /* 物品数量样式 */
+}
+
+/* 物品描述 */
+.backpack-item-description {
+    /* 物品描述样式 */
+}
+
+/* 背包分类标签 */
+.backpack-category {
+    /* 分类标签样式 */
+} 

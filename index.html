@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手机插件预览 - 开发测试</title>
+    
+    <!-- 
+    ===== 开发者注意 =====
+    这个HTML文件仅用于开发阶段预览手机插件效果，不会被导入到SillyTavern中。
+    SillyTavern中的实际插件通过index.js动态加载所有CSS和JS模块。
+    此文件只是为了方便开发者在浏览器中直接测试和预览插件界面效果。
+    =====================
+    -->
+    
+    <!-- CSS样式文件 -->
+    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/phone-interface.css" />
+    <link rel="stylesheet" href="styles/qq-app.css" />
+    <link rel="stylesheet" href="styles/taobao-app.css" />
+    <link rel="stylesheet" href="styles/task-app.css" />
+    <link rel="stylesheet" href="styles/backpack-app.css" />
+    <link rel="stylesheet" href="styles/chouka-app.css" />
+  </head>
+
+  <body>
+    <!-- 手机插件预览容器将通过JavaScript动态生成 -->
+  </body>
+  
+  <!-- JavaScript库和模块 -->
+  <script src="jquery-3.js"></script>
+  <script src="apps/data-extractor.js"></script>
+  <script src="apps/task-data-extractor.js"></script>
+  <script src="apps/phone-interface.js"></script>
+  <script src="apps/qq-app.js"></script>
+  <script src="apps/taobao-app.js"></script>
+  <script src="apps/task-app.js"></script>
+  <script src="apps/backpack-app.js"></script>
+  <script src="apps/chouka-app.js"></script>
+  
+  <!-- 初始化脚本 -->
+  <script>
+    // 开发预览模式初始化
+    $(document).ready(function() {
+      console.log('开发预览模式 - 手机插件初始化开始');
+      
+      // 模拟SillyTavern环境的基本变量
+      if (typeof window.SillyTavern === 'undefined') {
+        window.SillyTavern = {
+          getContext: () => ({
+            characters: [],
+            groups: [],
+            chat: []
+          })
+        };
+      }
+      
+      // 按顺序初始化各个模块
+      setTimeout(() => {
+        try {
+          if (window.HQDataExtractor) {
+            console.log('数据提取器已加载');
+          }
+          
+          if (window.PhoneInterface) {
+            window.PhoneInterface.init();
+            console.log('手机界面初始化完成');
+          }
+          
+          if (window.QQApp) {
+            window.QQApp.init();
+            console.log('QQ应用初始化完成');
+          }
+          
+          if (window.TaobaoApp) {
+            window.TaobaoApp.init();
+            console.log('淘宝应用初始化完成');
+          }
+          
+          if (window.TaskApp) {
+            window.TaskApp.init();
+            console.log('任务应用初始化完成');
+          }
+          
+          if (window.BackpackApp) {
+            window.BackpackApp.init();
+            console.log('背包应用初始化完成');
+          }
+          
+          if (window.ChoukaApp) {
+            window.ChoukaApp.init();
+            console.log('抽卡应用初始化完成');
+          }
+          
+          console.log('🎉 开发预览模式初始化完成！');
+        } catch (error) {
+          console.error('开发预览模式初始化出错:', error);
+        }
+      }, 500);
+    });
+  </script>
+</html>
+
