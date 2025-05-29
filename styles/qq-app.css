@@ -25,6 +25,11 @@ body .qq-app-container > div {
   background-color: rgb(255, 255, 255) !important;
 }
 
+/* 确保手机界面主容器的z-index也被限制 */
+#phone_interface {
+  z-index: 998 !important; /* 比内部应用的999低一级，确保不会意外覆盖 */
+}
+
 /* QQ应用容器样式 - 在手机界面内显示时 */
 .qq-app-container {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -35,6 +40,7 @@ body .qq-app-container > div {
   overflow: hidden !important;
   opacity: 1 !important;
   position: relative !important;
+  z-index: 999 !important; /* 确保在手机界面内时也遵循z-index限制 */
 }
 
 .qq-app-container > div {

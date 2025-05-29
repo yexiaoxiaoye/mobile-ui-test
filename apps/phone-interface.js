@@ -517,7 +517,19 @@
     show: function () {
       $('#phone_interface').addClass('show').removeClass('show-qq-app-content');
       $('body').removeClass('qq-app-mode');
+
+      // 强制隐藏QQ容器，确保手机主页内容优先显示
+      $('#phone_interface .qq-app-container').hide();
+
+      // 强制显示手机主屏幕的核心元素
+      $('#phone_interface .phone-background').show();
+      $('#phone_interface .dynamic-island').show();
+      $('#phone_interface .phone-status-bar').show();
+      $('#phone_interface .phone-home-screen').show();
+      $('#phone_interface .phone-dock').show();
+
       this.updateTime();
+      console.log('PhoneInterface.show() executed, ensured QQ container hidden and home screen elements visible.');
     },
 
     // 切换手机界面显示状态

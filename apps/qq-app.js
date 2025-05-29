@@ -42,17 +42,17 @@
         console.log('正在绑定事件...');
         this.bindEvents();
 
-        console.log('正在加载头像数据...');
+        console.log('正在加载头像数据 (init)'); // Simplified log
         this.loadAvatarData();
 
-        console.log('正在加载用户信息...');
+        console.log('正在加载用户信息 (init)'); // Simplified log
         this.loadUserData();
 
         // 延迟更新用户信息显示，确保数据加载完成
         setTimeout(() => {
           this.updateUserDisplay();
-          // 调试：检查聊天记录中的用户头像信息
-          this.checkUserAvatarInChat();
+          // 调试：检查聊天记录中的用户头像信息 (可以按需启用)
+          // this.checkUserAvatarInChat();
         }, 100);
 
         console.log('✅ QQ消息应用初始化完成');
@@ -70,7 +70,7 @@
         // 只从聊天记录中提取头像数据
         this.loadAvatarDataFromChat();
 
-        console.log('已从聊天记录加载头像数据:', this.avatarData);
+        console.log('已从聊天记录加载头像数据，数量:', Object.keys(this.avatarData).length); // Simplified log
       } catch (error) {
         console.error('加载头像数据失败:', error);
         this.avatarData = {};
@@ -89,12 +89,12 @@
 
         const context = SillyTavernContext.getContext();
         if (!context || !context.chat) {
-          console.warn('无法获取聊天记录，回退到DOM扫描方式');
+          console.warn('无法获取聊天记录，回退到DOM扫描方式 (loadAvatarDataFromChat)');
           return this.loadAvatarDataFromDOM();
         }
 
         const messages = context.chat || [];
-        console.log(`从SillyTavern上下文获取到${messages.length}条聊天记录`);
+        // console.log(`从SillyTavern上下文获取到${messages.length}条聊天记录 (for avatars)`); // Reduced verbosity
 
         messages.forEach((message, index) => {
           const messageText = message.mes || '';
@@ -107,11 +107,11 @@
             const qqNumber = match[1];
             const avatarUrl = match[2];
             this.avatarData[qqNumber] = avatarUrl;
-            console.log(`从聊天记录提取头像: ${qqNumber} -> ${avatarUrl}`);
+            // console.log(`从聊天记录提取头像: ${qqNumber} -> ${avatarUrl}`); // Reduced verbosity
           }
         });
 
-        console.log('头像数据提取完成（使用SillyTavern上下文）');
+        // console.log('头像数据提取完成（使用SillyTavern上下文）'); // Reduced verbosity
       } catch (error) {
         console.error('从SillyTavern上下文提取头像数据失败:', error);
         console.log('回退到DOM扫描方式');
@@ -152,9 +152,12 @@
 
     // 获取头像URL - 如果内存中没有则重新从聊天记录中读取
     getAvatarUrl: function (qqNumber) {
+      // console.log(`[AvatarDebug] Requesting avatar for QQ: ${qqNumber}. In avatarData: ${!!this.avatarData[qqNumber]}`); // Kept for critical debug
       // 如果内存中没有该QQ号的头像数据，重新从聊天记录中加载
       if (!this.avatarData[qqNumber]) {
+        // console.log(`[AvatarDebug] Avatar for ${qqNumber} not in memory, attempting to reload from chat.`); // Kept for critical debug
         this.loadAvatarDataFromChat();
+        // console.log(`[AvatarDebug] After reload, for ${qqNumber} - in avatarData: ${!!this.avatarData[qqNumber]}, URL: ${this.avatarData[qqNumber]}`); // Kept for critical debug
       }
       return this.avatarData[qqNumber] || '';
     },
@@ -171,7 +174,7 @@
         // 从聊天记录中提取用户数据
         this.loadUserDataFromChat();
 
-        console.log('已从聊天记录加载用户数据:', this.userData);
+        console.log('已从聊天记录加载用户数据:', this.userData.name, this.userData.avatar ? '有头像' : '无头像'); // Simplified log
 
         // 更新界面显示
         this.updateUserDisplay();
@@ -190,7 +193,7 @@
         // 使用SillyTavern上下文API获取聊天数据
         const SillyTavernContext = this.getSillyTavernContext();
         if (!SillyTavernContext) {
-          console.warn('无法获取SillyTavern上下文，回退到DOM扫描方式');
+          console.warn('无法获取SillyTavern上下文，回退到DOM扫描方式 (loadUserDataFromChat)');
           return this.loadUserDataFromDOM();
         }
 
@@ -203,14 +206,14 @@
         // 获取用户名
         if (context.name1) {
           this.userData.name = context.name1;
-          console.log(`从SillyTavern上下文获取用户名: ${this.userData.name}`);
+          // console.log(`从SillyTavern上下文获取用户名: ${this.userData.name}`); // Reduced verbosity
         }
 
         const messages = context.chat || [];
-        console.log(`从SillyTavern上下文获取到${messages.length}条聊天记录`);
+        // console.log(`从SillyTavern上下文获取到${messages.length}条聊天记录 (for user data)`); // Reduced verbosity
 
-        let userInfoFound = false;
-        let userAvatarFound = false;
+        let userInfoFoundInLoop = false;
+        let userAvatarFoundInLoop = false;
 
         messages.forEach((message, index) => {
           const messageText = message.mes || '';
@@ -219,31 +222,40 @@
           // 重置正则表达式的索引
           this.userInfoRegex.lastIndex = 0;
 
+          // 只取最后一次匹配到的用户信息和头像作为有效信息
+          let lastUserInfoMatch = null;
           while ((match = this.userInfoRegex.exec(messageText)) !== null) {
-            const userName = match[1];
-            const userAvatar = match[2];
+            lastUserInfoMatch = match;
+          }
+          if (lastUserInfoMatch) {
+            const userName = lastUserInfoMatch[1];
+            const userAvatar = lastUserInfoMatch[2];
             this.userData.name = userName;
-            this.userData.avatar = userAvatar;
-            userInfoFound = true;
-            console.log(`从聊天记录提取用户信息: ${userName} -> ${userAvatar}`);
+            if (userAvatar) this.userData.avatar = userAvatar; // 只有当正则捕获到头像时才更新
+            userInfoFoundInLoop = true;
+            // console.log(`从聊天记录提取用户信息: ${userName} -> ${userAvatar || '无头像'}`); // Reduced verbosity
           }
 
-          // 提取用户头像（独立格式）
+          // 提取用户头像（独立格式），同样只取最后一次匹配
           this.userAvatarRegex.lastIndex = 0;
+          let lastUserAvatarMatch = null;
           while ((match = this.userAvatarRegex.exec(messageText)) !== null) {
-            const userAvatar = match[1];
-            this.userData.avatar = userAvatar;
-            userAvatarFound = true;
-            console.log(`从聊天记录提取用户头像: ${userAvatar}`);
+            lastUserAvatarMatch = match;
+          }
+          if (lastUserAvatarMatch) {
+            const userAvatar = lastUserAvatarMatch[1];
+            if (userAvatar) this.userData.avatar = userAvatar; // 只有当正则捕获到头像时才更新
+            userAvatarFoundInLoop = true;
+            // console.log(`从聊天记录提取用户头像: ${userAvatar}`); // Reduced verbosity
           }
         });
 
-        console.log(`用户信息提取结果: userInfoFound=${userInfoFound}, userAvatarFound=${userAvatarFound}`);
-        console.log(`当前用户数据:`, this.userData);
+        // console.log(`用户信息提取结果 (loop): userInfoFound=${userInfoFoundInLoop}, userAvatarFound=${userAvatarFoundInLoop}`); // Reduced verbosity
+        // console.log(`当前用户数据 (after loop):`, this.userData); // Reduced verbosity
 
-        console.log('最终用户数据:', this.userData);
+        // console.log('最终用户数据 (before DOM fallback check):', this.userData); // Reduced verbosity
 
-        console.log('用户数据提取完成（使用SillyTavern上下文）');
+        // console.log('用户数据提取完成（使用SillyTavern上下文）'); // Reduced verbosity
       } catch (error) {
         console.error('从SillyTavern上下文提取用户数据失败:', error);
         console.log('回退到DOM扫描方式');
@@ -291,7 +303,11 @@
     // 更新用户信息显示
     updateUserDisplay: function () {
       try {
-        console.log('开始更新用户信息显示，当前用户数据:', this.userData);
+        console.log(
+          '开始更新用户信息显示，当前用户数据:',
+          this.userData.name,
+          this.userData.avatar ? '有头像' : '无头像',
+        ); // Simplified log
 
         // 更新用户名 - 在所有可能的容器中
         $('#user_name').text(this.userData.name);
@@ -1208,6 +1224,15 @@
 
         console.log(`📈 获取到${contacts.length}个联系人，${extractedGroups.length}个群组，${messages.length}条消息`);
 
+        // 创建一个从 senderName 到 qqNumber 的映射，方便查找
+        const senderNameToQqNumberMap = {};
+        contacts.forEach(contact => {
+          if (contact.name && contact.number) {
+            senderNameToQqNumberMap[contact.name] = contact.number;
+          }
+        });
+        console.log('[AvatarDebug] Created senderNameToQqNumberMap:', senderNameToQqNumberMap);
+
         // 创建联系人HTML - 使用新的包装容器结构
         contacts.forEach(contact => {
           const contactMessages = messages.filter(msg => msg.qqNumber === contact.number);
@@ -1435,8 +1460,18 @@
                 $groupWrapper.find(`.custom-qun-cont-${group.id}`).append(messageHtml);
               } else {
                 // 其他成员发送的群聊消息 - 显示在左侧
-                const senderQQ = msg.senderQQ || msg.qqNumber;
+                let senderQQ = msg.senderQQ || msg.qqNumber;
+
+                // 如果 senderQQ 未定义，尝试从 map 中查找
+                if (!senderQQ && msg.sender && senderNameToQqNumberMap[msg.sender]) {
+                  senderQQ = senderNameToQqNumberMap[msg.sender];
+                  // console.log(`[AvatarDebug] Group msg from senderName: "${msg.sender}", mapped to senderQQ: "${senderQQ}" from contacts list.`); // Kept for critical debug
+                } else {
+                  // console.log(`[AvatarDebug] Group msg from senderName: "${msg.sender}", original senderQQ: "${senderQQ}", msg.qqNumber: "${msg.qqNumber}", msg.senderQQ field: "${msg.senderQQ}"`); // Kept for critical debug
+                }
+
                 const senderAvatarUrl = senderQQ ? this.getAvatarUrl(senderQQ) : '';
+                // console.log(`[AvatarDebug] For group sender "${msg.sender}" (resolved QQ: ${senderQQ}), got avatar URL: ${senderAvatarUrl}`); // Kept for critical debug
                 let groupAvatarDisplay = '';
                 let avatarStyle = '';
 
@@ -1903,11 +1938,18 @@
         .off('click', '.custom-avatar')
         .on('click', '.custom-avatar', e => {
           e.stopPropagation();
-          const qqNumber = $(e.target).data('qq-number');
-          const contactName = $(e.target).data('contact-name');
+          const $targetAvatar = $(e.target).closest('.custom-avatar'); // Ensure we get the avatar element
+          const qqNumber = $targetAvatar.data('qq-number');
+          const contactName = $targetAvatar.data('contact-name');
 
-          console.log('点击头像，QQ号:', qqNumber, '联系人:', contactName);
-          this.showAvatarDialog(qqNumber, contactName);
+          // 只为有效的联系人QQ号显示头像修改弹窗
+          if (qqNumber && String(qqNumber).trim() !== '' && String(qqNumber).trim() !== 'undefined') {
+            console.log('点击联系人头像，QQ号:', qqNumber, '联系人:', contactName);
+            this.showAvatarDialog(qqNumber, contactName);
+          } else {
+            console.log('点击了群组占位符头像或无效头像数据，不显示修改弹窗。QQ号:', qqNumber, '联系人:', contactName);
+            // 对于群组头像，不执行任何操作，也不阻止事件冒泡，允许父级 .qq-group-wrapper 的点击事件处理
+          }
         });
 
       // QQ联系人包装容器点击事件
@@ -1924,6 +1966,13 @@
 
           // 先隐藏所有其他的聊天页面，避免显示错误信息
           $('.chat-page').removeClass('show');
+
+          // 隐藏主列表中的所有包装器
+          $('#history_content > .qq-contact-wrapper').hide();
+          $('#history_content > .qq-group-wrapper').hide();
+
+          // 显示当前点击的包装器 (它将承载聊天页面)
+          $wrapper.show();
 
           // 设置联系人聊天页面的头部颜色
           $chatPage.find('.chat-header').removeClass('group').addClass('contact');
@@ -1961,6 +2010,13 @@
 
           // 先隐藏所有其他的聊天页面，避免显示错误信息
           $('.chat-page').removeClass('show');
+
+          // 隐藏主列表中的所有包装器
+          $('#history_content > .qq-contact-wrapper').hide();
+          $('#history_content > .qq-group-wrapper').hide();
+
+          // 显示当前点击的包装器
+          $wrapper.show();
 
           // 设置群组聊天页面的头部颜色
           $chatPage.find('.chat-header').addClass('group');
@@ -2023,6 +2079,9 @@
           if (window.QQApp && typeof window.QQApp.showMainPageDecorations === 'function') {
             window.QQApp.showMainPageDecorations();
           }
+          // 显示主列表中的所有包装器
+          $('#history_content > .qq-contact-wrapper').show();
+          $('#history_content > .qq-group-wrapper').show();
           // 不需要隐藏 #chat_history_dialog，因为我们是返回到它
         });
 

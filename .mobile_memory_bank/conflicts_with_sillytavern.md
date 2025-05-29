@@ -135,6 +135,7 @@ $chatPage.addClass('show');
   - 判断消息是否为用户发送：`msg.isUser || (senderName === this.userData.name)`
   - 用户消息显示在右侧，使用用户头像
   - 其他成员消息显示在左侧，根据发送者QQ号获取对应头像
+  - **新增策略**: 如果消息对象 `msg` 中未直接提供 `senderQQ`，则尝试使用 `msg.sender` (发送者名称) 从 `HQDataExtractor.extractQQContacts()` 返回的联系人列表中查找对应的QQ号，然后使用此QQ号从 `avatarData` 中获取头像。这需要在 `qq-app.js` 的 `loadMessages` 函数渲染群消息时实现此查找和匹配逻辑。
 
 ## 测试检查清单
 
