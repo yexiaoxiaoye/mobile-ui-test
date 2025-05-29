@@ -118,19 +118,8 @@
                         <div class="phone-status-bar">
                             <div class="status-time" id="status_time">8:00</div>
                             <div class="status-icons">
-                                <div style="display: flex; gap: 1px;">
-                                    <div style="width: 1px; height: 3px; background: white; border-radius: 1px;"></div>
-                                    <div style="width: 1px; height: 3px; background: white; border-radius: 1px;"></div>
-                                    <div style="width: 1px; height: 3px; background: white; border-radius: 1px;"></div>
-                                </div>
-                                <div style="width: 4px; height: 3px; border: 1px solid white; border-radius: 1px;">
-                                    <div style="width: 100%; height: 100%; background: white; border-radius: 1px;"></div>
-                                </div>
-                                <div style="width: 6px; height: 4px; border: 1px solid white; border-radius: 1px; position: relative;">
-                                    <div style="width: 75%; height: 100%; background: white; border-radius: 1px;"></div>
-                                    <div style="position: absolute; right: -1px; top: 50%; transform: translateY(-50%); width: 1px; height: 2px; background: white; border-radius: 0 1px 1px 0;"></div>
-                                </div>
-                                <span style="font-size: 10px; color: white;">100</span>
+                                <span class="signal-icon"></span>
+                                <span class="battery-icon"></span>
                             </div>
                         </div>
 
@@ -303,6 +292,7 @@
             '#backpack_interface',
             '#chouka_interface',
             '#avatar_dialog',
+            '#user_avatar_dialog',
             '#group_create_dialog',
             '#add_member_dialog',
             '#accept_task_dialog',
@@ -310,9 +300,77 @@
             // Add any other specific top-level modal/dialog IDs that are appended to body
           ];
 
+          // 添加SillyTavern原有界面元素的排除列表
+          const sillyTavernUISelectors = [
+            '#WorldInfo', // 世界书界面
+            '#WIDrawerIcon', // 世界书图标
+            '#wi_menu', // 世界书菜单
+            '#character_popup', // 角色编辑弹窗
+            '#character_cross_talk', // 角色对话设置
+            '#character_world_info', // 角色世界信息
+            '#character_advanced', // 角色高级设置
+            '#selectCharacterTemplatePopup', // 角色模板选择
+            '#duplicate_character_popup', // 复制角色弹窗
+            '#character_search_popup', // 角色搜索弹窗
+            '#preset_settings', // 预设设置
+            '#preset_popup', // 预设弹窗
+            '#PromptManagerModule', // 提示管理器
+            '#promptManagerDrawerIcon', // 提示管理器图标
+            '#promptManagerDrawer', // 提示管理器抽屉
+            '#select_chat_popup', // 选择聊天弹窗
+            '#dialogue_popup', // 对话弹窗
+            '#shadow_popup', // 阴影弹窗
+            '#ghost_popup', // 幽灵弹窗
+            '#textgen_settings', // 文本生成设置
+            '#openai_settings', // OpenAI设置
+            '#novel_settings', // Novel设置
+            '#kobold_settings', // Kobold设置
+            '#claude_settings', // Claude设置
+            '#poe_settings', // Poe设置
+            '#context_menu', // 右键菜单
+            '#form_create', // 创建表单
+            '#form_favorite_tags', // 收藏标签表单
+            '#form_import_tags', // 导入标签表单
+            '#cfgConfig', // CFG配置
+            '#sampler_view', // 采样器视图
+            '#loader', // 加载器
+            '.drawer', // 抽屉组件
+            '.popup', // 通用弹窗
+            '.modal', // 模态框
+            '.menu', // 菜单
+            '.dropdown', // 下拉菜单
+            '.tooltip', // 工具提示
+            '.select2-container', // select2 容器
+            '.ui-dialog', // jQuery UI 对话框
+            '.ui-menu', // jQuery UI 菜单
+            '.context-menu', // 右键菜单
+            '[class*="popup"]', // 任何包含popup的类
+            '[class*="modal"]', // 任何包含modal的类
+            '[class*="dialog"]', // 任何包含dialog的类
+            '[class*="drawer"]', // 任何包含drawer的类
+            '[id*="popup"]', // 任何包含popup的ID
+            '[id*="modal"]', // 任何包含modal的ID
+            '[id*="dialog"]', // 任何包含dialog的ID
+            '[id*="drawer"]', // 任何包含drawer的ID
+            '[id*="settings"]', // 任何包含settings的ID
+            '[id*="menu"]', // 任何包含menu的ID
+            '.interactable', // SillyTavern的可交互元素
+            '.clickable', // 可点击元素
+          ];
+
           let isClickInsideAnyMobileUI = false;
           let insideSelector = null;
 
+          // 首先检查是否点击了SillyTavern的原有界面元素
+          for (const selector of sillyTavernUISelectors) {
+            if ($target.closest(selector).length) {
+              // 如果点击的是SillyTavern原有界面，则不执行关闭操作
+              // console.log('Click was inside SillyTavern UI element:', selector, 'Not closing mobile apps.');
+              return; // 直接返回，不执行关闭逻辑
+            }
+          }
+
+          // 然后检查手机插件的界面元素
           for (const selector of topLevelMobileUISelectors) {
             if ($target.closest(selector).length) {
               isClickInsideAnyMobileUI = true;
@@ -492,6 +550,7 @@
       $('#group_create_dialog').hide();
       $('#add_member_dialog').hide();
       $('#avatar_dialog').remove(); // avatar dialog 使用 remove 而不是 hide
+      $('#user_avatar_dialog').remove(); // user avatar dialog 使用 remove 而不是 hide
 
       // 关闭淘宝应用界面
       $('#taobao_interface').hide();
@@ -533,7 +592,8 @@
       if (
         $('#group_create_dialog').is(':visible') ||
         $('#add_member_dialog').is(':visible') ||
-        $('#avatar_dialog').length > 0
+        $('#avatar_dialog').length > 0 ||
+        $('#user_avatar_dialog').length > 0
       ) {
         return true;
       }

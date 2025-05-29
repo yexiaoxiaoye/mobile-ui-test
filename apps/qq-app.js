@@ -6,8 +6,20 @@
     // 头像数据存储
     avatarData: {},
 
+    // 用户数据存储
+    userData: {
+      name: '用户',
+      avatar: '',
+    },
+
     // 头像正则表达式
     avatarRegex: /\[头像\|(\d+)\|([^\]]+)\]/g,
+
+    // 用户信息正则表达式
+    userInfoRegex: /\[用户信息\|([^|]+)\|([^\]]*)\]/g,
+
+    // 用户头像正则表达式
+    userAvatarRegex: /\[用户头像\|([^\]]+)\]/g,
 
     // 初始化QQ应用界面
     init: function () {
@@ -32,6 +44,16 @@
 
         console.log('正在加载头像数据...');
         this.loadAvatarData();
+
+        console.log('正在加载用户信息...');
+        this.loadUserData();
+
+        // 延迟更新用户信息显示，确保数据加载完成
+        setTimeout(() => {
+          this.updateUserDisplay();
+          // 调试：检查聊天记录中的用户头像信息
+          this.checkUserAvatarInChat();
+        }, 100);
 
         console.log('✅ QQ消息应用初始化完成');
       } catch (error) {
@@ -135,6 +157,272 @@
         this.loadAvatarDataFromChat();
       }
       return this.avatarData[qqNumber] || '';
+    },
+
+    // 加载用户数据
+    loadUserData: function () {
+      try {
+        // 清空当前用户数据
+        this.userData = {
+          name: '用户',
+          avatar: '',
+        };
+
+        // 从聊天记录中提取用户数据
+        this.loadUserDataFromChat();
+
+        console.log('已从聊天记录加载用户数据:', this.userData);
+
+        // 更新界面显示
+        this.updateUserDisplay();
+      } catch (error) {
+        console.error('加载用户数据失败:', error);
+        this.userData = {
+          name: '用户',
+          avatar: '',
+        };
+      }
+    },
+
+    // 从聊天记录中提取用户数据
+    loadUserDataFromChat: function () {
+      try {
+        // 使用SillyTavern上下文API获取聊天数据
+        const SillyTavernContext = this.getSillyTavernContext();
+        if (!SillyTavernContext) {
+          console.warn('无法获取SillyTavern上下文，回退到DOM扫描方式');
+          return this.loadUserDataFromDOM();
+        }
+
+        const context = SillyTavernContext.getContext();
+        if (!context || !context.chat) {
+          console.warn('无法获取聊天记录，回退到DOM扫描方式');
+          return this.loadUserDataFromDOM();
+        }
+
+        // 获取用户名
+        if (context.name1) {
+          this.userData.name = context.name1;
+          console.log(`从SillyTavern上下文获取用户名: ${this.userData.name}`);
+        }
+
+        const messages = context.chat || [];
+        console.log(`从SillyTavern上下文获取到${messages.length}条聊天记录`);
+
+        let userInfoFound = false;
+        let userAvatarFound = false;
+
+        messages.forEach((message, index) => {
+          const messageText = message.mes || '';
+          let match;
+
+          // 重置正则表达式的索引
+          this.userInfoRegex.lastIndex = 0;
+
+          while ((match = this.userInfoRegex.exec(messageText)) !== null) {
+            const userName = match[1];
+            const userAvatar = match[2];
+            this.userData.name = userName;
+            this.userData.avatar = userAvatar;
+            userInfoFound = true;
+            console.log(`从聊天记录提取用户信息: ${userName} -> ${userAvatar}`);
+          }
+
+          // 提取用户头像（独立格式）
+          this.userAvatarRegex.lastIndex = 0;
+          while ((match = this.userAvatarRegex.exec(messageText)) !== null) {
+            const userAvatar = match[1];
+            this.userData.avatar = userAvatar;
+            userAvatarFound = true;
+            console.log(`从聊天记录提取用户头像: ${userAvatar}`);
+          }
+        });
+
+        console.log(`用户信息提取结果: userInfoFound=${userInfoFound}, userAvatarFound=${userAvatarFound}`);
+        console.log(`当前用户数据:`, this.userData);
+
+        console.log('最终用户数据:', this.userData);
+
+        console.log('用户数据提取完成（使用SillyTavern上下文）');
+      } catch (error) {
+        console.error('从SillyTavern上下文提取用户数据失败:', error);
+        console.log('回退到DOM扫描方式');
+        this.loadUserDataFromDOM();
+      }
+    },
+
+    // DOM扫描方式（备用方案）
+    loadUserDataFromDOM: function () {
+      try {
+        const messageElements = document.querySelectorAll('.mes_text, .mes_block');
+
+        messageElements.forEach(element => {
+          const messageText = element.textContent || '';
+          let match;
+
+          // 重置正则表达式的索引
+          this.userInfoRegex.lastIndex = 0;
+
+          while ((match = this.userInfoRegex.exec(messageText)) !== null) {
+            const userName = match[1];
+            const userAvatar = match[2];
+            this.userData.name = userName;
+            this.userData.avatar = userAvatar;
+            console.log(`从DOM扫描提取用户信息: ${userName} -> ${userAvatar}`);
+          }
+
+          // 提取用户头像（独立格式）
+          this.userAvatarRegex.lastIndex = 0;
+          while ((match = this.userAvatarRegex.exec(messageText)) !== null) {
+            const userAvatar = match[1];
+            this.userData.avatar = userAvatar;
+            console.log(`从DOM扫描提取用户头像: ${userAvatar}`);
+          }
+        });
+
+        console.log('DOM扫描最终用户数据:', this.userData);
+
+        console.log('用户数据提取完成（使用DOM扫描）');
+      } catch (error) {
+        console.error('DOM扫描方式提取用户数据也失败:', error);
+      }
+    },
+
+    // 更新用户信息显示
+    updateUserDisplay: function () {
+      try {
+        console.log('开始更新用户信息显示，当前用户数据:', this.userData);
+
+        // 更新用户名 - 在所有可能的容器中
+        $('#user_name').text(this.userData.name);
+        $('.qq-app-container #user_name').text(this.userData.name);
+        $('#phone_interface .qq-app-container #user_name').text(this.userData.name);
+
+        // 更新用户头像 - 在所有可能的容器中，特别关注手机界面容器
+        const $userAvatarAll = $(
+          '#user_avatar, .qq-app-container #user_avatar, #phone_interface #user_avatar, #phone_interface .qq-app-container #user_avatar',
+        );
+        console.log('找到用户头像元素:', $userAvatarAll.length);
+
+        // 调试：显示每个元素的位置
+        $userAvatarAll.each(function (index) {
+          const $element = $(this);
+          const container = $element.closest('#phone_interface').length > 0 ? '手机界面' : '原始对话框';
+          console.log(`用户头像元素 ${index + 1} 位置: ${container}`);
+        });
+
+        if (this.userData.avatar && this.userData.avatar.trim() !== '') {
+          console.log('设置用户头像:', this.userData.avatar);
+          // 有头像时：设置背景图片，清除蓝色背景，隐藏文字
+          $userAvatarAll.each(function (index) {
+            const $element = $(this);
+            const container = $element.closest('#phone_interface').length > 0 ? '手机界面' : '原始对话框';
+            console.log(`正在更新元素 ${index + 1} (${container})`);
+
+            $element.css({
+              'background-image': `url(${QQApp.userData.avatar})`,
+              'background-size': 'cover',
+              'background-position': 'center',
+              'background-color': 'transparent', // 清除蓝色背景
+              color: 'transparent', // 隐藏文字
+              'font-size': '0', // 确保文字完全隐藏
+            });
+            $element.text(''); // 移除文字内容
+
+            console.log(`元素 ${index + 1} 更新完成`);
+          });
+          console.log('用户头像已设置为背景图片');
+        } else {
+          console.log('没有用户头像，显示用户名首字母而不是蓝色背景');
+          // 没有头像时：显示用户名首字母，使用白色背景和黑色文字，而不是蓝色背景
+          $userAvatarAll.each(function (index) {
+            const $element = $(this);
+            const container = $element.closest('#phone_interface').length > 0 ? '手机界面' : '原始对话框';
+            console.log(`正在恢复元素 ${index + 1} (${container}) 为默认样式`);
+
+            $element.css({
+              'background-image': 'none',
+              'background-color': '#f0f0f0', // 使用浅灰色背景，不使用蓝色
+              color: '#666', // 使用深灰色文字
+              'font-size': '16px', // 恢复字体大小
+              border: '2px solid #ddd', // 添加边框
+            });
+            $element.text(QQApp.userData.name.charAt(0)); // 显示用户名首字母
+          });
+        }
+
+        console.log('用户信息显示已更新:', this.userData);
+      } catch (error) {
+        console.error('更新用户信息显示失败:', error);
+      }
+    },
+
+    // 设置用户信息
+    setUserData: function (name, avatar) {
+      // 更新内存中的数据
+      this.userData.name = name;
+      this.userData.avatar = avatar;
+
+      // 更新界面显示
+      this.updateUserDisplay();
+
+      // 保存到聊天记录
+      this.updateUserInfoInChat(name, avatar);
+    },
+
+    // 在聊天记录中更新或添加用户信息
+    updateUserInfoInChat: function (name, avatar) {
+      try {
+        console.log(`正在更新聊天记录中的用户信息: ${name} -> ${avatar}`);
+
+        // 获取最新的消息元素（最后一条用户消息）
+        const userMessages = document.querySelectorAll('.mes[is_user="true"]');
+        if (userMessages.length === 0) {
+          console.log('未找到用户消息，无法更新用户信息');
+          return;
+        }
+
+        // 获取最后一条用户消息
+        const lastUserMessage = userMessages[userMessages.length - 1];
+        const messageTextElement = lastUserMessage.querySelector('.mes_text');
+
+        if (!messageTextElement) {
+          console.log('未找到消息文本元素');
+          return;
+        }
+
+        let messageText = messageTextElement.textContent || '';
+
+        // 检查是否已经存在用户信息
+        const existingUserInfoRegex = new RegExp(`\\[用户信息\\|[^|]+\\|[^\\]]*\\]`, 'g');
+
+        // 检查是否已经存在用户头像（独立格式）
+        const existingUserAvatarRegex = new RegExp(`\\[用户头像\\|[^\\]]+\\]`, 'g');
+
+        if (existingUserInfoRegex.test(messageText)) {
+          // 如果存在用户信息，则替换
+          messageText = messageText.replace(existingUserInfoRegex, `[用户信息|${name}|${avatar}]`);
+        } else {
+          // 如果不存在，则在消息末尾添加
+          messageText += ` [用户信息|${name}|${avatar}]`;
+        }
+
+        // 如果有头像，同时保存独立的用户头像格式
+        if (avatar) {
+          if (existingUserAvatarRegex.test(messageText)) {
+            // 如果存在用户头像，则替换
+            messageText = messageText.replace(existingUserAvatarRegex, `[用户头像|${avatar}]`);
+          } else {
+            // 如果不存在，则在消息末尾添加
+            messageText += ` [用户头像|${avatar}]`;
+          }
+        }
+
+        // 修改消息内容
+        this.modifyChatMessage(lastUserMessage, messageText);
+      } catch (error) {
+        console.error('更新聊天记录中的用户信息失败:', error);
+      }
     },
 
     // 设置头像URL - 只更新到聊天记录，不保存到localStorage
@@ -270,6 +558,95 @@
       }
     },
 
+    // 显示用户头像设置弹窗
+    showUserAvatarDialog: function () {
+      const currentAvatar = this.userData.avatar;
+      const currentName = this.userData.name;
+
+      const $userAvatarDialog = $(`
+                <div id="user_avatar_dialog" style="display: flex; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; height: 90vh;z-index: 1000; flex-direction: column;border-radius: 10px;overflow: hidden;z-index:10002">
+                    <div style="background: #2c2c2c; color: white; width: 90%; max-width: 400px; height: 90%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;padding:30px">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0;">设置用户信息</h3>
+                            <div id="close_user_avatar_dialog" style="cursor: pointer; font-size: 20px;">×</div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #ccc;">用户名:</label>
+                            <input type="text" id="user_name_input" placeholder="请输入用户名" value="${currentName}" style="width: 100%; padding: 10px; border: 1px solid #555; background: #444; color: white; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #ccc;">头像链接:</label>
+                            <input type="text" id="user_avatar_url_input" placeholder="请输入头像图片链接" value="${currentAvatar}" style="width: 100%; padding: 10px; border: 1px solid #555; background: #444; color: white; border-radius: 4px; box-sizing: border-box;">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div style="color: #ccc; margin-bottom: 8px;">预览:</div>
+                            <div id="user_avatar_preview" style="width: 80px; height: 80px; border: 2px solid #555; border-radius: 50%; background: #444; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                ${
+                                  currentAvatar
+                                    ? `<img src="${currentAvatar}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='无效图片';">`
+                                    : currentName.charAt(0)
+                                }
+                            </div>
+                        </div>
+
+                        <div style="text-align: center;">
+                            <button id="save_user_info_btn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">保存</button>
+                            <button id="cancel_user_info_btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+      $('body').append($userAvatarDialog);
+
+      // 绑定预览事件
+      $('#user_avatar_url_input').on('input', function () {
+        const url = String($(this).val() || '').trim();
+        const name = String($('#user_name_input').val() || '').trim();
+        const $preview = $('#user_avatar_preview');
+
+        if (url) {
+          $preview.html(
+            `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='无效图片';">`,
+          );
+        } else {
+          $preview.html(name.charAt(0) || '用');
+        }
+      });
+
+      // 绑定用户名输入事件
+      $('#user_name_input').on('input', function () {
+        const name = String($(this).val() || '').trim();
+        const url = String($('#user_avatar_url_input').val() || '').trim();
+        const $preview = $('#user_avatar_preview');
+
+        if (!url) {
+          $preview.html(name.charAt(0) || '用');
+        }
+      });
+
+      // 绑定按钮事件
+      $('#close_user_avatar_dialog, #cancel_user_info_btn').on('click', function () {
+        $('#user_avatar_dialog').remove();
+      });
+
+      $('#save_user_info_btn').on('click', () => {
+        const userName = String($('#user_name_input').val() || '').trim();
+        const avatarUrl = String($('#user_avatar_url_input').val() || '').trim();
+
+        if (userName) {
+          this.setUserData(userName, avatarUrl);
+          alert('用户信息设置成功！信息已保存到聊天记录中');
+        } else {
+          alert('请输入有效的用户名');
+        }
+        $('#user_avatar_dialog').remove();
+      });
+    },
+
     // 显示头像设置弹窗
     showAvatarDialog: function (qqNumber, contactName) {
       const currentAvatar = this.getAvatarUrl(qqNumber);
@@ -359,6 +736,9 @@
 
       // 更新所有状态栏时间显示
       $('.qq-status-time').text(timeString);
+      $('.chat-status-time').text(timeString);
+
+      console.log('已更新QQ应用时间显示:', timeString);
     },
 
     // 启动时间更新功能
@@ -436,23 +816,30 @@
 
       const $historyDialog = $(`
                 <div id="chat_history_dialog" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; height: 90vh;z-index: 1000; flex-direction: column;border-radius: 10px;overflow: hidden;">
-                    <div style="background: #2c2c2c; color: white; width: 90%; max-width: 600px; height: 90%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
+                    <div style="background: #ffffff; color: black; width: 90%; max-width: 600px; height: 90%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
                         <!-- 状态栏 -->
                         <div class="qq-status-bar">
                             <div class="qq-status-time">7:13</div>
                             <div class="qq-status-icons">
-                                <div class="qq-signal-icon"></div>
-                                <div class="qq-battery-icon"></div>
+                                <span class="qq-signal-icon">📶</span>
+                                <span class="qq-battery-icon">🔋</span>
                             </div>
                         </div>
 
-                        <div class="dialog-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #555;">
-                            <div>
-                                <h3 style="margin: 0;" id="charname">QQ</h3>
-                                <div style="color:#777"><span class="hgd-show"></span></div>
+                        <div class="dialog-head">
+                            <div class="user-info-section">
+                                <div class="user-avatar-wrapper">
+                                    <div class="user-avatar" id="user_avatar" title="点击设置用户头像">
+                                        用户
+                                    </div>
+                                </div>
+                                <div class="user-details">
+                                    <h3 id="user_name">用户</h3>
+                                    <div><span class="hgd-show"></span></div>
+                                </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <button id="create_group_btn" style="padding: 8px 12px; font-size: 24px; background: none; border: none; color: black; cursor: pointer;">+</button>
+                                <button id="create_group_btn">+</button>
                                 <button class="home-btn" id="home_btn_main" title="返回手机首页">🏠︎</button>
                             </div>
                         </div>
@@ -464,7 +851,7 @@
 
       // 创建群组选择弹窗
       const $groupCreateDialog = $(`
-                <div id="group_create_dialog" style="z-index:10002;display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1100; flex-direction: column;">
+                <div id="group_create_dialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column;">
                     <div style="background: #2c2c2c; color: white; width: 90%; max-width: 500px; height: 80%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
                         <div class="dialog-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #555;">
                             <h3 style="margin: 0;">创建QQ群</h3>
@@ -495,7 +882,7 @@
 
       // 创建添加群员弹窗
       const $addMemberDialog = $(`
-                <div id="add_member_dialog" style="z-index:10005;display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1150; flex-direction: column;">
+                <div id="add_member_dialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1001; flex-direction: column;">
                     <div style="background: #2c2c2c; color: white; width: 90%; max-width: 500px; height: 80%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
                         <div class="dialog-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #555;">
                             <h3 style="margin: 0;">添加群员</h3>
@@ -540,42 +927,68 @@
 
       // 小房子按钮点击事件 - 返回手机首页 (主QQ界面)
       // 使用 event delegation for dynamically added elements if needed, but this one is static
-      $(document).on('click', '#home_btn_main', function () {
+      $(document).on('click', '#home_btn_main', function (e) {
+        console.log('点击了QQ主页的小房子按钮，返回手机首页');
+
+        // 阻止事件冒泡，避免被phone-interface的点击外部逻辑拦截
+        e.stopPropagation();
+        e.preventDefault();
+
+        // 隐藏QQ应用
         self.hide();
+
+        // 显示手机界面
         if (window.PhoneInterface && typeof window.PhoneInterface.show === 'function') {
           window.PhoneInterface.show(); // This will show phone home and remove qq-content mode
+        } else {
+          // 备用方案：直接显示手机界面
+          $('#phone_interface').removeClass('show-qq-app-content').addClass('show');
+          console.log('使用备用方案显示手机界面');
         }
       });
 
-      // 创建群组按钮事件
-      $('#create_group_btn').on('click', function () {
+      // 创建群组按钮事件 - 使用事件委托
+      $(document).on('click', '#create_group_btn', function (e) {
+        console.log('点击了创建群组按钮');
+        e.stopPropagation();
+        e.preventDefault();
+
+        // 确保弹窗元素存在
+        self.ensureDialogsExist();
+
+        // 检查弹窗元素是否存在
+        const $dialog = $('#group_create_dialog');
+        console.log('群组创建弹窗元素存在:', $dialog.length > 0);
+
+        // 调用显示群组创建对话框方法
         self.showGroupCreateDialog();
       });
 
-      // 关闭群组创建弹窗
-      $('#close_group_create_btn, #cancel_create_group_btn').on('click', function () {
+      // 关闭群组创建弹窗 - 使用事件委托
+      $(document).on('click', '#close_group_create_btn, #cancel_create_group_btn', function () {
         $('#group_create_dialog').hide();
       });
 
-      // 确认创建群组
-      $('#confirm_create_group_btn').on('click', function () {
+      // 确认创建群组 - 使用事件委托
+      $(document).on('click', '#confirm_create_group_btn', function () {
         self.createGroup();
       });
 
       // 添加群员相关事件
-      // 关闭添加群员弹窗
-      $('#close_add_member_btn, #cancel_add_member_btn').on('click', function () {
+      // 关闭添加群员弹窗 - 使用事件委托
+      $(document).on('click', '#close_add_member_btn, #cancel_add_member_btn', function () {
         $('#add_member_dialog').hide();
       });
 
-      // 确认添加群员
-      $('#confirm_add_member_btn').on('click', function () {
+      // 确认添加群员 - 使用事件委托
+      $(document).on('click', '#confirm_add_member_btn', function () {
         self.addGroupMembers();
       });
 
       this.addClickEventsToQQHao();
       this.addClickEventsToBack();
       this.addClickEventsToQQGroups();
+      this.addClickEventsToUserAvatar();
     },
 
     // 显示QQ应用
@@ -727,6 +1140,11 @@
           console.log('✅ 已添加测试内容到主容器');
         }
       }
+
+      // 确保用户头像正确显示
+      setTimeout(() => {
+        this.updateUserDisplay();
+      }, 300);
     },
 
     // 隐藏QQ应用
@@ -743,6 +1161,9 @@
       // 隐藏聊天页面
       $('.chat-page').removeClass('show');
 
+      // 恢复QQ主页装饰栏显示
+      this.showMainPageDecorations();
+
       console.log('QQ应用已隐藏');
     },
 
@@ -751,8 +1172,9 @@
       try {
         console.log('📊 开始从聊天记录抓取数据...');
 
-        // 每次加载消息时，重新从聊天记录中读取最新的头像数据
+        // 每次加载消息时，重新从聊天记录中读取最新的头像数据和用户数据
         this.loadAvatarData();
+        this.loadUserData();
 
         // 确保原始对话框存在
         let $originalDialog = $('#chat_history_dialog');
@@ -823,6 +1245,15 @@
 
                             <!-- 隐藏的聊天页面 - v0风格 -->
                             <div class="chat-page">
+                                <!-- 聊天页面状态栏 -->
+                                <div class="chat-status-bar">
+                                    <div class="chat-status-time qq-status-time">7:13</div>
+                                    <div class="chat-status-icons qq-status-icons">
+                                        <span class="chat-signal-icon qq-signal-icon">📶</span>
+                                        <span class="chat-battery-icon qq-battery-icon">🔋</span>
+                                    </div>
+                                </div>
+
                                 <div class="chat-header">
                                     <button class="back-to-main-list-btn">←</button>
                                     <div class="chat-title">
@@ -854,14 +1285,26 @@
             const messageTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             if (msg.type === 'sent') {
-              // 发送的消息 - v0风格右侧气泡
+              // 发送的消息 - v0风格右侧气泡，显示用户头像
+              const userAvatarUrl = this.userData.avatar;
+              let userAvatarDisplay = '';
+              let avatarStyle = '';
+
+              if (userAvatarUrl) {
+                userAvatarDisplay = `<img src="${userAvatarUrl}" alt="avatar">`;
+                avatarStyle = `background-image: url(${userAvatarUrl}); background-size: cover; background-position: center; background-color: transparent; color: transparent;`;
+              } else {
+                userAvatarDisplay = this.userData.name.charAt(0);
+                avatarStyle = 'background-color: #007bff; color: white;';
+              }
+
               messageHtml = `
                                 <div class="custom-message custom-sent">
                                     <div class="message-bubble">
                                         <div>${msg.content}</div>
                                         <div class="message-time">${messageTime}</div>
                                     </div>
-                                    <div class="message-avatar sent-avatar">我</div>
+                                    <div class="message-avatar sent-avatar" style="${avatarStyle}">${userAvatarDisplay}</div>
                                 </div>
                             `;
             } else {
@@ -919,6 +1362,15 @@
 
                             <!-- 隐藏的聊天页面 - v0风格 -->
                             <div class="chat-page">
+                                <!-- 聊天页面状态栏 -->
+                                <div class="chat-status-bar">
+                                    <div class="chat-status-time qq-status-time">7:13</div>
+                                    <div class="chat-status-icons qq-status-icons">
+                                        <span class="chat-signal-icon qq-signal-icon">📶</span>
+                                        <span class="chat-battery-icon qq-battery-icon">🔋</span>
+                                    </div>
+                                </div>
+
                                 <div class="chat-header">
                                     <button class="back-to-main-list-btn">←</button>
                                     <div class="chat-title">
@@ -927,7 +1379,7 @@
                                     </div>
                                     <button class="add-member-btn" data-group-id="${group.id}" data-group-name="${
             group.name
-          }">添加群员</button>
+          }">+</button>
                                     <button class="home-btn chat-home-btn" title="返回手机首页">🏠︎</button>
                                 </div>
 
@@ -952,30 +1404,63 @@
             group.messages.forEach(msg => {
               const senderName = msg.sender || '未知用户';
               const messageTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              // 假设群聊消息总是来自他人，显示在左侧
-              // 如果需要区分群内自己发送的消息，需要更复杂的逻辑和数据结构
-              const senderAvatarUrl = this.getAvatarUrl(msg.senderQQ); // 假设msg对象有senderQQ
-              let groupAvatarDisplay = '';
-              if (senderAvatarUrl) {
-                groupAvatarDisplay = `<img src="${senderAvatarUrl}" alt="avatar">`;
+
+              // 判断是否为用户发送的消息
+              const isUserMessage = msg.isUser || senderName === this.userData.name || senderName === '我';
+
+              if (isUserMessage) {
+                // 用户发送的群聊消息 - 显示在右侧
+                const userAvatarUrl = this.userData.avatar;
+                let userAvatarDisplay = '';
+                let avatarStyle = '';
+
+                if (userAvatarUrl) {
+                  userAvatarDisplay = `<img src="${userAvatarUrl}" alt="avatar">`;
+                  avatarStyle = `background-image: url(${userAvatarUrl}); background-size: cover; background-position: center; background-color: transparent; color: transparent;`;
+                } else {
+                  userAvatarDisplay = this.userData.name.charAt(0);
+                  avatarStyle = 'background-color: #007bff; color: white;';
+                }
+
+                let messageHtml = `
+                  <div class="custom-message custom-sent group-message">
+                      <div class="message-bubble">
+                          <div>${msg.content}</div>
+                          <div class="message-time">${messageTime}</div>
+                      </div>
+                      <div class="message-avatar sent-avatar" style="${avatarStyle}">${userAvatarDisplay}</div>
+                  </div>
+                `;
+
+                $groupWrapper.find(`.custom-qun-cont-${group.id}`).append(messageHtml);
               } else {
-                groupAvatarDisplay = senderName.charAt(0);
+                // 其他成员发送的群聊消息 - 显示在左侧
+                const senderQQ = msg.senderQQ || msg.qqNumber;
+                const senderAvatarUrl = senderQQ ? this.getAvatarUrl(senderQQ) : '';
+                let groupAvatarDisplay = '';
+                let avatarStyle = '';
+
+                if (senderAvatarUrl) {
+                  groupAvatarDisplay = `<img src="${senderAvatarUrl}" alt="avatar">`;
+                  avatarStyle = `background-image: url(${senderAvatarUrl}); background-size: cover; background-position: center;`;
+                } else {
+                  groupAvatarDisplay = senderName.charAt(0);
+                  avatarStyle = 'background-color: #ddd; color: #666;';
+                }
+
+                let messageHtml = `
+                  <div class="custom-message custom-received group-message">
+                      <div class="message-avatar group-avatar" style="${avatarStyle}">${groupAvatarDisplay}</div>
+                      <div class="message-bubble">
+                          <div class="sender-name">${senderName}</div>
+                          <div>${msg.content}</div>
+                          <div class="message-time">${messageTime}</div>
+                      </div>
+                  </div>
+                `;
+
+                $groupWrapper.find(`.custom-qun-cont-${group.id}`).append(messageHtml);
               }
-
-              let messageHtml = `
-                                <div class="custom-message custom-received group-message">
-                                    <div class="message-avatar group-avatar" style="${
-                                      senderAvatarUrl ? '' : 'background-color: #ddd;'
-                                    }">${groupAvatarDisplay}</div>
-                                    <div class="message-bubble">
-                                        <div class="sender-name">${senderName}</div>
-                                        <div>${msg.content}</div>
-                                        <div class="message-time">${messageTime}</div>
-                                    </div>
-                                </div>
-                            `;
-
-              $groupWrapper.find(`.custom-qun-cont-${group.id}`).append(messageHtml);
             });
           }
         });
@@ -989,6 +1474,11 @@
 
         // 绑定新的包装容器点击事件
         this.bindWrapperClickEvents();
+
+        // 消息加载完成后，再次更新用户显示
+        setTimeout(() => {
+          this.updateUserDisplay();
+        }, 100);
 
         console.log('QQ聊天历史加载完成');
       } catch (error) {
@@ -1094,7 +1584,15 @@
         $('#group_name_input').val('');
 
         // 显示弹窗
-        $('#group_create_dialog').css('display', 'flex');
+        const $dialog = $('#group_create_dialog');
+        console.log('弹窗元素查找结果:', $dialog.length);
+        if ($dialog.length > 0) {
+          $dialog.css('display', 'flex').show();
+          console.log('群组创建弹窗已显示');
+        } else {
+          console.error('群组创建弹窗元素不存在');
+          alert('群组创建功能暂时不可用，请稍后重试');
+        }
       } catch (error) {
         console.error('加载QQ联系人列表时出错:', error);
       }
@@ -1198,6 +1696,206 @@
       return Math.floor(100000000 + Math.random() * 900000000).toString();
     },
 
+    // 确保弹窗元素存在
+    ensureDialogsExist: function () {
+      // 检查群组创建弹窗是否存在
+      if ($('#group_create_dialog').length === 0) {
+        console.log('群组创建弹窗不存在，重新创建...');
+        this.createGroupDialogs();
+      }
+
+      // 检查添加群员弹窗是否存在
+      if ($('#add_member_dialog').length === 0) {
+        console.log('添加群员弹窗不存在，重新创建...');
+        this.createGroupDialogs();
+      }
+    },
+
+    // 创建群组相关弹窗
+    createGroupDialogs: function () {
+      // 移除可能存在的旧弹窗
+      $('#group_create_dialog').remove();
+      $('#add_member_dialog').remove();
+
+      // 创建群组选择弹窗
+      const $groupCreateDialog = $(`
+                <div id="group_create_dialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column;">
+                    <div style="background: #2c2c2c; color: white; width: 90%; max-width: 500px; height: 80%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
+                        <div class="dialog-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #555;">
+                            <h3 style="margin: 0;">创建QQ群</h3>
+                            <div id="close_group_create_btn" style="cursor: pointer; font-size: 20px;">×</div>
+                        </div>
+
+                        <div style="padding: 20px; flex-grow: 1; overflow-y: auto;">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; color: #ccc;">群名称:</label>
+                                <input type="text" id="group_name_input" placeholder="请输入群名称" style="width: 100%; padding: 10px; border: 1px solid #555; background: #444; color: white; border-radius: 4px; box-sizing: border-box;">
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; color: #ccc;">选择成员:</label>
+                                <div id="qq_contacts_list" style="max-height: 150px; overflow-y: auto; border: 1px solid #555; background: #444; border-radius: 4px; padding: 10px;">
+                                    <!-- QQ联系人列表将在这里动态加载 -->
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button id="confirm_create_group_btn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">确认创建</button>
+                                <button id="cancel_create_group_btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+      // 创建添加群员弹窗
+      const $addMemberDialog = $(`
+                <div id="add_member_dialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1001; flex-direction: column;">
+                    <div style="background: #2c2c2c; color: white; width: 90%; max-width: 500px; height: 80%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
+                        <div class="dialog-head" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #555;">
+                            <h3 style="margin: 0;">添加群员</h3>
+                            <div id="close_add_member_btn" style="cursor: pointer; font-size: 20px;">×</div>
+                        </div>
+
+                        <div style="padding: 20px; flex-grow: 1; overflow-y: auto;">
+                            <div style="margin-bottom: 15px;">
+                                <div style="color: #ccc; margin-bottom: 8px;">群名称: <span id="add_member_group_name"></span></div>
+                                <div style="color: #ccc; margin-bottom: 8px;">群号: <span id="add_member_group_id"></span></div>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; color: #ccc;">选择要添加的成员:</label>
+                                <div id="add_member_contacts_list" style="max-height: 200px; overflow-y: auto; border: 1px solid #555; background: #444; border-radius: 4px; padding: 10px;">
+                                    <!-- QQ联系人列表将在这里动态加载 -->
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button id="confirm_add_member_btn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">确认添加</button>
+                                <button id="cancel_add_member_btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+      $('body').append($groupCreateDialog);
+      $('body').append($addMemberDialog);
+
+      console.log('群组相关弹窗已重新创建');
+    },
+
+    // 测试用户头像设置（调试用）
+    testUserAvatar: function () {
+      console.log('=== 测试用户头像显示 ===');
+      console.log('当前用户数据:', this.userData);
+
+      // 只更新显示，不设置新头像
+      console.log('直接更新用户头像显示');
+      this.updateUserDisplay();
+
+      console.log('用户头像显示已更新');
+    },
+
+    // 临时调试方法 - 检查用户头像元素
+    debugUserAvatar: function () {
+      console.log('=== 临时调试用户头像元素 ===');
+
+      // 检查所有可能的用户头像元素
+      const $allUserAvatars = $(
+        '#user_avatar, .qq-app-container #user_avatar, #phone_interface #user_avatar, #phone_interface .qq-app-container #user_avatar',
+      );
+      console.log('找到的用户头像元素数量:', $allUserAvatars.length);
+
+      $allUserAvatars.each(function (index) {
+        const $element = $(this);
+        const styles = {
+          'background-image': $element.css('background-image'),
+          'background-color': $element.css('background-color'),
+          color: $element.css('color'),
+          'font-size': $element.css('font-size'),
+          text: $element.text(),
+          visible: $element.is(':visible'),
+          container: $element.closest('.qq-app-container').length > 0 ? '手机界面容器' : '原始对话框',
+        };
+        console.log(`用户头像元素 ${index + 1}:`, styles);
+      });
+
+      console.log('当前用户数据:', this.userData);
+
+      // 强制更新用户头像
+      if (this.userData.avatar && this.userData.avatar.trim() !== '') {
+        console.log('强制更新用户头像:', this.userData.avatar);
+        $allUserAvatars.each(function () {
+          $(this).css({
+            'background-image': `url(${QQApp.userData.avatar})`,
+            'background-size': 'cover',
+            'background-position': 'center',
+            'background-color': 'transparent',
+            color: 'transparent',
+            'font-size': '0',
+          });
+          $(this).text('');
+        });
+        console.log('强制更新完成');
+      }
+    },
+
+    // 检查聊天记录中的用户头像信息（调试用）
+    checkUserAvatarInChat: function () {
+      console.log('=== 检查聊天记录中的用户头像信息 ===');
+
+      try {
+        const SillyTavernContext = this.getSillyTavernContext();
+        if (!SillyTavernContext) {
+          console.log('无法获取SillyTavern上下文');
+          return;
+        }
+
+        const context = SillyTavernContext.getContext();
+        if (!context || !context.chat) {
+          console.log('无法获取聊天记录');
+          return;
+        }
+
+        const messages = context.chat || [];
+        console.log(`检查${messages.length}条聊天记录中的用户头像信息...`);
+
+        let foundUserInfo = [];
+        let foundUserAvatar = [];
+
+        messages.forEach((message, index) => {
+          const messageText = message.mes || '';
+
+          // 检查用户信息格式
+          const userInfoMatches = messageText.match(/\[用户信息\|([^|]+)\|([^\]]*)\]/g);
+          if (userInfoMatches) {
+            userInfoMatches.forEach(match => {
+              foundUserInfo.push(`消息${index}: ${match}`);
+            });
+          }
+
+          // 检查用户头像格式
+          const userAvatarMatches = messageText.match(/\[用户头像\|([^\]]+)\]/g);
+          if (userAvatarMatches) {
+            userAvatarMatches.forEach(match => {
+              foundUserAvatar.push(`消息${index}: ${match}`);
+            });
+          }
+        });
+
+        console.log('找到的用户信息:', foundUserInfo);
+        console.log('找到的用户头像:', foundUserAvatar);
+
+        if (foundUserInfo.length === 0 && foundUserAvatar.length === 0) {
+          console.log('❌ 聊天记录中没有找到任何用户头像信息');
+          console.log('💡 建议：点击用户头像设置一个头像，然后刷新页面测试');
+        }
+      } catch (error) {
+        console.error('检查聊天记录失败:', error);
+      }
+    },
+
     // 绑定新的包装容器点击事件
     bindWrapperClickEvents: function () {
       // 头像点击事件
@@ -1224,12 +1922,20 @@
 
           console.log('找到聊天页面元素:', $chatPage.length);
 
+          // 先隐藏所有其他的聊天页面，避免显示错误信息
+          $('.chat-page').removeClass('show');
+
           // 设置联系人聊天页面的头部颜色
           $chatPage.find('.chat-header').removeClass('group').addClass('contact');
           $chatPage.find('.send-btn').removeClass('group').addClass('contact');
 
           $chatPage.addClass('show');
           console.log('已添加show类');
+
+          // 隐藏QQ主页的装饰栏
+          if (window.QQApp && typeof window.QQApp.hideMainPageDecorations === 'function') {
+            window.QQApp.hideMainPageDecorations();
+          }
 
           // 滚动到消息底部
           setTimeout(() => {
@@ -1253,12 +1959,20 @@
 
           console.log('找到聊天页面元素:', $chatPage.length);
 
+          // 先隐藏所有其他的聊天页面，避免显示错误信息
+          $('.chat-page').removeClass('show');
+
           // 设置群组聊天页面的头部颜色
           $chatPage.find('.chat-header').addClass('group');
           $chatPage.find('.send-btn').addClass('group');
 
           $chatPage.addClass('show');
           console.log('已添加show类');
+
+          // 隐藏QQ主页的装饰栏
+          if (window.QQApp && typeof window.QQApp.hideMainPageDecorations === 'function') {
+            window.QQApp.hideMainPageDecorations();
+          }
 
           // 滚动到消息底部
           setTimeout(() => {
@@ -1275,10 +1989,16 @@
         .off('click', '.chat-home-btn')
         .on('click', '.chat-home-btn', function (e) {
           e.stopPropagation();
+          e.preventDefault();
           console.log('点击了聊天页面的小房子按钮，返回手机首页');
 
           // 隐藏聊天页面
           $(this).closest('.chat-page').removeClass('show');
+
+          // 显示QQ主页的装饰栏
+          if (window.QQApp && typeof window.QQApp.showMainPageDecorations === 'function') {
+            window.QQApp.showMainPageDecorations();
+          }
 
           // 隐藏QQ应用
           if (window.QQApp && typeof window.QQApp.hide === 'function') {
@@ -1298,6 +2018,11 @@
           e.stopPropagation();
           console.log('点击返回箭头，返回QQ聊天主页');
           $(this).closest('.chat-page').removeClass('show');
+
+          // 显示QQ主页的装饰栏
+          if (window.QQApp && typeof window.QQApp.showMainPageDecorations === 'function') {
+            window.QQApp.showMainPageDecorations();
+          }
           // 不需要隐藏 #chat_history_dialog，因为我们是返回到它
         });
 
@@ -1500,8 +2225,8 @@
       console.log('构建的消息格式:', formattedMessage);
       this.sendToChat(formattedMessage);
 
-      // 显示发送成功提示
-      this.showSendSuccessToast(message, target, isGroup);
+      // 删除发送成功提示弹窗
+      // this.showSendSuccessToast(message, target, isGroup);
     },
 
     // 显示发送成功提示
@@ -1747,6 +2472,55 @@
       } catch (error) {
         console.error('更新聊天记录中的群聊成员信息失败:', error);
       }
+    },
+
+    // 隐藏QQ主页装饰栏
+    hideMainPageDecorations: function () {
+      console.log('隐藏QQ主页装饰栏');
+
+      // 隐藏所有可能的QQ主页装饰栏
+      $('.dialog-head').hide();
+      $('.qq-status-bar:not(.chat-status-bar)').hide();
+      $('#chat_history_dialog .dialog-head').hide();
+      $('#chat_history_dialog .qq-status-bar').hide();
+      $('.qq-app-container .dialog-head').hide();
+      $('.qq-app-container .qq-status-bar').hide();
+
+      // 添加隐藏类
+      $('body').addClass('chat-detail-active');
+    },
+
+    // 显示QQ主页装饰栏
+    showMainPageDecorations: function () {
+      console.log('显示QQ主页装饰栏');
+
+      // 显示QQ主页装饰栏
+      $('.dialog-head').show();
+      $('.qq-status-bar:not(.chat-status-bar)').show();
+      $('#chat_history_dialog .dialog-head').show();
+      $('#chat_history_dialog .qq-status-bar').show();
+      $('.qq-app-container .dialog-head').show();
+      $('.qq-app-container .qq-status-bar').show();
+
+      // 移除隐藏类
+      $('body').removeClass('chat-detail-active');
+    },
+
+    // 添加用户头像点击事件
+    addClickEventsToUserAvatar: function () {
+      const self = this;
+
+      // 用户头像点击事件 - 使用事件委托
+      $(document).on('click', '#user_avatar', function (e) {
+        console.log('点击了用户头像');
+        e.stopPropagation();
+        e.preventDefault();
+
+        // 显示用户头像设置弹窗
+        self.showUserAvatarDialog();
+      });
+
+      console.log('用户头像点击事件已绑定');
     },
   };
 
