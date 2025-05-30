@@ -1,5 +1,8 @@
 /* QQ应用样式 - 重构版本 */
 
+/* 导入好友群组管理器样式 */
+@import url('./qq-friend-group-manager.css');
+
 /* CSS变量定义 - 统一管理 */
 :root {
   /* Z-index 层级管理 */
@@ -1521,4 +1524,206 @@ textarea.message-input {
 input.message-input:focus,
 textarea.message-input:focus {
   color: #000000 !important;
+}
+
+/* QQ应用样式 - 支持好友群组管理 */
+
+/* 导入好友群组管理器样式 */
+@import url('./../../iphone-qq-simulator/styles/qq-friend-group-manager.css');
+
+/* ... existing code ...
+
+/* 好友群组管理页面集成样式 */
+.qq-app-container .qq-friend-group-manager-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 50px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* 确保好友管理页面在QQ应用内显示正确 */
+.qq-app-container .friend-manager {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* QQ应用内的好友管理页面状态栏 */
+.qq-app-container .friend-manager .status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 48px 24px 8px;
+  background: #f8f9fa;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* QQ应用内的动态岛 */
+.qq-app-container .friend-manager .dynamic-island {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 128px;
+  height: 28px;
+  background: black;
+  border-radius: 14px;
+  z-index: 50;
+}
+
+/* 好友管理页面的按钮样式 */
+.qq-app-container .friend-manager .friend-action-btn,
+.qq-app-container .friend-manager .group-action-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.qq-app-container .friend-manager .friend-action-btn:hover,
+.qq-app-container .friend-manager .group-action-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+/* 删除按钮样式 */
+.qq-app-container .friend-manager .friend-action-btn.delete,
+.qq-app-container .friend-manager .group-action-btn.delete {
+  background: #dc3545;
+}
+
+.qq-app-container .friend-manager .friend-action-btn.delete:hover,
+.qq-app-container .friend-manager .group-action-btn.delete:hover {
+  background: #c82333;
+}
+
+/* 确保头像在好友管理页面内正确显示 */
+.qq-app-container .friend-manager .friend-avatar,
+.qq-app-container .friend-manager .group-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 好友管理页面的列表项 */
+.qq-app-container .friend-manager .friend-item,
+.qq-app-container .friend-manager .group-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+}
+
+.qq-app-container .friend-manager .friend-item:hover,
+.qq-app-container .friend-manager .group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* 好友信息区域 */
+.qq-app-container .friend-manager .friend-info,
+.qq-app-container .friend-manager .group-info {
+  flex: 1;
+  margin-left: 12px;
+  min-width: 0;
+}
+
+.qq-app-container .friend-manager .friend-name,
+.qq-app-container .friend-manager .group-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.qq-app-container .friend-manager .friend-qq,
+.qq-app-container .friend-manager .group-id {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 操作按钮区域 */
+.qq-app-container .friend-manager .friend-actions,
+.qq-app-container .friend-manager .group-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 添加好友/群组的表单样式 */
+.qq-app-container .friend-manager .add-form {
+  padding: 20px;
+  background: #f8f9fa;
+  margin: 20px;
+  border-radius: 12px;
+}
+
+.qq-app-container .friend-manager .add-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.qq-app-container .friend-manager .add-form button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qq-app-container .friend-manager .add-form button:hover {
+  background: #0056b3;
+}
+
+/* 确保好友管理页面内的滚动 */
+.qq-app-container .friend-manager .content-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 响应式适配 */
+@media (max-width: 480px) {
+  .qq-app-container .friend-manager .friend-actions,
+  .qq-app-container .friend-manager .group-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .qq-app-container .friend-manager .friend-action-btn,
+  .qq-app-container .friend-manager .group-action-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
 }

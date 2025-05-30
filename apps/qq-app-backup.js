@@ -74,116 +74,6 @@
       this.loadUserData();
     },
 
-    // 加载头像数据（增强版）
-    loadAvatarDataEnhanced() {
-      try {
-        this.avatarData = {};
-        this.extractAvatarDataFromChatEnhanced();
-      } catch (error) {
-        console.error('加载增强头像数据失败:', error);
-        this.avatarData = {};
-      }
-    },
-
-    // 从聊天记录提取头像数据（增强版）
-    extractAvatarDataFromChatEnhanced() {
-      const context = this.getSillyTavernContext();
-      if (!context) {
-        return this.extractAvatarDataFromDOMEnhanced();
-      }
-
-      const chatData = context.getContext();
-      if (!chatData?.chat) {
-        return this.extractAvatarDataFromDOMEnhanced();
-      }
-
-      this.processMessagesForAvatarsEnhanced(chatData.chat);
-    },
-
-    // 处理消息提取头像（增强版）
-    processMessagesForAvatarsEnhanced(messages) {
-      messages.forEach(message => {
-        const messageText = message.mes || '';
-        this.extractAvatarsFromTextEnhanced(messageText);
-        this.extractUserAvatarFromTextEnhanced(messageText);
-      });
-    },
-
-    // 从文本提取头像信息（增强版）
-    extractAvatarsFromTextEnhanced(text) {
-      // 提取增强格式的头像
-      const enhancedRegex = /\[头像增强\|(\d+)\|([^\]]+)\]/g;
-      let match;
-
-      while ((match = enhancedRegex.exec(text)) !== null) {
-        const [, qqNumber, configJson] = match;
-        try {
-          const avatarConfig = JSON.parse(configJson);
-          this.avatarData[qqNumber] = avatarConfig.url;
-          this.avatarData[`${qqNumber}_config`] = avatarConfig;
-        } catch (error) {
-          console.error('解析头像配置失败:', error);
-        }
-      }
-
-      // 兼容旧格式
-      this.extractAvatarsFromText(text);
-    },
-
-    // 从文本提取用户头像（增强版）
-    extractUserAvatarFromTextEnhanced(text) {
-      // 提取增强格式的用户头像
-      const enhancedRegex = /\[用户头像增强\|([^\]]+)\]/g;
-      let lastMatch = null;
-      let match;
-
-      while ((match = enhancedRegex.exec(text)) !== null) {
-        lastMatch = match;
-      }
-
-      if (lastMatch) {
-        try {
-          const [, configJson] = lastMatch;
-          const avatarConfig = JSON.parse(configJson);
-          this.userData.avatar = avatarConfig.url;
-          this.userData.avatarConfig = avatarConfig;
-        } catch (error) {
-          console.error('解析用户头像配置失败:', error);
-        }
-      }
-
-      // 兼容旧格式
-      this.extractUserAvatarFromText(text);
-    },
-
-    // DOM扫描备用方案（增强版）
-    extractAvatarDataFromDOMEnhanced() {
-      try {
-        const messageElements = document.querySelectorAll('.mes_text, .mes_block');
-        messageElements.forEach(element => {
-          const messageText = element.textContent || '';
-          this.extractAvatarsFromTextEnhanced(messageText);
-          this.extractUserAvatarFromTextEnhanced(messageText);
-        });
-      } catch (error) {
-        console.error('DOM扫描提取增强头像数据失败:', error);
-      }
-    },
-
-    // DOM扫描备用方案（增强版用户数据）
-    extractUserDataFromDOMEnhanced() {
-      try {
-        const messageElements = document.querySelectorAll('.mes_text, .mes_block');
-        messageElements.forEach(element => {
-          const messageText = element.textContent || '';
-          this.extractUserInfoFromText(messageText);
-          this.extractUserAvatarFromTextEnhanced(messageText);
-        });
-      } catch (error) {
-        console.error('DOM扫描提取增强用户数据失败:', error);
-      }
-    },
-
     // 加载头像数据
     loadAvatarData() {
       try {
@@ -350,49 +240,6 @@
       } catch (error) {
         console.error('更新用户信息显示失败:', error);
       }
-    },
-
-    // 更新用户头像显示（增强版）
-    updateUserAvatarEnhanced() {
-      const $userAvatarElements = this.getUserAvatarElements();
-      const avatarConfig = this.getUserAvatarConfig();
-
-      if (this.userData.avatar?.trim()) {
-        this.setUserAvatarImageEnhanced($userAvatarElements, avatarConfig);
-      } else {
-        this.setUserAvatarDefault($userAvatarElements);
-      }
-    },
-
-    // 获取用户头像配置
-    getUserAvatarConfig() {
-      return this.userData.avatarConfig || null;
-    },
-
-    // 设置用户头像图片（增强版）
-    setUserAvatarImageEnhanced($elements, avatarConfig) {
-      $elements.each((index, element) => {
-        const $element = $(element);
-        let css = {
-          'background-image': `url(${this.userData.avatar})`,
-          'background-size': 'cover',
-          'background-position': 'center',
-          'background-color': 'transparent',
-          color: 'transparent',
-          'font-size': '0',
-        };
-
-        // 应用变换
-        if (avatarConfig && avatarConfig.transform) {
-          const transform = avatarConfig.transform;
-          css['transform'] = `scale(${transform.scale || 1}) translate(${transform.translateX || 0}px, ${
-            transform.translateY || 0
-          }px) rotate(${transform.rotate || 0}deg)`;
-          css['transform-origin'] = 'center center';
-        }
-
-        $element.css(css).text('');
-      });
     },
 
     // 更新用户名显示
@@ -1993,18 +1840,8 @@
           // 只为有效的联系人QQ号显示头像修改弹窗
           if (qqNumber && String(qqNumber).trim() !== '' && String(qqNumber).trim() !== 'undefined') {
             console.log('点击联系人头像，QQ号:', qqNumber, '联系人:', contactName);
-
-            // 详细调试信息
-            console.log('window.QQAvatarEditor 存在:', !!window.QQAvatarEditor);
-            console.log('window["QQAvatarEditor"] 存在:', !!window['QQAvatarEditor']);
-            console.log('QQAvatarEditor 对象:', window.QQAvatarEditor);
-            if (window.QQAvatarEditor) {
-              console.log('showContactEditor 方法存在:', typeof window.QQAvatarEditor.showContactEditor);
-            }
-
             // 调用新的头像编辑器
             if (window.QQAvatarEditor && typeof window.QQAvatarEditor.showContactEditor === 'function') {
-              console.log('调用联系人头像编辑器');
               window.QQAvatarEditor.showContactEditor(qqNumber, contactName);
             } else {
               console.error('QQAvatarEditor 不可用');
@@ -2638,17 +2475,8 @@
         e.stopPropagation();
         e.preventDefault();
 
-        // 详细调试信息
-        console.log('window.QQAvatarEditor 存在:', !!window.QQAvatarEditor);
-        console.log('window["QQAvatarEditor"] 存在:', !!window['QQAvatarEditor']);
-        console.log('QQAvatarEditor 对象:', window.QQAvatarEditor);
-        if (window.QQAvatarEditor) {
-          console.log('showUserEditor 方法存在:', typeof window.QQAvatarEditor.showUserEditor);
-        }
-
         // 显示用户头像编辑器
         if (window.QQAvatarEditor && typeof window.QQAvatarEditor.showUserEditor === 'function') {
-          console.log('调用用户头像编辑器');
           window.QQAvatarEditor.showUserEditor();
         } else {
           console.error('QQAvatarEditor 不可用');
@@ -2827,11 +2655,181 @@
         }
       });
     },
+
+    // 加载头像数据（增强版）
+    loadAvatarDataEnhanced() {
+      try {
+        this.avatarData = {};
+        this.extractAvatarDataFromChatEnhanced();
+      } catch (error) {
+        console.error('加载增强头像数据失败:', error);
+        this.avatarData = {};
+      }
+    },
+
+    // 从聊天记录提取头像数据（增强版）
+    extractAvatarDataFromChatEnhanced() {
+      const context = this.getSillyTavernContext();
+      if (!context) {
+        return this.extractAvatarDataFromDOMEnhanced();
+      }
+
+      const chatData = context.getContext();
+      if (!chatData?.chat) {
+        return this.extractAvatarDataFromDOMEnhanced();
+      }
+
+      this.processMessagesForAvatarsEnhanced(chatData.chat);
+    },
+
+    // 处理消息提取头像（增强版）
+    processMessagesForAvatarsEnhanced(messages) {
+      messages.forEach(message => {
+        const messageText = message.mes || '';
+        this.extractAvatarsFromTextEnhanced(messageText);
+        this.extractUserAvatarFromTextEnhanced(messageText);
+      });
+    },
+
+    // 从文本提取头像信息（增强版）
+    extractAvatarsFromTextEnhanced(text) {
+      // 提取增强格式的头像
+      const enhancedRegex = /\[头像增强\|(\d+)\|([^\]]+)\]/g;
+      let match;
+
+      while ((match = enhancedRegex.exec(text)) !== null) {
+        const [, qqNumber, configJson] = match;
+        try {
+          const avatarConfig = JSON.parse(configJson);
+          this.avatarData[qqNumber] = avatarConfig.url;
+          this.avatarData[`${qqNumber}_config`] = avatarConfig;
+        } catch (error) {
+          console.error('解析头像配置失败:', error);
+        }
+      }
+
+      // 兼容旧格式
+      this.extractAvatarsFromText(text);
+    },
+
+    // 从文本提取用户头像（增强版）
+    extractUserAvatarFromTextEnhanced(text) {
+      // 提取增强格式的用户头像
+      const enhancedRegex = /\[用户头像增强\|([^\]]+)\]/g;
+      let lastMatch = null;
+      let match;
+
+      while ((match = enhancedRegex.exec(text)) !== null) {
+        lastMatch = match;
+      }
+
+      if (lastMatch) {
+        try {
+          const [, configJson] = lastMatch;
+          const avatarConfig = JSON.parse(configJson);
+          this.userData.avatar = avatarConfig.url;
+          this.userData.avatarConfig = avatarConfig;
+        } catch (error) {
+          console.error('解析用户头像配置失败:', error);
+        }
+      }
+
+      // 兼容旧格式
+      this.extractUserAvatarFromText(text);
+    },
+
+    // DOM扫描备用方案（增强版）
+    extractAvatarDataFromDOMEnhanced() {
+      try {
+        const messageElements = document.querySelectorAll('.mes_text, .mes_block');
+        messageElements.forEach(element => {
+          const messageText = element.textContent || '';
+          this.extractAvatarsFromTextEnhanced(messageText);
+          this.extractUserAvatarFromTextEnhanced(messageText);
+        });
+      } catch (error) {
+        console.error('DOM扫描提取增强头像数据失败:', error);
+      }
+    },
+
+    // 获取头像配置
+    getAvatarConfig(qqNumber) {
+      const configKey = `${qqNumber}_config`;
+      return this.avatarData[configKey] || null;
+    },
+
+    // 获取用户头像配置
+    getUserAvatarConfig() {
+      return this.userData.avatarConfig || null;
+    },
+
+    // 更新用户显示（增强版）
+    updateUserDisplayEnhanced() {
+      try {
+        this.updateUserName();
+        this.updateUserAvatarEnhanced();
+      } catch (error) {
+        console.error('更新用户信息显示失败:', error);
+      }
+    },
+
+    // 更新用户头像显示（增强版）
+    updateUserAvatarEnhanced() {
+      const $userAvatarElements = this.getUserAvatarElements();
+      const avatarConfig = this.getUserAvatarConfig();
+
+      if (this.userData.avatar?.trim()) {
+        this.setUserAvatarImageEnhanced($userAvatarElements, avatarConfig);
+      } else {
+        this.setUserAvatarDefault($userAvatarElements);
+      }
+    },
+
+    // 设置用户头像图片（增强版）
+    setUserAvatarImageEnhanced($elements, avatarConfig) {
+      $elements.each((index, element) => {
+        const $element = $(element);
+
+        let css = {
+          'background-image': `url(${this.userData.avatar})`,
+          'background-size': 'cover',
+          'background-position': 'center',
+          'background-color': 'transparent',
+          color: 'transparent',
+          'font-size': '0',
+        };
+
+        // 应用变换
+        if (avatarConfig && avatarConfig.transform) {
+          const transform = avatarConfig.transform;
+          css['transform'] = `scale(${transform.scale || 1}) translate(${transform.translateX || 0}px, ${
+            transform.translateY || 0
+          }px) rotate(${transform.rotate || 0}deg)`;
+          css['transform-origin'] = 'center center';
+        }
+
+        $element.css(css).text('');
+      });
+    },
   };
 
   // 当DOM加载完成时初始化
   $(document).ready(function () {
     console.log('🚀 QQ应用模块初始化完成');
+
+    // 确保样式已加载
+    if (!$('link[href*="qq-friend-group-manager.css"]').length) {
+      $('head').append(
+        '<link rel="stylesheet" type="text/css" href="/src/iphone-qq-simulator/styles/qq-friend-group-manager.css">',
+      );
+    }
+
+    // 加载头像编辑器样式
+    if (!$('link[href*="qq-avatar-editor.css"]').length) {
+      $('head').append(
+        '<link rel="stylesheet" type="text/css" href="/src/mobile-ui-test/styles/qq-avatar-editor.css">',
+      );
+    }
 
     // 导出到全局
     window.QQApp = QQApp;

@@ -1,0 +1,500 @@
+/* QQ好友群组管理器样式 - 基于tsx文件美化 */
+
+/* 好友群组管理页面主容器 */
+.qq-friend-group-manager-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 50px;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.qq-friend-group-manager-page.show {
+  display: flex;
+}
+
+/* 动态岛 */
+.friend-manager .dynamic-island {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 128px;
+  height: 28px;
+  background: black;
+  border-radius: 14px;
+  z-index: 50;
+}
+
+/* 状态栏 */
+.friend-manager .status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 48px 24px 8px;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.friend-manager .status-time {
+  color: black;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.friend-manager .status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.friend-manager .signal-icon,
+.friend-manager .battery-icon {
+  width: 4px;
+  height: 12px;
+  background: black;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.friend-manager .battery-icon {
+  width: 24px;
+  height: 12px;
+  border: 1px solid black;
+  border-radius: 2px;
+  position: relative;
+}
+
+.friend-manager .battery-icon::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 8px;
+  background: black;
+  border-radius: 0 2px 2px 0;
+}
+
+/* 页面头部 */
+.friend-manager .page-header {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.friend-manager .header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.friend-manager .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.friend-manager .back-button {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.friend-manager .page-title {
+  font-weight: 500;
+  color: black;
+}
+
+.friend-manager .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.friend-manager .more-button,
+.friend-manager .home-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.friend-manager .home-button {
+  font-size: 18px;
+}
+
+/* 选项卡导航 */
+.friend-manager .tab-navigation {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.friend-manager .tab-button {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6b7280;
+}
+
+.friend-manager .tab-button.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.friend-manager .tab-button:hover {
+  color: #374151;
+}
+
+/* 内容区域 */
+.friend-manager .content-area {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  background: white;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 背景图片 - 修复为不覆盖状态栏和头部 */
+.friend-manager .content-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.95;
+  background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 内容容器 - 提高z-index确保在背景图之上 */
+.friend-manager .content-container {
+  position: relative;
+  z-index: 10;
+  padding: 16px;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 卡片样式 */
+.friend-manager .card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+/* 表单控件 */
+.friend-manager .form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.friend-manager .form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  backdrop-filter: blur(4px);
+}
+
+.friend-manager .form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.friend-manager .form-input::placeholder {
+  color: #9ca3af;
+}
+
+/* 按钮样式 */
+.friend-manager .btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.friend-manager .btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.friend-manager .btn-primary:hover {
+  background: #2563eb;
+}
+
+.friend-manager .btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.friend-manager .btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.friend-manager .btn-secondary:hover {
+  background: #4b5563;
+}
+
+.friend-manager .btn-outline {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.friend-manager .btn-outline:hover {
+  background: #f9fafb;
+}
+
+.friend-manager .btn-danger {
+  background: transparent;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+}
+
+.friend-manager .btn-danger:hover {
+  background: #fef2f2;
+}
+
+.friend-manager .btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* 动作按钮组 */
+.friend-manager .action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.friend-manager .action-buttons .btn {
+  flex: 1;
+}
+
+/* 联系人/群组列表 */
+.friend-manager .member-list {
+  max-height: 256px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.friend-manager .member-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 8px 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.friend-manager .member-checkbox {
+  margin-right: 10px;
+}
+
+.friend-manager .member-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-weight: 600;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  position: relative;
+}
+
+.friend-manager .member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.friend-manager .member-info {
+  flex: 1;
+}
+
+.friend-manager .member-name {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.friend-manager .member-details {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.friend-manager .member-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 部分标题 */
+.friend-manager .section-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 统计信息 */
+.friend-manager .section-count {
+  color: #6b7280;
+}
+
+/* 复选框样式 */
+.friend-manager .checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+}
+
+/* 滚动条样式 */
+.friend-manager .content-area::-webkit-scrollbar,
+.friend-manager .member-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.friend-manager .content-area::-webkit-scrollbar-track,
+.friend-manager .member-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.friend-manager .content-area::-webkit-scrollbar-thumb,
+.friend-manager .member-list::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 2px;
+}
+
+.friend-manager .content-area::-webkit-scrollbar-thumb:hover,
+.friend-manager .member-list::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* 底部指示器 */
+.friend-manager .home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 128px;
+  height: 4px;
+  background: black;
+  border-radius: 2px;
+  z-index: 60;
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .friend-manager .content-container {
+    padding: 12px;
+  }
+
+  .friend-manager .card {
+    padding: 12px;
+  }
+
+  .friend-manager .member-item {
+    padding: 8px;
+  }
+
+  .friend-manager .member-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* 页面切换动画 */
+.friend-manager .tab-content {
+  flex: 1;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.friend-manager .tab-content.active {
+  opacity: 1;
+  transform: translateY(0);
+  display: block;
+}
+
+/* 加载状态 */
+.friend-manager .loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+/* 空状态 */
+.friend-manager .empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.friend-manager .empty-state h3 {
+  margin-bottom: 8px;
+  color: #374151;
+}

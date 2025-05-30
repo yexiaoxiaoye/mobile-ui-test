@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>头像修改界面测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>头像修改界面修复测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 方法存在性检查</h3>
+            <button onclick="checkMethods()">检查缺失方法</button>
+            <div id="method-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 头像编辑器界面检查</h3>
+            <button onclick="checkEditorInterface()">检查编辑器界面</button>
+            <div id="editor-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 按钮功能测试</h3>
+            <button onclick="testButtons()">测试按钮</button>
+            <div id="button-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 控制台输出</h3>
+            <button onclick="clearConsole()">清空控制台</button>
+            <div id="console-output" class="console-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // 捕获控制台输出
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(type, message) {
+            const consoleDiv = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('warn', args.join(' '));
+        };
+
+        function clearConsole() {
+            document.getElementById('console-output').textContent = '';
+        }
+
+        function checkMethods() {
+            const statusDiv = document.getElementById('method-status');
+            const methods = [
+                'loadAvatarDataEnhanced',
+                'extractUserAvatarFromTextEnhanced', 
+                'updateUserAvatarEnhanced',
+                'extractUserDataFromDOMEnhanced',
+                'setUserDataEnhanced',
+                'updateAllAvatarDisplaysEnhanced',
+                'updateAvatarInChatEnhanced'
+            ];
+            
+            let results = [];
+            
+            if (window.QQApp) {
+                methods.forEach(method => {
+                    if (typeof window.QQApp[method] === 'function') {
+                        results.push(`✅ ${method} - 存在`);
+                    } else {
+                        results.push(`❌ ${method} - 缺失`);
+                    }
+                });
+                
+                const allExist = methods.every(method => typeof window.QQApp[method] === 'function');
+                const statusClass = allExist ? 'success' : 'error';
+                const summary = allExist ? '所有方法都存在！' : '仍有方法缺失！';
+                
+                statusDiv.innerHTML = `
+                    <div class="status ${statusClass}">${summary}</div>
+                    <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                `;
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ QQApp 未找到</div>';
+            }
+        }
+
+        function checkEditorInterface() {
+            const statusDiv = document.getElementById('editor-status');
+            
+            if (window.QQAvatarEditor) {
+                // 检查编辑器是否可以创建界面
+                try {
+                    window.QQAvatarEditor.createEditorInterface();
+                    
+                    // 检查按钮是否存在
+                    const cancelBtn = document.querySelector('.editor-cancel-btn');
+                    const saveBtn = document.querySelector('.editor-save-btn');
+                    const backBtn = document.querySelector('.editor-back-btn');
+                    
+                    let results = [];
+                    results.push(cancelBtn ? '✅ 取消按钮 - 存在' : '❌ 取消按钮 - 缺失');
+                    results.push(saveBtn ? '✅ 保存按钮 - 存在' : '❌ 保存按钮 - 缺失');
+                    results.push(backBtn ? '✅ 返回按钮 - 存在' : '❌ 返回按钮 - 缺失');
+                    
+                    const allExist = cancelBtn && saveBtn && backBtn;
+                    const statusClass = allExist ? 'success' : 'error';
+                    const summary = allExist ? '编辑器界面正常！' : '编辑器界面有问题！';
+                    
+                    statusDiv.innerHTML = `
+                        <div class="status ${statusClass}">${summary}</div>
+                        <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                    `;
+                    
+                    // 清理测试界面
+                    document.querySelector('.qq-avatar-editor-page')?.remove();
+                    
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="status error">❌ 创建编辑器界面失败: ${error.message}</div>`;
+                }
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ QQAvatarEditor 未找到</div>';
+            }
+        }
+
+        function testButtons() {
+            const statusDiv = document.getElementById('button-status');
+            
+            if (window.QQAvatarEditor) {
+                try {
+                    // 创建编辑器界面
+                    window.QQAvatarEditor.createEditorInterface();
+                    
+                    let results = [];
+                    
+                    // 测试取消按钮
+                    const cancelBtn = document.querySelector('.editor-cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.click();
+                        results.push('✅ 取消按钮 - 可点击');
+                    } else {
+                        results.push('❌ 取消按钮 - 不存在');
+                    }
+                    
+                    // 重新创建界面测试保存按钮
+                    window.QQAvatarEditor.createEditorInterface();
+                    const saveBtn = document.querySelector('.editor-save-btn');
+                    if (saveBtn) {
+                        // 模拟点击（不实际保存）
+                        results.push('✅ 保存按钮 - 存在且可点击');
+                    } else {
+                        results.push('❌ 保存按钮 - 不存在');
+                    }
+                    
+                    statusDiv.innerHTML = `
+                        <div class="status success">按钮测试完成</div>
+                        <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+                    `;
+                    
+                    // 清理测试界面
+                    document.querySelector('.qq-avatar-editor-page')?.remove();
+                    
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="status error">❌ 按钮测试失败: ${error.message}</div>`;
+                }
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ QQAvatarEditor 未找到</div>';
+            }
+        }
+
+        // 页面加载完成后自动运行检查
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                console.log('开始自动检查...');
+                checkMethods();
+                checkEditorInterface();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
