@@ -1,103 +1,133 @@
-/* QQ应用样式 */
+/* QQ应用样式 - 重构版本 */
+
+/* CSS变量定义 - 统一管理 */
+:root {
+  /* Z-index 层级管理 */
+  --z-phone-interface: 500;
+  --z-qq-app: 510;
+  --z-chat-page: 515;
+  --z-status-bar: 50;
+  --z-dynamic-island: 100;
+  --z-dialog: 1000;
+  --z-dialog-high: 10002;
+
+  /* 颜色变量 */
+  --primary-blue: #007bff;
+  --primary-blue-dark: #357abd;
+  --light-gray: #f0f0f0;
+  --light-gray-alt: #e9e9eb;
+  --border-light: #e0e0e0;
+  --border-gray: #d1d5db;
+  --input-bg: #f9fafb;
+  --text-primary: #333;
+  --text-secondary: #555;
+  --text-tertiary: #444;
+  --white-bg: #ffffff;
+
+  /* 状态栏变量 */
+  --status-bar-height: 37px;
+  --status-bar-padding: 20px;
+  --status-bar-font-size: 18px;
+  --status-bar-font-weight: 700;
+  --status-bar-icon-gap: 4px;
+  --status-bar-icon-width: 20px;
+  --status-bar-icon-height: 14px;
+
+  /* 头像尺寸变量 */
+  --avatar-size: 46px;
+  --contact-avatar-size: 48px;
+}
 
 /* SillyTavern环境样式强化 */
 body #chat_history_dialog,
 body .chat-page,
 body .qq-app-container {
-  opacity: 1 !important;
-  visibility: visible !important;
+  opacity: 1;
+  visibility: visible;
 }
 
+/* 统一白色背景样式 */
+.qq-white-bg,
 body #chat_history_dialog > div,
 body .chat-page::after,
-body .qq-app-container > div {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  opacity: 1 !important;
-  filter: none !important;
-}
-
-/* 强制白色背景，不受主题影响 */
+body .qq-app-container > div,
 #chat_history_dialog > div,
 .chat-page::after,
 .qq-app-container > div {
-  background: rgb(255, 255, 255) !important;
-  background-color: rgb(255, 255, 255) !important;
+  background: #ffffff;
+  background-color: #ffffff;
+  opacity: 1;
+  filter: none;
 }
 
-/* 确保手机界面主容器的z-index也被限制 */
+/* 手机界面主容器 */
 #phone_interface {
-  z-index: 998 !important; /* 比内部应用的999低一级，确保不会意外覆盖 */
+  z-index: var(--z-phone-interface);
 }
 
-/* QQ应用容器样式 - 在手机界面内显示时 */
+/* 统一字体样式 */
+.qq-font,
+.qq-app-container,
+#chat_history_dialog,
+.chat-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* QQ应用容器样式 */
 .qq-app-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: transparent !important;
-  border-radius: 50px !important;
-  overflow: hidden !important;
-  opacity: 1 !important;
-  position: relative !important;
-  z-index: 999 !important; /* 确保在手机界面内时也遵循z-index限制 */
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border-radius: 50px;
+  overflow: hidden;
+  opacity: 1;
+  position: relative;
+  z-index: var(--z-qq-app);
 }
 
 .qq-app-container > div {
-  width: 100% !important;
-  height: 100% !important;
-  background: #ffffff !important;
-  border-radius: 50px !important;
-  overflow: hidden !important;
-  position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  opacity: 1 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
-}
-
-/* QQ应用容器内的 Dynamic Island */
-.qq-app-container::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 28px;
-  background: black;
-  border-radius: 20px;
-  z-index: 100;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 /* QQ对话框样式 */
 #chat_history_dialog {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  width: 375px !important;
-  height: 812px !important;
-  background: transparent !important;
-  border-radius: 60px !important;
-  padding: 8px !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
-  opacity: 1 !important;
-  z-index: 999 !important; /* 降低z-index，确保不会覆盖SillyTavern的其他界面 */
+  width: 375px;
+  height: 812px;
+  background: transparent;
+  border-radius: 60px;
+  padding: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  opacity: 1;
+  z-index: var(--z-qq-app);
 }
 
 #chat_history_dialog > div {
-  width: 100% !important;
-  height: 100% !important;
-  background: #ffffff !important;
-  border-radius: 50px !important;
-  overflow: hidden !important;
-  position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  opacity: 1 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
-/* Dynamic Island */
-#chat_history_dialog::before {
+/* Dynamic Island 统一样式 */
+.dynamic-island,
+.qq-app-container::before,
+#chat_history_dialog::before,
+.chat-page::before {
   content: '';
   position: absolute;
   top: 10px;
@@ -107,52 +137,59 @@ body .qq-app-container > div {
   height: 28px;
   background: black;
   border-radius: 20px;
-  z-index: 100;
+  z-index: var(--z-dynamic-island);
 }
 
-/* 状态栏 - 时间、电量、信号 - 统一标准 */
-.qq-status-bar {
-  position: absolute !important;
-  top: 10px !important;
-  left: 0 !important;
-  right: 0 !important;
-  height: 37px !important; /* 统一状态栏高度 */
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0 20px !important; /* 统一左右内边距 */
-  color: black !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  z-index: 50 !important;
-  pointer-events: none !important;
+/* 状态栏统一样式 */
+.qq-status-bar,
+.chat-status-bar {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 37px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  color: black;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: var(--z-status-bar);
+  pointer-events: none;
 }
 
-.qq-status-time {
-  font-size: 18px !important; /* 统一时间字体大小 */
-  font-weight: 700 !important; /* 统一时间字体粗细 */
-  color: black !important;
+/* 状态栏时间样式 */
+.qq-status-time,
+.chat-status-time {
+  font-size: 18px;
+  font-weight: 700;
+  color: black;
 }
 
-.qq-status-icons {
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important; /* 统一图标间距 */
-  font-size: 12px !important;
-  color: black !important;
-  font-weight: 600 !important;
+/* 状态栏图标容器 */
+.qq-status-icons,
+.chat-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: black;
+  font-weight: 600;
 }
 
-/* 使用SVG图标替换emoji - QQ主页状态栏 - 统一标准 */
+/* SVG图标统一样式 */
 .qq-signal-icon,
-.qq-battery-icon {
-  display: inline-block !important;
-  width: 20px !important; /* 统一图标宽度 */
-  height: 14px !important; /* 统一图标高度 */
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  font-size: 0 !important; /* 隐藏emoji文字 */
+.qq-battery-icon,
+.chat-signal-icon,
+.chat-battery-icon {
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-size: 0;
 }
 
 .qq-signal-icon {
@@ -163,35 +200,66 @@ body .qq-app-container > div {
   background-image: url("data:image/svg+xml,%3Csvg width='27' height='14' viewBox='50 0 28 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_0_1)'%3E%3Cg opacity='0.3'%3E%3Cpath d='M51.6574 1.77772C50.9915 2.78661 50.9915 4.19108 50.9915 7C50.9915 9.80892 50.9915 11.2134 51.6574 12.2223C51.9457 12.659 52.3162 13.034 52.7477 13.3259C53.7444 14 55.1319 14 57.9069 14H68.7741C71.5491 14 72.9366 14 73.9333 13.3259C74.3648 13.034 74.7353 12.659 75.0236 12.2223C75.6896 11.2134 75.6896 9.80892 75.6896 7C75.6896 4.19108 75.6896 2.78661 75.0236 1.77772C74.7353 1.34096 74.3648 0.965956 73.9333 0.674122C72.9366 0 71.5491 0 68.7741 0H57.9069C55.1319 0 53.7444 0 52.7477 0.674122C52.3162 0.965956 51.9457 1.34096 51.6574 1.77772Z' fill='%235A5A5A'/%3E%3Cpath d='M77.9915 6.75C77.9915 7.62313 77.4737 8.41122 76.6775 8.75V4.75C77.4737 5.08878 77.9915 5.87687 77.9915 6.75Z' fill='%235A5A5A'/%3E%3C/g%3E%3Crect width='21' height='14' transform='translate(50.9915)' fill='%23121212'/%3E%3Cpath d='M60.0032 11.1719C59.3801 11.1719 58.8323 11.077 58.3596 10.8872C57.887 10.6938 57.5181 10.4271 57.2532 10.0869C56.9882 9.74316 56.8557 9.34749 56.8557 8.8999V8.88916C56.8557 8.55257 56.9327 8.24821 57.0867 7.97607C57.2442 7.70394 57.4591 7.47835 57.7312 7.29932C58.0033 7.1167 58.3149 6.99137 58.6658 6.92334V6.89111C58.211 6.78011 57.8422 6.57243 57.5593 6.26807C57.28 5.96012 57.1404 5.59489 57.1404 5.17236V5.16162C57.1404 4.76058 57.2621 4.4043 57.5056 4.09277C57.7491 3.77767 58.0857 3.5306 58.5154 3.35156C58.9451 3.16895 59.441 3.07764 60.0032 3.07764C60.5653 3.07764 61.0613 3.16895 61.491 3.35156C61.9207 3.5306 62.2572 3.77767 62.5007 4.09277C62.7442 4.4043 62.866 4.76058 62.866 5.16162V5.17236C62.866 5.59489 62.7245 5.96012 62.4417 6.26807C62.1588 6.57243 61.7917 6.78011 61.3406 6.89111V6.92334C61.6915 6.99137 62.003 7.1167 62.2751 7.29932C62.5473 7.47835 62.7603 7.70394 62.9143 7.97607C63.0719 8.24821 63.1506 8.55257 63.1506 8.88916V8.8999C63.1506 9.34749 63.0181 9.74316 62.7532 10.0869C62.4882 10.4271 62.1176 10.6938 61.6414 10.8872C61.1687 11.077 60.6226 11.1719 60.0032 11.1719ZM60.0032 9.99023C60.2861 9.99023 60.5367 9.9401 60.7551 9.83984C60.9736 9.736 61.1436 9.59456 61.2654 9.41553C61.3907 9.23291 61.4534 9.02523 61.4534 8.79248V8.78174C61.4534 8.54899 61.3925 8.3431 61.2708 8.16406C61.149 7.98145 60.9789 7.83822 60.7605 7.73438C60.5421 7.63053 60.2896 7.57861 60.0032 7.57861C59.7167 7.57861 59.4643 7.63053 59.2458 7.73438C59.0274 7.83822 58.8556 7.98145 58.7302 8.16406C58.6085 8.3431 58.5476 8.54899 58.5476 8.78174V8.79248C58.5476 9.02523 58.6103 9.23291 58.7356 9.41553C58.8609 9.59456 59.0328 9.736 59.2512 9.83984C59.4696 9.9401 59.7203 9.99023 60.0032 9.99023ZM60.0032 6.40234C60.2502 6.40234 60.4687 6.35758 60.6584 6.26807C60.8482 6.17497 60.995 6.04785 61.0989 5.88672C61.2063 5.72559 61.26 5.53939 61.26 5.32812V5.31738C61.26 5.10612 61.2063 4.91992 61.0989 4.75879C60.9915 4.59766 60.8429 4.47233 60.6531 4.38281C60.4669 4.29329 60.2502 4.24854 60.0032 4.24854C59.7561 4.24854 59.5377 4.29329 59.3479 4.38281C59.1581 4.47233 59.0095 4.59766 58.9021 4.75879C58.7947 4.91992 58.741 5.10612 58.741 5.31738V5.32812C58.741 5.53939 58.7947 5.72559 58.9021 5.88672C59.0095 6.04785 59.1581 6.17497 59.3479 6.26807C59.5377 6.35758 59.7561 6.40234 60.0032 6.40234ZM67.0334 11.1987C66.3961 11.1987 65.8464 11.034 65.3845 10.7046C64.9262 10.3716 64.5735 9.90072 64.3264 9.29199C64.0793 8.68327 63.9558 7.96175 63.9558 7.12744V7.1167C63.9558 6.27881 64.0793 5.55729 64.3264 4.95215C64.5735 4.34342 64.9262 3.87435 65.3845 3.54492C65.8464 3.21549 66.3961 3.05078 67.0334 3.05078C67.6744 3.05078 68.224 3.21549 68.6824 3.54492C69.1407 3.87435 69.4934 4.34342 69.7405 4.95215C69.9875 5.55729 70.1111 6.27881 70.1111 7.1167V7.12744C70.1111 7.96175 69.9875 8.68327 69.7405 9.29199C69.4934 9.90072 69.1407 10.3716 68.6824 10.7046C68.224 11.034 67.6744 11.1987 67.0334 11.1987ZM67.0334 9.91504C67.3414 9.91504 67.601 9.80404 67.8123 9.58203C68.0271 9.36003 68.19 9.04134 68.301 8.62598C68.4156 8.21061 68.4729 7.7111 68.4729 7.12744V7.1167C68.4729 6.52946 68.4156 6.02995 68.301 5.61816C68.19 5.2028 68.0271 4.8859 67.8123 4.66748C67.601 4.44548 67.3414 4.33447 67.0334 4.33447C66.7291 4.33447 66.4695 4.44548 66.2546 4.66748C66.0434 4.8859 65.8805 5.2028 65.7659 5.61816C65.6549 6.02995 65.5994 6.52946 65.5994 7.1167V7.12744C65.5994 7.7111 65.6549 8.21061 65.7659 8.62598C65.8805 9.04134 66.0434 9.36003 66.2546 9.58203C66.4695 9.80404 66.7291 9.91504 67.0334 9.91504Z' fill='white'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_0_1'%3E%3Crect x='50.9915' width='27.3587' height='14' rx='4' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E") !important;
 }
 
-/* 聊天页面状态栏样式 - 只在聊天页面显示时生效 - 统一标准 */
+/* 统一状态栏样式类 */
+.unified-status-bar {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: var(--status-bar-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--status-bar-padding);
+  color: black;
+  font-size: var(--status-bar-font-size);
+  font-weight: var(--status-bar-font-weight);
+  z-index: var(--z-status-bar);
+  pointer-events: none;
+}
+
+.unified-status-time {
+  font-size: var(--status-bar-font-size);
+  font-weight: var(--status-bar-font-weight);
+  color: black;
+}
+
+.unified-status-icons {
+  display: flex;
+  align-items: center;
+  gap: var(--status-bar-icon-gap);
+  color: black;
+  font-size: 12px;
+}
+
+/* 聊天页面状态栏样式 - 使用统一样式 */
 .chat-page.show .chat-status-bar {
-  position: absolute !important;
-  top: 10px !important; /* 与QQ主页状态栏位置完全一致 */
-  left: 0 !important; /* 统一左边距 */
-  right: 0 !important; /* 统一右边距 */
-  height: 37px !important; /* 统一状态栏高度 */
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0 20px !important; /* 统一左右内边距 */
-  margin-top: 10px !important; /* 与QQ主页状态栏完全一致 */
-  color: black !important;
-  font-size: 18px !important; /* 统一字体大小 */
-  font-weight: 700 !important; /* 统一字体粗细 */
-  z-index: 50 !important; /* 提高z-index确保显示在最上层 */
-  pointer-events: none !important;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: var(--status-bar-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--status-bar-padding);
+  color: black;
+  font-size: var(--status-bar-font-size);
+  font-weight: var(--status-bar-font-weight);
+  z-index: var(--z-status-bar);
+  pointer-events: none;
 }
 
 .chat-page.show .chat-status-time {
-  font-size: 18px; /* 统一时间字体大小 */
-  font-weight: 700; /* 统一时间字体粗细 */
+  font-size: var(--status-bar-font-size);
+  font-weight: var(--status-bar-font-weight);
   color: black;
 }
 
 .chat-page.show .chat-status-icons {
   display: flex;
   align-items: center;
-  gap: 4px; /* 统一图标间距 */
+  gap: var(--status-bar-icon-gap);
   color: black;
   font-size: 12px;
 }
@@ -283,6 +351,13 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   overflow: hidden !important;
 }
 
+/* QQ装饰栏隐藏类 - 保持原有display属性 */
+.qq-decoration-hidden {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* QQ主页状态栏 */
 .dialog-head {
   background: #f5f5f5 !important;
@@ -358,81 +433,115 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   text-shadow: none !important;
 }
 
-/* QQ主页按钮样式 */
+/* 统一按钮样式类 */
+.unified-btn {
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.unified-btn.icon-btn {
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.unified-btn.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.unified-btn.icon-btn:active {
+  transform: scale(0.9);
+}
+
+.unified-btn.text-btn {
+  padding: 8px 12px;
+  font-weight: bold;
+}
+
+.unified-btn.large-text {
+  font-size: 28px;
+  font-weight: normal;
+  line-height: 1;
+  width: auto;
+  height: auto;
+  padding: 0;
+  transition: none;
+}
+
+.unified-btn.large-text:hover,
+.unified-btn.large-text:active {
+  transform: none;
+}
+
+/* 保持向后兼容的按钮样式 */
 #create_group_btn {
-  padding: 8px 12px !important;
-  font-size: 24px !important;
-  background: none !important;
-  border: none !important;
-  color: black !important;
-  cursor: pointer !important;
-  font-weight: bold !important;
+  background: none;
+  color: black;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: 28px;
+  cursor: pointer;
+  transition: none;
+  box-shadow: none;
+  font-weight: normal;
+  line-height: 1;
+  width: auto;
+  height: auto;
+}
+
+#create_group_btn:hover,
+#create_group_btn:active {
+  transform: none;
+  box-shadow: none;
+  background: none;
 }
 
 #home_btn_main {
-  padding: 8px 12px !important;
-  font-size: 20px !important;
-  background: none !important;
-  border: none !important;
-  color: black !important;
-  cursor: pointer !important;
+  padding: 8px 12px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
 }
 
-/* 小房子按钮样式 */
 .home-btn {
-  background: none !important;
-  color: black !important;
-  border: none !important;
-  border-radius: 50% !important;
-  width: 32px !important;
-  height: 32px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 24px !important;
-  transition: transform 0.2s ease !important;
-  flex-shrink: 0 !important;
-  user-select: none !important;
-  padding: 0 !important;
+  background: none;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+  padding: 0;
 }
 
 .home-btn:hover {
-  transform: scale(1.1) !important;
-  background: none !important;
+  transform: scale(1.1);
+  background: none;
 }
 
 .home-btn:active {
-  transform: scale(0.9) !important;
-  background: none !important;
-}
-
-/* 创建群组按钮优化 */
-#create_group_btn {
-  background: none !important;
-  color: black !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  font-size: 28px !important;
-  cursor: pointer !important;
-  transition: none !important;
-  box-shadow: none !important;
-  font-weight: normal !important;
-  line-height: 1 !important;
-  width: auto !important;
-  height: auto !important;
-}
-
-#create_group_btn:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  background: none !important;
-}
-
-#create_group_btn:active {
-  transform: none !important;
-  box-shadow: none !important;
+  transform: scale(0.9);
+  background: none;
 }
 
 /* 主页内容区域 */
@@ -640,13 +749,62 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   background: transparent;
 }
 
-/* 消息样式 - 优化定位更靠近屏幕边缘 */
+/* 统一消息样式类 */
+.unified-message {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 15px;
+  clear: both;
+  gap: 4px;
+  position: relative;
+  z-index: 5;
+}
+
+.unified-message.sent {
+  justify-content: flex-end;
+  flex-direction: row;
+  padding-right: 1px;
+  margin-right: 0;
+}
+
+.unified-message.received {
+  justify-content: flex-start;
+  flex-direction: row;
+  padding-left: 1px;
+  margin-left: 0;
+}
+
+/* 统一消息气泡样式类 */
+.unified-bubble {
+  max-width: calc(100% - 54px);
+  padding: 10px 14px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  position: relative;
+  font-size: 17px;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.unified-bubble.sent {
+  background: var(--primary-blue);
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.unified-bubble.received {
+  background: var(--light-gray);
+  color: black;
+  border-bottom-left-radius: 6px;
+}
+
+/* 保持向后兼容的消息样式 */
 .custom-message {
   display: flex;
   align-items: flex-end;
-  margin-bottom: 15px !important;
+  margin-bottom: 15px;
   clear: both;
-  gap: 4px; /* 减少头像和气泡间距 */
+  gap: 4px;
   position: relative;
   z-index: 5;
 }
@@ -654,108 +812,133 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
 .custom-message.custom-sent {
   justify-content: flex-end;
   flex-direction: row;
-  padding-right: 1px; /* 进一步靠近右边缘 */
-  margin-right: 0; /* 完全贴近右边缘 */
+  padding-right: 1px;
+  margin-right: 0;
 }
 
 .custom-message.custom-received {
   justify-content: flex-start;
   flex-direction: row;
-  padding-left: 1px; /* 进一步靠近左边缘 */
-  margin-left: 0; /* 完全贴近左边缘 */
+  padding-left: 1px;
+  margin-left: 0;
 }
 
-/* 消息气泡统一样式 - 优化宽度利用屏幕空间 */
 .message-bubble {
-  max-width: calc(100% - 54px); /* 根据46px头像调整宽度 */
-  padding: 10px 14px !important;
-  border-radius: 18px !important;
+  max-width: calc(100% - 54px);
+  padding: 10px 14px;
+  border-radius: 18px;
   word-wrap: break-word;
   position: relative;
-  font-size: 17px !important;
+  font-size: 17px;
   line-height: 1.4;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
-  text-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .custom-sent .message-bubble {
-  background: #007bff !important;
-  color: white !important;
-  border-bottom-right-radius: 6px !important;
+  background: var(--primary-blue);
+  color: white;
+  border-bottom-right-radius: 6px;
 }
 
 .custom-received .message-bubble {
-  background: #f0f0f0 !important;
-  color: black !important;
-  border-bottom-left-radius: 6px !important;
+  background: var(--light-gray);
+  color: black;
+  border-bottom-left-radius: 6px;
 }
 
-/* 消息头像 - 进一步放大尺寸并靠近边框 */
-.message-avatar {
-  width: 46px !important;
-  height: 46px !important;
-  border-radius: 50% !important;
-  flex-shrink: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* 统一头像样式类 */
+.unified-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
   overflow: hidden;
-  text-shadow: none !important;
-  color: black !important;
-  border: 2px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: 16px;
 }
 
-/* 消息头像图片样式 */
-.message-avatar img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  border-radius: 50% !important;
+.unified-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
-/* 发送消息的头像样式 */
-.sent-avatar {
-  background-color: #007bff !important;
-  color: white !important;
+.unified-avatar.sent {
+  background-color: var(--primary-blue);
+  color: white;
 }
 
-/* 当发送消息头像有图片时，隐藏文字和背景色 */
-.sent-avatar img {
-  background-color: transparent !important;
+.unified-avatar.received {
+  background-color: var(--light-gray-alt);
+  color: var(--text-secondary);
 }
 
-.sent-avatar:has(img) {
-  background-color: transparent !important;
-  color: transparent !important;
+.unified-avatar.group {
+  background-color: var(--border-light);
+  color: var(--text-tertiary);
+}
+
+.unified-avatar:has(img) {
+  background-color: transparent;
+  color: transparent;
+}
+
+/* 保持向后兼容的头像样式 */
+.message-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  overflow: hidden;
+  color: black;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .message-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .sent-avatar {
-  background-color: #007bff !important;
-  color: white !important;
-  font-size: 16px !important;
+  background-color: var(--primary-blue);
+  color: white;
+  font-size: 16px;
 }
 
 .received-avatar {
-  background-color: #e9e9eb !important;
-  font-size: 16px !important;
-  color: #555 !important;
+  background-color: var(--light-gray-alt);
+  font-size: 16px;
+  color: var(--text-secondary);
 }
 
 .group-avatar {
-  background-color: #ddd !important;
-  font-size: 16px !important;
-  color: #444 !important;
+  background-color: var(--border-light);
+  font-size: 16px;
+  color: var(--text-tertiary);
+}
+
+.sent-avatar:has(img) {
+  background-color: transparent;
+  color: transparent;
 }
 
 /* 消息内时间戳 */
@@ -822,147 +1005,121 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   text-shadow: none !important;
 }
 
-/* 消息输入区域样式 */
+/* 统一输入区域样式类 */
+.unified-input-area {
+  padding: 12px 16px 32px;
+  background: white;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.unified-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border-gray);
+  border-radius: 20px;
+  background: var(--input-bg);
+  outline: none;
+  font-size: 16px;
+  color: black;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.unified-input:focus {
+  border-color: var(--primary-blue);
+  background: white;
+  color: black;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.unified-send-btn {
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.unified-send-btn:hover {
+  transform: scale(1.05);
+  background: var(--primary-blue-dark);
+}
+
+.unified-send-btn:active {
+  transform: scale(0.95);
+}
+
+/* 保持向后兼容的输入样式 */
 .chat-input-area {
-  padding: 12px 16px 32px !important;
-  background: white !important;
-  border-top: 1px solid #e0e0e0 !important;
-  display: flex !important;
-  align-items: center !important;
-  flex-shrink: 0 !important;
-  gap: 12px !important;
+  padding: 12px 16px 32px;
+  background: white;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
 }
 
 .message-input {
-  flex: 1 !important;
-  padding: 10px 16px !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 20px !important;
-  background: #f9fafb !important;
-  outline: none !important;
-  font-size: 16px !important;
-  color: #000000 !important; /* 确保输入文字为黑色 */
-  transition: border-color 0.2s ease, background-color 0.2s ease !important;
-  height: 40px !important;
-  box-sizing: border-box !important;
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border-gray);
+  border-radius: 20px;
+  background: var(--input-bg);
+  outline: none;
+  font-size: 16px;
+  color: black;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .message-input:focus {
-  border-color: #4a90e2 !important;
-  background: white !important;
-  color: #000000 !important; /* 确保焦点状态下文字也是黑色 */
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
+  border-color: var(--primary-blue);
+  background: white;
+  color: black;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .send-btn {
-  background: #4a90e2 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 16px !important;
-  transition: transform 0.2s ease, background-color 0.2s ease !important;
-  flex-shrink: 0 !important;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  flex-shrink: 0;
 }
 
 .send-btn:hover {
   transform: scale(1.05);
-  background: #357abd !important;
+  background: var(--primary-blue-dark);
 }
 
 .send-btn:active {
   transform: scale(0.95);
 }
 
-/* 联系人和群组信息显示样式 - v0风格 */
-.contact-summary,
-.group-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  pointer-events: none;
-}
-
-.contact-header,
-.group-header {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-}
-
-/* 头像容器样式 - v0风格 */
-.contact-avatar-wrapper {
-  position: relative;
-  pointer-events: auto;
-  flex-shrink: 0;
-}
-
-.custom-avatar {
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 50% !important;
-  border: 2px solid rgba(255, 255, 255, 0.5) !important;
-  transition: transform 0.2s ease, border-color 0.2s ease !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  cursor: pointer !important;
-}
-
-.custom-avatar:hover {
-  transform: scale(1.05) !important;
-  border-color: #4caf50 !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* 群组图标标识 */
-.qq-group-wrapper .contact-avatar-wrapper::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 16px;
-  height: 16px;
-  background: #4a90e2;
-  border-radius: 50%;
-  border: 2px solid white;
-  z-index: 1;
-}
-
-.qq-group-wrapper .contact-avatar-wrapper::before {
-  content: '';
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 8px;
-  height: 8px;
-  background: white;
-  border-radius: 50%;
-  z-index: 2;
-}
-
-.contact-info,
-.group-info {
-  flex: 1 !important;
-  min-width: 0 !important;
-  margin-right: 8px !important;
-}
-
-.contact-name-text,
-.group-name-text {
-  font-weight: 600 !important;
-  color: black !important;
-  font-size: 19px !important;
-  text-shadow: none !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  flex: 1 !important;
-}
+/* 注意：重复的联系人和群组样式已移除，使用上面定义的统一样式 */
 
 /* 聊天页面样式 - v0风格 */
 .chat-page {
@@ -972,7 +1129,7 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   width: 375px !important;
   height: 812px !important;
   background: transparent !important;
-  z-index: 999 !important; /* 降低z-index，确保不会覆盖SillyTavern的其他界面 */
+  z-index: 515 !important; /* 大幅降低z-index，确保不会覆盖SillyTavern的其他界面 */
   display: none;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   border-radius: 60px !important;
@@ -1022,41 +1179,7 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   z-index: 100;
 }
 
-/* 聊天页面状态栏 - 统一标准位置 */
-.chat-page .qq-status-bar {
-  position: absolute !important;
-  top: 10px !important; /* 统一顶部间距 */
-  left: 0 !important; /* 统一左边距 */
-  right: 0 !important; /* 统一右边距 */
-  height: 37px !important; /* 统一状态栏高度 */
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0 20px !important; /* 统一左右内边距 */
-  color: black !important;
-  font-size: 18px !important; /* 统一字体大小 */
-  font-weight: 700 !important; /* 统一字体粗细 */
-  z-index: 50 !important;
-  pointer-events: none !important;
-}
-
-/* 聊天页面状态栏时间样式 - 统一标准 */
-.chat-page .qq-status-time,
-.chat-page .chat-status-time {
-  font-size: 18px !important; /* 统一时间字体大小 */
-  font-weight: 700 !important; /* 统一时间字体粗细 */
-  color: black !important;
-}
-
-/* 聊天页面状态栏图标样式 - 统一标准 */
-.chat-page .qq-status-icons {
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important; /* 统一图标间距 */
-  font-size: 12px !important;
-  color: black !important;
-  font-weight: 600 !important;
-}
+/* 注意：聊天页面状态栏样式已移除，使用上面定义的统一样式 */
 
 /* 聊天头部样式 - 与QQ主页一致的高度 */
 .chat-header {
@@ -1168,97 +1291,9 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   display: none;
 }
 
-/* 群聊消息项样式 - v0风格 */
-.custom-qun-cont-item {
-  margin-bottom: 12px;
-  clear: both;
-  position: relative;
-  z-index: 10;
-}
+/* 注意：重复的群聊消息样式已移除，使用上面定义的统一样式 */
 
-.custom-qun-cont-item .sender-name {
-  color: #007bff !important;
-  font-weight: 600;
-  margin-bottom: 4px;
-  font-size: 17px !important;
-  text-shadow: none !important;
-}
-
-.custom-qun-cont-item .message-content {
-  display: inline-block;
-  background: white;
-  color: black !important;
-  padding: 12px 16px;
-  border-radius: 18px;
-  border-bottom-left-radius: 6px;
-  max-width: 70%;
-  word-wrap: break-word;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  font-size: 17px !important;
-}
-
-.custom-qun-cont-item .message-time {
-  font-size: 12px !important;
-  opacity: 0.7;
-  color: #777 !important;
-  margin-top: 4px;
-  text-shadow: none !important;
-}
-
-/* 消息输入区域样式 - v0风格 */
-.chat-input-area {
-  padding: 12px 16px 32px !important;
-  background: white !important;
-  border-top: 1px solid #e0e0e0 !important;
-  display: flex !important;
-  align-items: center !important;
-  flex-shrink: 0 !important;
-  gap: 12px !important;
-}
-
-.message-input {
-  flex: 1 !important;
-  padding: 10px 16px !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 20px !important;
-  background: #f9fafb !important;
-  outline: none !important;
-  font-size: 16px !important;
-  transition: border-color 0.2s ease, background-color 0.2s ease !important;
-  height: 40px !important;
-  box-sizing: border-box !important;
-}
-
-.message-input:focus {
-  border-color: #4a90e2 !important;
-  background: white !important;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
-}
-
-.send-btn {
-  background: #4a90e2 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 16px !important;
-  transition: transform 0.2s ease, background-color 0.2s ease !important;
-  flex-shrink: 0 !important;
-}
-
-.send-btn:hover {
-  transform: scale(1.05);
-  background: #357abd !important;
-}
-
-.send-btn:active {
-  transform: scale(0.95);
-}
+/* 注意：重复的消息输入区域样式已移除，使用上面定义的统一样式 */
 
 /* 移除旧的选中状态样式 */
 .custom-qqhao,

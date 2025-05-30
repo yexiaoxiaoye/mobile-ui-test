@@ -2,243 +2,262 @@
 
 /* 全局样式 */
 .hq-extension {
-    /* 扩展全局样式 */
-    font-family: 'Microsoft YaHei', Arial, sans-serif;
+  /* 扩展全局样式 */
+  font-family: 'Microsoft YaHei', Arial, sans-serif;
 }
 
 /* 通用对话框样式 */
 .hq-dialog {
-    /* 对话框基础样式 */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  /* 对话框基础样式 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 530;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.app-icon{}
+.app-icon {
+}
 .hq-dialog-content {
-    /* 对话框内容样式 */
-    background: #2c2c2c;
-    color: white;
-    border-radius: 10px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+  /* 对话框内容样式 */
+  background: #2c2c2c;
+  color: white;
+  border-radius: 10px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-#add_member_dialog,#group_create_dialog{z-index: 10005 !important;}
+#add_member_dialog,
+#group_create_dialog {
+  z-index: 520 !important;
+}
 /* 通用头部样式 */
 .hq-header {
-    /* 头部样式 */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #555;
-    background: #333;
+  /* 头部样式 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #555;
+  background: #333;
 }
 
 .hq-title {
-    /* 标题样式 */
-    margin: 0;
-    font-size: 18px;
-    font-weight: bold;
+  /* 标题样式 */
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .hq-close-btn {
-    /* 关闭按钮样式 */
-    cursor: pointer;
-    font-size: 20px;
-    color: #aaa;
-    transition: color 0.2s;
+  /* 关闭按钮样式 */
+  cursor: pointer;
+  font-size: 20px;
+  color: #aaa;
+  transition: color 0.2s;
 }
 
 .hq-close-btn:hover {
-    color: white;
+  color: white;
 }
 
 /* 通用内容区域样式 */
 .hq-content {
-    /* 内容区域样式 */
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
+  /* 内容区域样式 */
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
 }
 
 /* 通用按钮样式 */
 .hq-btn {
-    /* 按钮基础样式 */
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
+  /* 按钮基础样式 */
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
 .hq-btn.primary {
-    /* 主要按钮样式 */
-    background: #007bff;
-    color: white;
+  /* 主要按钮样式 */
+  background: #007bff;
+  color: white;
 }
 
 .hq-btn.primary:hover {
-    background: #0056b3;
+  background: #0056b3;
 }
 
 .hq-btn.success {
-    /* 成功按钮样式 */
-    background: #28a745;
-    color: white;
+  /* 成功按钮样式 */
+  background: #28a745;
+  color: white;
 }
 
 .hq-btn.success:hover {
-    background: #1e7e34;
+  background: #1e7e34;
 }
 
 .hq-btn.warning {
-    /* 警告按钮样式 */
-    background: #ffc107;
-    color: #212529;
+  /* 警告按钮样式 */
+  background: #ffc107;
+  color: #212529;
 }
 
 .hq-btn.warning:hover {
-    background: #e0a800;
+  background: #e0a800;
 }
 
 .hq-btn.danger {
-    /* 危险按钮样式 */
-    background: #dc3545;
-    color: white;
+  /* 危险按钮样式 */
+  background: #dc3545;
+  color: white;
 }
 
 .hq-btn.danger:hover {
-    background: #c82333;
+  background: #c82333;
 }
 
 /* 通用列表样式 */
 .hq-list {
-    /* 列表样式 */
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  /* 列表样式 */
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .hq-list-item {
-    /* 列表项样式 */
-    padding: 10px;
-    margin: 5px 0;
-    background: #3c3c3c;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+  /* 列表项样式 */
+  padding: 10px;
+  margin: 5px 0;
+  background: #3c3c3c;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .hq-list-item:hover {
-    background: #4a4a4a;
+  background: #4a4a4a;
 }
 
 .hq-list-item.selected {
-    background: #ffe7ba;
-    color: #333;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  background: #ffe7ba;
+  color: #333;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
 /* 通用网格样式 */
 .hq-grid {
-    /* 网格样式 */
-    display: grid;
-    gap: 10px;
+  /* 网格样式 */
+  display: grid;
+  gap: 10px;
 }
 
 .hq-grid.cols-2 {
-    grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .hq-grid.cols-3 {
-    grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .hq-grid.cols-4 {
-    grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* 通用标签页样式 */
 .hq-tabs {
-    /* 标签页容器样式 */
-    display: flex;
-    border-bottom: 1px solid #555;
-    margin-bottom: 15px;
+  /* 标签页容器样式 */
+  display: flex;
+  border-bottom: 1px solid #555;
+  margin-bottom: 15px;
 }
 
 .hq-tab {
-    /* 标签页样式 */
-    padding: 10px 20px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
+  /* 标签页样式 */
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
 }
 
 .hq-tab:hover {
-    background: #3c3c3c;
+  background: #3c3c3c;
 }
 
 .hq-tab.active {
-    border-bottom-color: #007bff;
-    background: #3c3c3c;
+  border-bottom-color: #007bff;
+  background: #3c3c3c;
 }
 
 /* 通用输入框样式 */
 .hq-input {
-    /* 输入框样式 */
-    padding: 8px 12px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background: #3c3c3c;
-    color: white;
-    font-size: 14px;
+  /* 输入框样式 */
+  padding: 8px 12px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #3c3c3c;
+  color: white;
+  font-size: 14px;
 }
-#chat_history_dialog,#taobao_interface,#task_interface,#backpack_interface,#chouka_interface{z-index: 10001 !important;}
-.cart-item span{color: #333 !important;}
+#chat_history_dialog,
+#taobao_interface,
+#task_interface,
+#backpack_interface,
+#chouka_interface {
+  z-index: 510 !important;
+}
+.cart-item span {
+  color: #333 !important;
+}
 .hq-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
-#nonQRFormItems{    align-items: center !important;}
+#nonQRFormItems {
+  align-items: center !important;
+}
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .hq-dialog-content {
-        width: 95%;
-        height: 95%;
-    }
-    
-    .hq-header {
-        padding: 15px;
-    }
-    
-    .hq-content {
-        padding: 10px;
-    }
-    
-    .hq-grid.cols-4 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .hq-grid.cols-3 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .product-card > div{    flex-direction: column !important;}
-    #taobao_cart_btn{display: none !important;}
-} 
+  .hq-dialog-content {
+    width: 95%;
+    height: 95%;
+  }
+
+  .hq-header {
+    padding: 15px;
+  }
+
+  .hq-content {
+    padding: 10px;
+  }
+
+  .hq-grid.cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hq-grid.cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .product-card > div {
+    flex-direction: column !important;
+  }
+  #taobao_cart_btn {
+    display: none !important;
+  }
+}
 @media screen and (max-width: 450px) {
-    #leftSendForm, #rightSendForm {
-        width: unset !important; 
-    }
+  #leftSendForm,
+  #rightSendForm {
+    width: unset !important;
+  }
 }

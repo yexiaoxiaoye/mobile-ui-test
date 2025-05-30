@@ -13,6 +13,7 @@
   margin-left: 10px;
   border: 2px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 450 !important; /* 确保手机按钮的z-index低于SillyTavern界面 */
 }
 
 .mobile-btn:hover {
@@ -32,7 +33,7 @@
   border: 8px solid white;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  z-index: 1000;
+  z-index: 500; /* 降低z-index，确保不会覆盖SillyTavern界面 */
   background: white;
   display: none;
 }

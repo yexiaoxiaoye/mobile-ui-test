@@ -515,6 +515,9 @@
 
     // 显示手机界面
     show: function () {
+      // 首先确保完全清理之前的状态
+      this.forceCleanState();
+
       $('#phone_interface').addClass('show').removeClass('show-qq-app-content');
       $('body').removeClass('qq-app-mode');
 
@@ -543,8 +546,11 @@
 
     // 隐藏手机界面
     hide: function () {
+      // 完全清理状态
+      this.forceCleanState();
       $('#phone_interface').removeClass('show show-qq-app-content');
       $('body').removeClass('qq-app-mode');
+      console.log('PhoneInterface.hide() executed, all states cleaned.');
     },
 
     // 关闭所有应用界面
@@ -631,6 +637,49 @@
       }
 
       return false;
+    },
+
+    // 强制清理所有状态 - 新增方法
+    forceCleanState: function () {
+      console.log('强制清理所有手机插件状态...');
+
+      // 清理所有CSS类
+      $('#phone_interface').removeClass('show show-qq-app-content');
+      $('body').removeClass('qq-app-mode chat-detail-active');
+
+      // 清理所有聊天页面状态
+      $('.chat-page').removeClass('show');
+
+      // 强制隐藏所有应用界面
+      $('#chat_history_dialog').hide();
+      $('#taobao_interface').hide();
+      $('#task_interface').hide();
+      $('#backpack_interface').hide();
+      $('#chouka_interface').hide();
+
+      // 清理QQ应用容器
+      $('#phone_interface .qq-app-container').empty().hide();
+
+      // 移除所有临时弹窗
+      $('#group_create_dialog').remove();
+      $('#add_member_dialog').remove();
+      $('#avatar_dialog').remove();
+      $('#user_avatar_dialog').remove();
+      $('#accept_task_dialog').remove();
+      $('#use_item_dialog').remove();
+
+      // 清理任何可能的内联样式覆盖
+      $('#phone_interface').css('z-index', '');
+      $('#chat_history_dialog').css('z-index', '');
+      $('.qq-app-container').css('z-index', '');
+      $('#chat_history_btn').css('z-index', '');
+      $('#taobao_interface').css('z-index', '');
+      $('#task_interface').css('z-index', '');
+      $('#backpack_interface').css('z-index', '');
+      $('#chouka_interface').css('z-index', '');
+      $('.chat-page').css('z-index', '');
+
+      console.log('状态清理完成');
     },
   };
 

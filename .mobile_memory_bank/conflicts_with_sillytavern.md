@@ -64,7 +64,7 @@ for (const selector of sillyTavernUISelectors) {
 
 #### 预防措施
 - **原则**: 所有手机插件的元素ID都应该有明确的前缀
-- **命名规范**: 
+- **命名规范**:
   - 手机界面: `phone_*`, `mobile_*`
   - QQ应用: `qq_*`, `chat_history_*`
   - 其他应用: `taobao_*`, `task_*`, `backpack_*`, `chouka_*`
@@ -78,7 +78,7 @@ for (const selector of sillyTavernUISelectors) {
 
 #### 解决方案
 - **原则**: 尽量使用具体的选择器，避免过于宽泛的全局样式
-- **方法**: 
+- **方法**:
   - 使用嵌套选择器限制样式作用范围
   - 为重要样式添加`!important`标识
   - 定期检查是否影响了SillyTavern原有样式
@@ -140,10 +140,12 @@ $chatPage.addClass('show');
 ## 测试检查清单
 
 ### 开发阶段必须检查的项目
-1. **Z-Index检查**: 确认所有手机插件界面的z-index < 1000
+1. **Z-Index检查**: 确认所有手机插件界面的z-index < 600 (新标准)
 2. **点击事件检查**: 测试点击SillyTavern各个界面是否会误关闭手机应用
 3. **样式冲突检查**: 确认手机插件样式不会影响SillyTavern原有界面
 4. **元素命名检查**: 确认所有新增元素ID都有合适的前缀
+5. **重复打开测试**: 必须测试多次打开/关闭手机插件的场景
+6. **状态清理检查**: 确认每次关闭后状态完全清理
 
 ### 常见SillyTavern界面元素清单
 需要特别注意兼容性的SillyTavern界面：
@@ -176,11 +178,55 @@ checkZIndex();
 // 临时添加点击监听来调试
 document.addEventListener('click', function(e) {
   console.log('Clicked element:', e.target);
-  console.log('Closest SillyTavern elements:', 
+  console.log('Closest SillyTavern elements:',
     e.target.closest('.interactable'),
     e.target.closest('[class*="dialog"]')
   );
 });
+```
+
+### 3. 重复打开测试场景
+```javascript
+// 测试重复打开手机插件的脚本
+function testRepeatedOpen() {
+  console.log('开始重复打开测试...');
+
+  // 第一次打开
+  $('#chat_history_btn').click();
+  setTimeout(() => {
+    console.log('第一次打开完成，检查状态...');
+    console.log('Phone interface visible:', $('#phone_interface').hasClass('show'));
+    console.log('Body classes:', document.body.className);
+
+    // 关闭
+    $('#chat_history_btn').click();
+    setTimeout(() => {
+      console.log('关闭完成，检查清理状态...');
+      console.log('Phone interface visible:', $('#phone_interface').hasClass('show'));
+      console.log('Body classes:', document.body.className);
+
+      // 第二次打开
+      $('#chat_history_btn').click();
+      setTimeout(() => {
+        console.log('第二次打开完成，检查是否有冲突...');
+        console.log('Phone interface visible:', $('#phone_interface').hasClass('show'));
+        console.log('Body classes:', document.body.className);
+
+        // 测试SillyTavern界面是否可访问
+        console.log('测试世界书是否可点击...');
+        if ($('#WIDrawerIcon').length) {
+          $('#WIDrawerIcon').click();
+          setTimeout(() => {
+            console.log('世界书界面是否正常显示:', $('#WorldInfo').is(':visible'));
+          }, 500);
+        }
+      }, 500);
+    }, 500);
+  }, 500);
+}
+
+// 运行测试
+testRepeatedOpen();
 ```
 
 ## 版本记录
@@ -189,6 +235,26 @@ document.addEventListener('click', function(e) {
 - 初始文档创建
 - 记录z-index冲突和点击事件冲突的解决方案
 - 建立基本的预防措施和测试清单
+
+### v1.1 (2024-12-19)
+- **重大修复**: 解决手机插件重复打开时覆盖SillyTavern界面的问题
+- **z-index优化**: 将手机界面z-index从1000降低到500，QQ应用从999降低到510
+- **状态管理改进**: 新增`forceCleanState()`方法，确保每次显示/隐藏时完全清理状态
+- **问题根因**: 发现问题出现在第二次打开手机插件时，之前的状态残留导致界面覆盖
+- **修复文件**:
+  - `styles/phone-interface.css`: 降低主界面z-index
+  - `styles/qq-app.css`: 降低QQ应用相关z-index
+  - `apps/phone-interface.js`: 新增强制状态清理方法
+
+### v1.2 (2024-12-19)
+- **全面z-index修复**: 基于控制台调试信息，发现并修复了所有高z-index问题
+- **关键修复**:
+  - `main.css`: 应用界面从10001降到510，对话框从1000降到530
+  - `phone-interface.css`: 手机按钮从1000降到450
+  - `qq-app.css`: 聊天页面从999降到515
+- **调试工具增强**: 新增`verifyFix()`方法验证修复效果
+- **状态清理完善**: 扩展`forceCleanState()`清理更多元素的z-index
+- **新z-index标准**: 所有手机插件元素z-index < 600
 
 ## 注意事项
 
@@ -201,4 +267,4 @@ document.addEventListener('click', function(e) {
 
 1. **自动检测**: 开发自动检测冲突的工具
 2. **隔离机制**: 考虑使用iframe或shadow DOM来隔离手机插件
-3. **配置化**: 让用户可以配置手机插件的行为以避免冲突 
+3. **配置化**: 让用户可以配置手机插件的行为以避免冲突
