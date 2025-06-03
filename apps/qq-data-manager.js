@@ -1604,6 +1604,129 @@
         console.error('修改消息时出错:', error);
       }
     },
+
+    // 更新好友管理界面中的头像显示 - 添加防抖
+    updateFriendManagerAvatars: function () {
+      // 清除之前的定时器
+      if (window.QQApp && window.QQApp.updateTimers && window.QQApp.updateTimers.friendManager) {
+        clearTimeout(window.QQApp.updateTimers.friendManager);
+      }
+
+      // 防抖处理
+      const updateTimer = setTimeout(() => {
+        this.performFriendManagerAvatarUpdate();
+      }, 150);
+
+      if (window.QQApp && window.QQApp.updateTimers) {
+        window.QQApp.updateTimers.friendManager = updateTimer;
+      }
+    },
+
+    // 执行好友管理界面头像更新
+    performFriendManagerAvatarUpdate: function () {
+      // 首先检查好友管理界面是否存在
+      const $friendManagerPage = $('.qq-friend-group-manager-page');
+
+      if ($friendManagerPage.length === 0) {
+        console.log('🔄 好友管理页面不存在，跳过头像更新');
+        return;
+      }
+
+      console.log('🔄 更新好友管理界面中的头像显示');
+
+      // 检查所有可能的好友管理界面选择器
+      const friendManagerSelectors = [
+        '#create_member_list .member-item',
+        '#manage_friends_list .member-item',
+        '.member-list .member-item',
+        '.friend-list .friend-item',
+        '.contact-list .contact-item',
+      ];
+
+      let totalUpdated = 0;
+
+      friendManagerSelectors.forEach((selector, index) => {
+        const $elements = $(selector);
+        console.log(`🔍 选择器 ${index + 1} "${selector}" 找到 ${$elements.length} 个元素`);
+
+        $elements.each(function (i) {
+          const $item = $(this);
+
+          // 尝试多种方式获取QQ号
+          let qqNumber = null;
+          const possibleSelectors = ['.member-checkbox', '.friend-checkbox', '.contact-checkbox', '[data-qq-number]'];
+
+          possibleSelectors.forEach(checkboxSelector => {
+            if (!qqNumber) {
+              const $checkbox = $item.find(checkboxSelector);
+              if ($checkbox.length > 0) {
+                qqNumber = $checkbox.data('qq-number') || $checkbox.attr('data-qq-number');
+              }
+            }
+          });
+
+          if (qqNumber && window.QQApp) {
+            const avatarUrl = window.QQApp.getAvatarUrl(qqNumber);
+            const avatarConfig = window.QQApp.avatarData[`${qqNumber}_config`];
+
+            // 尝试多种头像选择器
+            const avatarSelectors = ['.member-avatar', '.friend-avatar', '.contact-avatar', '.avatar'];
+
+            let $avatar = null;
+            avatarSelectors.forEach(avatarSelector => {
+              if (!$avatar || $avatar.length === 0) {
+                $avatar = $item.find(avatarSelector);
+              }
+            });
+
+            if ($avatar && $avatar.length > 0 && avatarUrl) {
+              // 应用头像和变换效果
+              let css = {
+                'background-image': `url(${avatarUrl})`,
+                'background-color': 'transparent',
+                color: 'transparent',
+                'font-size': '0',
+              };
+
+              // 应用变换效果
+              if (avatarConfig && avatarConfig.transform) {
+                const transform = avatarConfig.transform;
+
+                // 应用安全限制
+                const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
+                const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
+                const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
+                const safeRotation = (transform.rotate || 0) % 360;
+
+                // 计算背景尺寸和位置
+                const backgroundSize = `${safeScale * 100}%`;
+                const backgroundPositionX = `${50 - safeX * 0.5}%`;
+                const backgroundPositionY = `${50 - safeY * 0.5}%`;
+
+                css['background-size'] = backgroundSize;
+                css['background-position'] = `${backgroundPositionX} ${backgroundPositionY}`;
+                css['background-repeat'] = 'no-repeat';
+
+                // 应用旋转
+                if (safeRotation !== 0) {
+                  css['transform'] = `rotate(${safeRotation}deg)`;
+                  css['transform-origin'] = 'center center';
+                }
+              } else {
+                // 默认样式
+                css['background-size'] = 'cover';
+                css['background-position'] = 'center';
+              }
+
+              $avatar.css(css).text('');
+              totalUpdated++;
+            }
+          }
+        });
+      });
+
+      console.log(`✅ 好友管理界面头像更新完成，总共更新了 ${totalUpdated} 个头像`);
+    },
   };
 
   // 导出到全局

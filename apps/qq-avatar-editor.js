@@ -58,10 +58,6 @@
               </svg>
             </button>
             <h1 class="editor-title">设置头像</h1>
-            <div class="editor-actions">
-              <button class="editor-cancel-btn">取消</button>
-              <button class="editor-save-btn">保存</button>
-            </div>
           </div>
 
           <!-- 编辑器主体 -->
@@ -83,17 +79,8 @@
             <div class="editor-controls">
               <!-- 选择图片 -->
               <div class="control-section">
-                <h3>选择图片</h3>
-                <div class="image-source-options">
-                  <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
-                  <button class="source-btn upload-btn" data-source="upload">
-                    📁 从相册选择
-                  </button>
-                  <button class="source-btn url-btn" data-source="url">
-                    🔗 输入图片链接
-                  </button>
-                </div>
-                <div class="url-input-section" style="display: none;">
+                <h3>输入图片链接</h3>
+                <div class="url-input-section">
                   <input type="text" class="avatar-url-input" placeholder="输入图片URL地址">
                   <button class="load-url-btn">加载</button>
                 </div>
@@ -104,7 +91,7 @@
                 <h3>调整图片</h3>
 
                 <!-- 缩放控制 -->
-                <div class="control-group">
+                <div class="control-group compact">
                   <label>缩放 (<span class="scale-value">100</span>%)</label>
                   <div class="slider-container">
                     <input type="range" class="scale-slider" min="50" max="200" value="100" step="5">
@@ -116,7 +103,7 @@
                 </div>
 
                 <!-- 旋转控制 -->
-                <div class="control-group">
+                <div class="control-group compact">
                   <label>旋转 (<span class="rotation-value">0</span>°)</label>
                   <div class="slider-container">
                     <input type="range" class="rotation-slider" min="-180" max="180" value="0" step="15">
@@ -127,29 +114,22 @@
                   </div>
                 </div>
 
-                <!-- 位置控制 -->
-                <div class="control-group">
-                  <label>位置调整</label>
-                  <div class="position-controls">
-                    <button class="position-btn" data-direction="up">↑</button>
-                    <button class="position-btn" data-direction="left">←</button>
-                    <button class="position-btn reset-btn" data-action="reset">重置</button>
-                    <button class="position-btn" data-direction="right">→</button>
-                    <button class="position-btn" data-direction="down">↓</button>
-                  </div>
-                </div>
-
                 <!-- 快捷操作 -->
-                <div class="control-group">
+                <div class="control-group compact">
                   <label>快捷操作</label>
                   <div class="quick-actions">
-                    <button class="action-btn" data-action="fit-width">适应宽度</button>
-                    <button class="action-btn" data-action="fit-height">适应高度</button>
                     <button class="action-btn" data-action="center">居中</button>
+                    <button class="action-btn reset-btn" data-action="reset">重置</button>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- 底部操作按钮 -->
+          <div class="editor-bottom-actions">
+            <button class="editor-cancel-btn">取消</button>
+            <button class="editor-save-btn">保存</button>
           </div>
         </div>
       `);
@@ -177,6 +157,16 @@
         '✅ 头像编辑器界面已创建，位置:',
         $editorPage.parent().attr('id') || $editorPage.parent().attr('class'),
       );
+
+      // 调试：检查创建的界面结构
+      console.log('🔍 创建的界面结构检查:');
+      console.log('- 编辑器页面存在:', $editorPage.length > 0);
+      console.log('- 状态栏存在:', $editorPage.find('.qq-status-bar').length > 0);
+      console.log('- 头部存在:', $editorPage.find('.qq-avatar-editor-header').length > 0);
+      console.log('- 底部操作区域存在:', $editorPage.find('.editor-bottom-actions').length > 0);
+      console.log('- 取消按钮存在:', $editorPage.find('.editor-cancel-btn').length > 0);
+      console.log('- 保存按钮存在:', $editorPage.find('.editor-save-btn').length > 0);
+      console.log('- 编辑器主体存在:', $editorPage.find('.qq-avatar-editor-body').length > 0);
     },
 
     // 绑定事件
@@ -204,24 +194,7 @@
         self.saveAvatar();
       });
 
-      // 图片来源选择
-      $(document).on('click', '.upload-btn', function (e) {
-        e.stopPropagation();
-        $('#avatar-file-input').click();
-      });
-
-      $(document).on('click', '.url-btn', function (e) {
-        e.stopPropagation();
-        $('.url-input-section').toggle();
-      });
-
-      // 文件选择
-      $(document).on('change', '#avatar-file-input', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-          self.handleFileUpload(file);
-        }
-      });
+      // 删除了文件上传相关的事件处理，只保留URL输入功能
 
       // URL加载
       $(document).on('click', '.load-url-btn', function (e) {
@@ -275,25 +248,17 @@
         self.updateRotation(newRotation);
       });
 
-      // 位置控制
-      $(document).on('click', '.position-btn[data-direction]', function () {
-        const direction = $(this).data('direction');
-        self.moveImage(direction);
-      });
+      // 位置控制 - 已删除方向按钮，只保留重置功能
+      // $(document).on('click', '.position-btn[data-direction]', function () {
+      //   const direction = $(this).data('direction');
+      //   self.moveImage(direction);
+      // });
 
       $(document).on('click', '[data-action="reset"]', function () {
         self.resetAdjustments();
       });
 
       // 快捷操作
-      $(document).on('click', '[data-action="fit-width"]', function () {
-        self.fitToWidth();
-      });
-
-      $(document).on('click', '[data-action="fit-height"]', function () {
-        self.fitToHeight();
-      });
-
       $(document).on('click', '[data-action="center"]', function () {
         self.centerImage();
       });
@@ -402,6 +367,9 @@
         if ($editorPage.length) {
           $editorPage.css('display', 'flex').show();
           console.log('头像编辑器已在手机界面中显示');
+
+          // 确保头部区域可见
+          this.ensureHeaderVisible($editorPage);
         } else {
           console.error('创建编辑器界面后仍未找到页面');
         }
@@ -418,10 +386,124 @@
 
         // 备用方案：独立显示
         $editorPage.css('display', 'flex').show();
+
+        // 确保头部区域可见
+        this.ensureHeaderVisible($editorPage);
       }
 
-      // 重置编辑器状态
-      this.resetEditorState();
+      // 不要在显示编辑器时重置状态，这会丢失用户的调整
+      // this.resetEditorState(); // 已注释，避免丢失用户调整
+    },
+
+    // 确保按钮区域可见
+    ensureHeaderVisible($editorPage) {
+      console.log('🔍 检查按钮区域可见性');
+
+      const $header = $editorPage.find('.qq-avatar-editor-header');
+      const $statusBar = $editorPage.find('.qq-status-bar');
+      const $bottomActions = $editorPage.find('.editor-bottom-actions');
+      const $cancelBtn = $editorPage.find('.editor-cancel-btn');
+      const $saveBtn = $editorPage.find('.editor-save-btn');
+
+      console.log('界面元素检查:');
+      console.log('- 状态栏存在:', $statusBar.length > 0);
+      console.log('- 头部存在:', $header.length > 0);
+      console.log('- 底部操作区域存在:', $bottomActions.length > 0);
+      console.log('- 取消按钮存在:', $cancelBtn.length > 0);
+      console.log('- 保存按钮存在:', $saveBtn.length > 0);
+
+      // 强制显示头部区域
+      if ($header.length > 0) {
+        $header.css({
+          display: 'flex',
+          visibility: 'visible',
+          opacity: '1',
+        });
+        console.log('✅ 头部区域已强制显示');
+      }
+
+      // 强制显示底部操作按钮区域
+      if ($bottomActions.length > 0) {
+        $bottomActions.css({
+          display: 'flex',
+          visibility: 'visible',
+          opacity: '1',
+        });
+        console.log('✅ 底部操作按钮区域已强制显示');
+      }
+
+      // 强制显示取消按钮
+      if ($cancelBtn.length > 0) {
+        $cancelBtn.css({
+          display: 'flex',
+          visibility: 'visible',
+          opacity: '1',
+        });
+        console.log('✅ 取消按钮已强制显示');
+      }
+
+      // 强制显示保存按钮
+      if ($saveBtn.length > 0) {
+        $saveBtn.css({
+          display: 'flex',
+          visibility: 'visible',
+          opacity: '1',
+        });
+        console.log('✅ 保存按钮已强制显示');
+      }
+
+      // 检查是否在手机界面中
+      const $phoneContainer = $editorPage.closest('.qq-app-container');
+      if ($phoneContainer.length > 0) {
+        console.log('🔧 检测到手机界面，CSS样式将自动应用');
+      }
+
+      // 检查最终状态并输出详细调试信息
+      setTimeout(() => {
+        const finalCheck = {
+          header: $header.is(':visible'),
+          bottomActions: $bottomActions.is(':visible'),
+          cancelBtn: $cancelBtn.is(':visible'),
+          saveBtn: $saveBtn.is(':visible'),
+        };
+        console.log('🔍 最终可见性检查:', finalCheck);
+
+        // 输出详细的位置和样式信息
+        if ($header.length > 0) {
+          const headerRect = $header[0].getBoundingClientRect();
+          console.log('📐 头部区域位置:', {
+            top: headerRect.top,
+            left: headerRect.left,
+            width: headerRect.width,
+            height: headerRect.height,
+            visible: headerRect.height > 0 && headerRect.width > 0,
+          });
+
+          // 检查手机界面适配
+          const $phoneContainer = $header.closest('.qq-app-container');
+          if ($phoneContainer.length > 0) {
+            console.log('🔧 手机界面中，CSS样式应该已自动应用');
+          }
+        }
+
+        // 底部按钮检查
+        if ($bottomActions.length > 0) {
+          const bottomRect = $bottomActions[0].getBoundingClientRect();
+          console.log('📐 底部按钮区域位置:', {
+            top: bottomRect.top,
+            left: bottomRect.left,
+            width: bottomRect.width,
+            height: bottomRect.height,
+            visible: bottomRect.height > 0 && bottomRect.width > 0,
+          });
+        }
+
+        if ($cancelBtn.length > 0 && $saveBtn.length > 0) {
+          console.log('📐 按钮检查完成');
+          console.log('- 取消按钮存在且可见:', $cancelBtn.is(':visible'));
+          console.log('- 保存按钮存在且可见:', $saveBtn.is(':visible'));
+        }
+      }, 100);
     },
 
     // 隐藏编辑器
@@ -439,13 +521,60 @@
         console.log('在手机界面中恢复QQ应用');
         // 恢复QQ应用的其他内容
         $qqContainer.find('> div:not(.qq-avatar-editor-page)').show();
+
+        // 确保QQ应用主界面可见
+        if (window.QQApp && typeof window.QQApp.showMainInterface === 'function') {
+          window.QQApp.showMainInterface();
+        }
+      } else {
+        // 如果不在手机界面中，尝试显示QQ应用
+        if (window.QQApp && typeof window.QQApp.show === 'function') {
+          console.log('返回QQ应用主界面');
+          window.QQApp.show();
+        }
       }
 
       // 清理状态
       this.resetEditorState();
       $('.avatar-url-input').val('');
       $('.adjustment-controls').hide();
-      $('.url-input-section').hide();
+      // 保持URL输入框可见，不隐藏
+      // $('.url-input-section').hide();
+    },
+
+    // 隐藏编辑器但不重置状态（用于保存后）
+    hideEditorWithoutReset() {
+      console.log('📱 隐藏头像编辑器（保持状态）');
+
+      // 隐藏编辑器页面
+      $('.qq-avatar-editor-page').hide();
+
+      // 检查是否在手机界面中
+      const $phoneInterface = $('#phone_interface');
+      const $qqContainer = $phoneInterface.find('.qq-app-container');
+
+      if ($phoneInterface.length && $qqContainer.length) {
+        console.log('在手机界面中恢复QQ应用');
+        // 恢复QQ应用的其他内容
+        $qqContainer.find('> div:not(.qq-avatar-editor-page)').show();
+
+        // 确保QQ应用主界面可见
+        if (window.QQApp && typeof window.QQApp.showMainInterface === 'function') {
+          window.QQApp.showMainInterface();
+        }
+      } else {
+        // 如果不在手机界面中，尝试显示QQ应用
+        if (window.QQApp && typeof window.QQApp.show === 'function') {
+          console.log('返回QQ应用主界面');
+          window.QQApp.show();
+        }
+      }
+
+      // 不重置编辑器状态，保持用户的调整
+      $('.avatar-url-input').val('');
+      $('.adjustment-controls').hide();
+      // 保持URL输入框可见，不隐藏
+      // $('.url-input-section').hide();
     },
 
     // 处理URL变化
@@ -465,11 +594,21 @@
       const $img = $('.avatar-preview-image');
       const $container = $('.avatar-preview-frame');
 
+      // 检查是否是新的图片URL
+      const currentUrl = $img.attr('src');
+      const isNewImage = currentUrl !== url;
+
       $img.off('load error');
 
       $img.on('load', () => {
         console.log('图片加载成功');
-        this.resetAdjustments();
+        // 只在加载新图片时重置调整，避免丢失用户的调整
+        if (isNewImage) {
+          console.log('🔄 新图片加载，重置调整参数');
+          this.resetAdjustments();
+        } else {
+          console.log('🔄 相同图片重新加载，保持当前调整参数');
+        }
       });
 
       $img.on('error', () => {
@@ -495,7 +634,7 @@
     handleDrag(e) {
       if (!this.editorState.isDragging) return;
 
-      const maxOffset = 150;
+      const maxOffset = 200; // 增加拖拽范围，与保存时的限制保持一致
       const newX = e.clientX - this.editorState.dragStart.x;
       const newY = e.clientY - this.editorState.dragStart.y;
 
@@ -539,13 +678,26 @@
     // 更新图片变换
     updateImageTransform() {
       const { imagePosition, imageScale, imageRotation } = this.editorState;
-      const transform = `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${
-        imageScale / 100
-      }) rotate(${imageRotation}deg)`;
+
+      // 限制变换参数范围，防止异常显示
+      const safeScale = Math.max(0.1, Math.min(5, imageScale / 100)); // 限制缩放在10%-500%之间
+      const safeX = Math.max(-200, Math.min(200, imagePosition.x)); // 限制位移范围
+      const safeY = Math.max(-200, Math.min(200, imagePosition.y));
+      const safeRotation = imageRotation % 360; // 确保旋转角度在0-360度之间
+
+      // 调整变换顺序：先缩放和旋转，再平移，避免异常放大
+      const transform = `scale(${safeScale}) rotate(${safeRotation}deg) translate(${safeX}px, ${safeY}px)`;
 
       $('.avatar-preview-image').css({
         transform: transform,
         'transform-origin': 'center center',
+      });
+
+      console.log('🔧 应用图片变换:', {
+        scale: safeScale,
+        translate: { x: safeX, y: safeY },
+        rotate: safeRotation,
+        transform: transform,
       });
     },
 
@@ -557,60 +709,171 @@
 
       const { avatarUrl, imagePosition, imageScale, imageRotation } = this.editorState;
       console.log('编辑器状态:', { avatarUrl, imagePosition, imageScale, imageRotation });
+      console.log('🔍 详细位移信息:', {
+        'imagePosition.x': imagePosition.x,
+        'imagePosition.y': imagePosition.y,
+        'typeof x': typeof imagePosition.x,
+        'typeof y': typeof imagePosition.y,
+      });
 
       if (!avatarUrl.trim()) {
         alert('请输入有效的头像链接');
         return;
       }
 
+      // 应用安全限制，确保保存的参数在合理范围内
+      const safeScale = Math.max(0.1, Math.min(5, imageScale / 100));
+      const safeX = Math.max(-200, Math.min(200, imagePosition.x));
+      const safeY = Math.max(-200, Math.min(200, imagePosition.y));
+      const safeRotation = imageRotation % 360;
+
       // 构建头像配置
       const avatarConfig = {
         url: avatarUrl,
         transform: {
-          scale: imageScale / 100,
-          translateX: imagePosition.x,
-          translateY: imagePosition.y,
-          rotate: imageRotation,
+          scale: safeScale,
+          translateX: safeX,
+          translateY: safeY,
+          rotate: safeRotation,
         },
       };
 
-      console.log('💾 保存头像配置:', avatarConfig);
+      console.log('💾 保存头像配置 (安全限制后):', avatarConfig);
 
-      if (this.currentEditTarget === 'user') {
-        this.saveUserAvatar(avatarConfig);
-      } else if (this.currentEditTarget === 'contact') {
-        this.saveContactAvatar(avatarConfig);
-      } else {
-        console.error('❌ 未知的编辑目标:', this.currentEditTarget);
-        alert('保存失败：编辑目标未知');
-        return;
+      try {
+        if (this.currentEditTarget === 'user') {
+          this.saveUserAvatar(avatarConfig);
+        } else if (this.currentEditTarget === 'contact') {
+          this.saveContactAvatar(avatarConfig);
+        } else {
+          console.error('❌ 未知的编辑目标:', this.currentEditTarget);
+          alert('保存失败：编辑目标未知');
+          return;
+        }
+
+        // 保存成功后隐藏编辑器并返回主界面
+        console.log('✅ 头像保存成功，返回主界面');
+        this.hideEditorWithoutReset(); // 使用不重置状态的隐藏方法
+
+        // 延迟一下确保界面切换完成，然后更新相关界面
+        setTimeout(() => {
+          console.log('🔄 头像保存完成，开始更新相关界面');
+
+          if (window.QQApp) {
+            if (this.currentEditTarget === 'user') {
+              // 用户头像更新
+              if (typeof window.QQApp.updateUserDisplay === 'function') {
+                console.log('🔄 更新用户头像显示');
+                window.QQApp.updateUserDisplay();
+              }
+            } else if (this.currentEditTarget === 'contact' && this.currentContactInfo) {
+              // 联系人头像更新
+              const { qqNumber } = this.currentContactInfo;
+              console.log('🔄 更新联系人头像显示:', qqNumber);
+
+              // 只调用数据更新，避免重复调用
+              if (typeof window.QQApp.updateAllAvatarDisplaysFromData === 'function') {
+                window.QQApp.updateAllAvatarDisplaysFromData();
+              }
+            }
+
+            // 统一更新好友管理界面（防抖处理已在方法内部）
+            if (window.QQDataManager && typeof window.QQDataManager.updateFriendManagerAvatars === 'function') {
+              console.log('🔄 更新好友管理界面头像');
+              window.QQDataManager.updateFriendManagerAvatars();
+            }
+          }
+        }, 200);
+      } catch (error) {
+        console.error('❌ 保存头像时发生错误:', error);
+        alert('保存失败：' + error.message);
       }
-
-      this.hideEditor();
     },
 
     // 保存用户头像
     saveUserAvatar(avatarConfig) {
       if (window.QQApp && typeof window.QQApp.setUserDataEnhanced === 'function') {
-        const userName = window.QQApp.userData.name;
-        window.QQApp.setUserDataEnhanced(userName, avatarConfig);
-        console.log('✅ 用户头像已保存');
-        alert('用户头像设置成功！');
+        try {
+          const userName = window.QQApp.userData.name || '用户';
+          window.QQApp.setUserDataEnhanced(userName, avatarConfig);
+          console.log('✅ 用户头像已保存');
+
+          // 显示成功提示
+          this.showSuccessMessage('用户头像设置成功！');
+        } catch (error) {
+          console.error('❌ 保存用户头像失败:', error);
+          throw new Error('保存用户头像失败');
+        }
       } else {
         console.error('❌ QQApp.setUserDataEnhanced 方法不可用');
+        throw new Error('QQ应用未正确加载，无法保存用户头像');
       }
     },
 
     // 保存联系人头像
     saveContactAvatar(avatarConfig) {
       if (window.QQApp && typeof window.QQApp.setAvatarUrlEnhanced === 'function') {
-        const { qqNumber } = this.currentContactInfo;
-        window.QQApp.setAvatarUrlEnhanced(qqNumber, avatarConfig);
-        console.log('✅ 联系人头像已保存');
-        alert('联系人头像设置成功！');
+        try {
+          const { qqNumber, contactName } = this.currentContactInfo;
+          window.QQApp.setAvatarUrlEnhanced(qqNumber, avatarConfig);
+          console.log('✅ 联系人头像已保存');
+
+          // 显示成功提示
+          this.showSuccessMessage(`${contactName} 的头像设置成功！`);
+        } catch (error) {
+          console.error('❌ 保存联系人头像失败:', error);
+          throw new Error('保存联系人头像失败');
+        }
       } else {
         console.error('❌ QQApp.setAvatarUrlEnhanced 方法不可用');
+        throw new Error('QQ应用未正确加载，无法保存联系人头像');
       }
+    },
+
+    // 显示成功消息
+    showSuccessMessage(message) {
+      // 创建成功提示
+      const $successToast = $(`
+        <div class="avatar-success-toast" style="
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #28a745;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          z-index: 10000;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          animation: fadeInOut 2s ease-in-out;
+        ">
+          ✅ ${message}
+        </div>
+      `);
+
+      // 添加动画样式
+      if (!$('#avatar-toast-styles').length) {
+        $('head').append(`
+          <style id="avatar-toast-styles">
+            @keyframes fadeInOut {
+              0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+              20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+              80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+              100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            }
+          </style>
+        `);
+      }
+
+      // 显示提示
+      $('body').append($successToast);
+
+      // 2秒后自动移除
+      setTimeout(() => {
+        $successToast.remove();
+      }, 2000);
     },
 
     // 重置编辑器状态
@@ -627,15 +890,7 @@
       };
     },
 
-    // 处理文件上传
-    handleFileUpload(file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const imageUrl = e.target.result;
-        this.handleUrlChange(imageUrl);
-      };
-      reader.readAsDataURL(file);
-    },
+    // 删除了文件上传处理方法，只保留URL输入功能
 
     // 更新旋转
     updateRotation(rotation) {
@@ -648,43 +903,28 @@
     // 移动图像
     moveImage(direction) {
       const step = 5;
+      const maxOffset = 200; // 与其他地方保持一致
       const { imagePosition } = this.editorState;
 
       switch (direction) {
         case 'up':
-          imagePosition.y = Math.max(-150, imagePosition.y - step);
+          imagePosition.y = Math.max(-maxOffset, imagePosition.y - step);
           break;
         case 'down':
-          imagePosition.y = Math.min(150, imagePosition.y + step);
+          imagePosition.y = Math.min(maxOffset, imagePosition.y + step);
           break;
         case 'left':
-          imagePosition.x = Math.max(-150, imagePosition.x - step);
+          imagePosition.x = Math.max(-maxOffset, imagePosition.x - step);
           break;
         case 'right':
-          imagePosition.x = Math.min(150, imagePosition.x + step);
+          imagePosition.x = Math.min(maxOffset, imagePosition.x + step);
           break;
       }
 
       this.updateImageTransform();
     },
 
-    // 适应宽度
-    fitToWidth() {
-      this.editorState.imageScale = 100;
-      this.editorState.imagePosition = { x: 0, y: 0 };
-      $('.scale-slider').val(100);
-      $('.scale-value').text(100);
-      this.updateImageTransform();
-    },
-
-    // 适应高度
-    fitToHeight() {
-      this.editorState.imageScale = 120;
-      this.editorState.imagePosition = { x: 0, y: 0 };
-      $('.scale-slider').val(120);
-      $('.scale-value').text(120);
-      this.updateImageTransform();
-    },
+    // 删除了适应宽度和适应高度功能，简化界面
 
     // 居中图像
     centerImage() {

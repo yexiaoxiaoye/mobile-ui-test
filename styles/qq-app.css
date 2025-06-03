@@ -411,11 +411,12 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   border: 2px solid #ddd !important; /* 添加边框 */
 }
 
-.user-avatar:hover {
+/* 删除用户头像悬停效果，避免干扰旋转变换 */
+/* .user-avatar:hover {
   transform: scale(1.05) !important;
   border-color: #4caf50 !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-}
+} */
 
 .user-avatar img {
   width: 100%;
@@ -642,11 +643,12 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   cursor: pointer !important;
 }
 
-.custom-avatar:hover {
+/* 删除头像悬停效果，避免干扰旋转变换 */
+/* .custom-avatar:hover {
   transform: scale(1.05) !important;
   border-color: #4caf50 !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-}
+} */
 
 /* 群组图标标识 */
 .qq-group-wrapper .contact-avatar-wrapper::after {

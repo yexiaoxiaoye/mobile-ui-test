@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QQ头像编辑器按钮修复测试</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="styles/qq-avatar-editor.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+      }
+
+      .test-container {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-btn {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .test-btn:hover {
+        background: #0056b3;
+      }
+
+      /* 模拟手机界面容器 */
+      .qq-app-container {
+        width: 360px;
+        height: 640px;
+        margin: 20px auto;
+        border: 2px solid #333;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        position: relative;
+      }
+
+      .status-info {
+        margin-top: 20px;
+        padding: 10px;
+        background: #e9ecef;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>QQ头像编辑器按钮修复测试</h1>
+      <p>这个页面用于测试头像编辑器按钮在手机界面中的显示问题修复。</p>
+
+      <button class="test-btn" onclick="testInMobileContainer()">在手机容器中测试头像编辑器</button>
+      <button class="test-btn" onclick="testStandalone()">独立测试头像编辑器</button>
+      <button class="test-btn" onclick="clearTest()">清除测试</button>
+
+      <div class="status-info">
+        <strong>测试说明：</strong><br />
+        1. 点击"在手机容器中测试"应该显示按钮在页面底部<br />
+        2. 按钮应该是大尺寸，适合手机界面触摸<br />
+        3. 按钮应该完全可见，固定在底部<br />
+        4. 查看控制台了解详细信息<br />
+        5. 新版本：按钮已移至页面底部，避免被顶部覆盖
+      </div>
+    </div>
+
+    <!-- 手机界面容器 -->
+    <div class="qq-app-container" id="mobile-container" style="display: none">
+      <!-- 头像编辑器将在这里显示 -->
+    </div>
+
+    <script src="apps/qq-avatar-editor.js"></script>
+    <script>
+      function testInMobileContainer() {
+        console.log('🧪 开始手机容器测试');
+
+        // 显示手机容器
+        $('#mobile-container').show();
+
+        // 模拟手机界面环境
+        const $container = $('#mobile-container');
+        $container.addClass('qq-app-container');
+
+        // 创建头像编辑器
+        if (window.QQAvatarEditor) {
+          // 设置测试数据
+          window.QQAvatarEditor.currentEditTarget = 'contact';
+          window.QQAvatarEditor.currentContactInfo = {
+            qqNumber: 123456789,
+            contactName: '测试联系人',
+          };
+
+          // 创建编辑器界面
+          window.QQAvatarEditor.createEditorInterface();
+
+          // 将编辑器添加到手机容器
+          const $editor = $('.qq-avatar-editor-page').detach();
+          $container.append($editor);
+          $editor.show().css('display', 'flex');
+
+          // 确保头部可见
+          window.QQAvatarEditor.ensureHeaderVisible($editor);
+
+          console.log('✅ 手机容器测试已启动');
+        } else {
+          console.error('❌ QQAvatarEditor 未加载');
+        }
+      }
+
+      function testStandalone() {
+        console.log('🧪 开始独立测试');
+
+        // 隐藏手机容器
+        $('#mobile-container').hide();
+
+        // 创建独立的头像编辑器
+        if (window.QQAvatarEditor) {
+          window.QQAvatarEditor.currentEditTarget = 'user';
+          window.QQAvatarEditor.currentContactInfo = null;
+
+          window.QQAvatarEditor.createEditorInterface();
+
+          const $editor = $('.qq-avatar-editor-page');
+          $('body').append($editor);
+          $editor.show().css('display', 'flex');
+
+          window.QQAvatarEditor.ensureHeaderVisible($editor);
+
+          console.log('✅ 独立测试已启动');
+        } else {
+          console.error('❌ QQAvatarEditor 未加载');
+        }
+      }
+
+      function clearTest() {
+        console.log('🧹 清除测试');
+        $('.qq-avatar-editor-page').remove();
+        $('#mobile-container').hide();
+      }
+
+      // 页面加载完成后的初始化
+      $(document).ready(function () {
+        console.log('📱 测试页面已加载');
+        console.log('QQAvatarEditor 可用:', typeof window.QQAvatarEditor !== 'undefined');
+      });
+    </script>
+  </body>
+</html>

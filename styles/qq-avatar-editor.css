@@ -15,11 +15,84 @@
   z-index: 100; /* 降低z-index，确保在手机界面内 */
 }
 
+/* 强制显示头部按钮 - 解决可能的遮挡问题 */
+.qq-avatar-editor-page .qq-avatar-editor-header,
+.qq-avatar-editor-page .editor-actions,
+.qq-avatar-editor-page .editor-cancel-btn,
+.qq-avatar-editor-page .editor-save-btn {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 /* 当在手机界面中显示时 */
 .qq-app-container .qq-avatar-editor-page {
-  position: relative; /* 在容器内使用相对定位 */
+  position: relative;
   z-index: auto;
-  border-radius: 0; /* 去掉圆角，因为容器已经有了 */
+  border-radius: 0;
+}
+
+/* 手机界面中的头部样式 - 完全重写 */
+.qq-app-container .qq-avatar-editor-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 12px !important;
+  background: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+  position: relative !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  min-height: 50px !important;
+}
+
+/* 手机界面中的标题 */
+.qq-app-container .editor-title {
+  flex: 1 !important;
+  text-align: center !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+  margin: 0 8px !important;
+}
+
+/* 手机界面中的按钮容器 - 固定在右侧 */
+.qq-app-container .editor-actions {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+  position: static !important;
+  background: none !important;
+  padding: 0 !important;
+  z-index: 100 !important;
+}
+
+/* 手机界面中的按钮样式 */
+.qq-app-container .editor-cancel-btn,
+.qq-app-container .editor-save-btn {
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  min-width: 45px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  border: 1px solid !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.qq-app-container .editor-cancel-btn {
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+}
+
+.qq-app-container .editor-save-btn {
+  background: #007bff !important;
+  color: #ffffff !important;
+  border-color: #007bff !important;
 }
 
 /* 当独立显示时 */
@@ -68,6 +141,9 @@ body > .qq-avatar-editor-page {
   background: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
   flex-shrink: 0;
+  min-height: 60px; /* 确保头部有足够的高度 */
+  position: relative;
+  z-index: 10; /* 确保在其他元素之上 */
 }
 
 .editor-back-btn {
@@ -102,6 +178,8 @@ body > .qq-avatar-editor-page {
   display: flex;
   gap: 8px;
   align-items: center;
+  position: relative;
+  z-index: 11; /* 确保按钮在最上层 */
 }
 
 /* 取消按钮 */
@@ -246,24 +324,25 @@ body > .qq-avatar-editor-page {
 /* 控制面板 */
 .editor-controls {
   flex: 1;
-  padding: 20px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
+  overflow-y: hidden; /* 删除滚动条 */
 }
 
 .control-section {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 12px;
   border: 1px solid #e9ecef;
 }
 
 .control-section h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;
 }
 
 /* 图片来源选择 */
@@ -316,15 +395,19 @@ body > .qq-avatar-editor-page {
 
 /* 调整控制 */
 .control-group {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+.control-group.compact {
+  margin-bottom: 8px;
 }
 
 .control-group label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .slider-container {
@@ -422,16 +505,15 @@ body > .qq-avatar-editor-page {
   grid-row: 2;
 }
 
-.reset-btn {
-  grid-column: 2;
-  grid-row: 2;
-  font-size: 12px;
+/* 重置按钮在快捷操作中的样式 */
+.quick-actions .reset-btn {
   background: #28a745;
   color: white;
   border-color: #28a745;
+  font-size: 12px;
 }
 
-.reset-btn:hover {
+.quick-actions .reset-btn:hover {
   background: #218838;
   border-color: #1e7e34;
   color: white;
@@ -495,6 +577,46 @@ body > .qq-avatar-editor-page {
   animation: fadeInUp 0.3s ease-out;
 }
 
+/* 成功提示样式 */
+.avatar-success-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #28a745;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeInOut 2s ease-in-out;
+  white-space: nowrap;
+  max-width: 300px;
+  text-align: center;
+}
+
+/* 成功提示动画 */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
 /* 响应式调整 */
 @media (max-width: 480px) {
   .editor-controls {
@@ -515,4 +637,79 @@ body > .qq-avatar-editor-page {
     flex-direction: column;
     gap: 8px;
   }
+
+  .avatar-success-toast {
+    max-width: 250px;
+    font-size: 13px;
+    padding: 10px 20px;
+  }
+}
+
+/* 底部操作按钮区域 */
+.editor-bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 手机界面中的底部按钮 */
+.qq-app-container .editor-bottom-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 底部按钮样式 */
+.editor-bottom-actions .editor-cancel-btn,
+.editor-bottom-actions .editor-save-btn {
+  flex: 1;
+  font-size: 16px !important;
+  padding: 12px !important;
+  height: 44px !important;
+  border-radius: 6px !important;
+  border: 1px solid #ddd !important;
+  background: #fff !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+
+.editor-bottom-actions .editor-save-btn {
+  background: #007bff !important;
+  color: white !important;
+  border-color: #007bff !important;
+}
+
+.editor-bottom-actions .editor-cancel-btn:hover {
+  background: #f8f9fa !important;
+  border-color: #adb5bd !important;
+}
+
+.editor-bottom-actions .editor-save-btn:hover {
+  background: #0056b3 !important;
+}
+
+/* 确保编辑器主体有底部间距，避免被按钮遮挡 */
+.qq-app-container .qq-avatar-editor-body {
+  padding-bottom: 80px;
 }
