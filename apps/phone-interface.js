@@ -408,7 +408,13 @@
           let isClickInsideAnyMobileUI = false;
           let insideSelector = null;
 
-          // 首先检查是否点击了SillyTavern的原有界面元素
+          // 首先检查是否点击了标记为移动UI元素的元素
+          if ($target.closest('[data-mobile-ui-element="true"]').length) {
+            // console.log('Click was on a marked mobile UI element, not closing mobile apps.');
+            return; // 直接返回，不执行关闭逻辑
+          }
+
+          // 然后检查是否点击了SillyTavern的原有界面元素
           for (const selector of sillyTavernUISelectors) {
             if ($target.closest(selector).length) {
               // 如果点击的是SillyTavern原有界面，则不执行关闭操作

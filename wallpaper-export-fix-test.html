@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美化应用 - 导出修复测试</title>
+    <script src="jquery-3.js"></script>
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <link rel="stylesheet" href="styles/wallpaper-app.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .test-title {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .fix-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: left;
+        }
+        
+        .test-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success {
+            background: #4CAF50;
+        }
+        
+        .status-error {
+            background: #F44336;
+        }
+        
+        .status-warning {
+            background: #FF9800;
+        }
+        
+        .test-steps {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .test-steps li {
+            margin: 8px 0;
+        }
+        
+        .console-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🔧 美化应用 - 导出修复测试</h1>
+        <p style="color: rgba(255,255,255,0.9); font-size: 18px;">测试导出文件时不再导致手机界面白屏</p>
+        
+        <div class="fix-info">
+            <h3 style="margin-top: 0; color: #FFD700;">🐛 修复的问题</h3>
+            <p><span class="status-indicator status-error"></span><strong>问题：</strong>导出配置文件时手机界面变白屏</p>
+            <p><span class="status-indicator status-warning"></span><strong>原因：</strong>文件下载操作触发了外部点击检测，导致所有应用被关闭</p>
+            <p><span class="status-indicator status-success"></span><strong>解决：</strong>标记下载元素为移动UI元素，避免触发外部点击检测</p>
+            
+            <h3 style="color: #FFD700;">🔧 修复内容</h3>
+            <ul>
+                <li><strong>自动导出优化：</strong>
+                    <ul>
+                        <li>添加 <code>data-mobile-ui-element="true"</code> 标记</li>
+                        <li>将下载链接添加到手机界面内部而非body</li>
+                        <li>使用延迟触发避免与点击事件冲突</li>
+                    </ul>
+                </li>
+                <li><strong>外部点击检测增强：</strong>
+                    <ul>
+                        <li>优先检查移动UI元素标记</li>
+                        <li>忽略标记为移动UI的元素点击</li>
+                    </ul>
+                </li>
+                <li><strong>导入功能同步优化：</strong>
+                    <ul>
+                        <li>文件选择器也使用相同的标记机制</li>
+                        <li>确保导入操作不会意外关闭应用</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <button class="test-btn" onclick="openWallpaperApp()">🎨 打开美化应用</button>
+            <button class="test-btn" onclick="testAutoExport()">📁 测试自动导出</button>
+            <button class="test-btn" onclick="testManualExport()">📤 测试手动导出</button>
+            <button class="test-btn" onclick="clearConsole()">🧹 清空日志</button>
+        </div>
+        
+        <div class="test-steps">
+            <h3 style="color: #FFD700; margin-top: 0;">📋 测试步骤</h3>
+            <ol>
+                <li>点击"打开美化应用"</li>
+                <li>在美化应用中输入一个壁纸URL</li>
+                <li>点击"应用壁纸"（这会触发自动导出）</li>
+                <li>观察手机界面是否保持正常显示</li>
+                <li>检查下载文件夹是否有配置文件</li>
+                <li>点击"📁 导出配置"按钮测试手动导出</li>
+                <li>点击"📂 导入配置"按钮测试导入功能</li>
+            </ol>
+        </div>
+        
+        <div class="fix-info">
+            <h3 style="color: #FFD700; margin-top: 0;">✅ 预期结果</h3>
+            <ul>
+                <li>导出文件时手机界面保持正常显示</li>
+                <li>美化应用不会意外关闭</li>
+                <li>配置文件成功下载到下载文件夹</li>
+                <li>控制台不再出现"Click Outside"相关的错误信息</li>
+                <li>导入功能正常工作，不会关闭应用</li>
+            </ul>
+        </div>
+        
+        <div id="console-output" class="console-log">
+            控制台日志将显示在这里...
+        </div>
+    </div>
+
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+    
+    <script>
+        // 拦截console.log来显示日志
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function openWallpaperApp() {
+            if (window.WallpaperApp && window.PhoneInterface) {
+                window.PhoneInterface.show();
+                setTimeout(() => {
+                    window.WallpaperApp.show();
+                    console.log('🎨 美化应用已打开，准备测试导出功能');
+                }, 500);
+            }
+        }
+        
+        function testAutoExport() {
+            if (window.WallpaperApp) {
+                const testData = {
+                    currentWallpaper: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+                    history: [
+                        {
+                            url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+                            name: '测试壁纸',
+                            timestamp: Date.now()
+                        }
+                    ]
+                };
+                console.log('🧪 开始测试自动导出功能...');
+                window.WallpaperApp.autoExportConfig(testData);
+                
+                // 检查手机界面状态
+                setTimeout(() => {
+                    const phoneVisible = $('#phone_interface').hasClass('show');
+                    const wallpaperVisible = $('#phone_interface').hasClass('show-wallpaper-app-content');
+                    console.log(`📱 手机界面状态: 可见=${phoneVisible}, 美化应用模式=${wallpaperVisible}`);
+                    
+                    if (phoneVisible) {
+                        console.log('✅ 测试成功：导出后手机界面保持正常显示');
+                    } else {
+                        console.log('❌ 测试失败：导出后手机界面被隐藏');
+                    }
+                }, 200);
+            }
+        }
+        
+        function testManualExport() {
+            console.log('🧪 开始测试手动导出功能...');
+            // 模拟点击导出按钮
+            $('.wallpaper-export-btn').click();
+            
+            setTimeout(() => {
+                const phoneVisible = $('#phone_interface').hasClass('show');
+                console.log(`📱 手动导出后手机界面状态: 可见=${phoneVisible}`);
+            }, 200);
+        }
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '控制台日志已清空...\n';
+        }
+        
+        $(document).ready(async function() {
+            console.log('🔧 导出修复测试页面已加载');
+            
+            if (window.PhoneInterface) {
+                window.PhoneInterface.init();
+            }
+            
+            if (window.WallpaperApp) {
+                await window.WallpaperApp.init();
+                // 启用自动导出功能
+                window.WallpaperApp.useAutoExport = true;
+                console.log('✅ 自动导出功能已启用');
+            }
+            
+            console.log('📋 请按照测试步骤进行测试');
+        });
+    </script>
+</body>
+</html>

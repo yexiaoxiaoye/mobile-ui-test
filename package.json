@@ -1,0 +1,24 @@
+{
+  "name": "mobile-ui-wallpaper-server",
+  "version": "1.0.0",
+  "description": "后端服务器用于保存壁纸配置到本地文件",
+  "main": "wallpaper-server.js",
+  "scripts": {
+    "start": "node wallpaper-server.js",
+    "dev": "nodemon wallpaper-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "wallpaper",
+    "mobile-ui",
+    "file-storage"
+  ],
+  "author": "Mobile UI Team",
+  "license": "MIT"
+}

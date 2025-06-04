@@ -171,6 +171,64 @@
   background: #dc3545;
 }
 
+/* 配置文件管理区域 */
+.wallpaper-config-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.wallpaper-config-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.wallpaper-config-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wallpaper-export-btn,
+.wallpaper-import-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallpaper-export-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.wallpaper-export-btn:hover {
+  background: #138496;
+}
+
+.wallpaper-import-btn {
+  background: #6f42c1;
+  color: white;
+}
+
+.wallpaper-import-btn:hover {
+  background: #5a32a3;
+}
+
+.wallpaper-config-tip {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
 /* 历史记录区域 */
 .wallpaper-history-section h3 {
   font-size: 16px;

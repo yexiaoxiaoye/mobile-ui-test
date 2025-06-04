@@ -7,10 +7,16 @@
     wallpaperHistory: [],
     currentWallpaper: '',
 
+    // 配置选项
+    useFileStorage: false, // 是否使用文件存储（需要后端支持）
+    apiBaseUrl: 'http://localhost:3001/api', // 后端API地址
+    useAutoExport: true, // 自动导出配置文件（无需后端）
+    configFileName: 'wallpaper-config.json', // 配置文件名
+
     // 初始化应用
-    init() {
+    async init() {
       console.log('🎨 美化应用初始化...');
-      this.loadWallpaperHistory();
+      await this.loadWallpaperHistory();
       this.bindEvents();
 
       // 延迟应用当前壁纸，确保手机界面已经创建
@@ -19,6 +25,29 @@
       }, 500);
 
       console.log('✅ 美化应用初始化完成');
+    },
+
+    // 启用文件存储模式
+    enableFileStorage(apiUrl = 'http://localhost:3001/api') {
+      this.useFileStorage = true;
+      this.apiBaseUrl = apiUrl;
+      console.log('📁 已启用文件存储模式:', apiUrl);
+    },
+
+    // 禁用文件存储模式（回到localStorage）
+    disableFileStorage() {
+      this.useFileStorage = false;
+      console.log('💾 已切换到localStorage存储模式');
+    },
+
+    // 检查后端服务是否可用
+    async checkBackendAvailable() {
+      try {
+        const response = await fetch(`${this.apiBaseUrl}/wallpaper-config`);
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
     },
 
     // 创建应用界面 - 不需要创建独立界面，使用手机界面内的容器
@@ -71,6 +100,32 @@
           $('.wallpaper-url-input').val(url);
           self.previewWallpaper(url);
         }
+      });
+
+      // 导出配置按钮
+      $(document).on('click', '.wallpaper-export-btn', function (e) {
+        e.stopPropagation();
+        const data = {
+          currentWallpaper: self.currentWallpaper,
+          history: self.wallpaperHistory,
+        };
+        self.autoExportConfig(data);
+      });
+
+      // 导入配置按钮
+      $(document).on('click', '.wallpaper-import-btn', function (e) {
+        e.stopPropagation();
+        self
+          .importConfig()
+          .then(() => {
+            // 刷新界面显示
+            self.loadCurrentWallpaper();
+            self.refreshHistoryDisplay();
+            alert('✅ 配置文件导入成功！');
+          })
+          .catch(error => {
+            alert('❌ 导入失败: ' + error.message);
+          });
       });
 
       console.log('✅ 美化应用事件已绑定');
@@ -177,6 +232,16 @@
               <div class="wallpaper-actions">
                 <button class="wallpaper-apply-btn">应用壁纸</button>
                 <button class="wallpaper-reset-btn">恢复默认</button>
+              </div>
+
+              <!-- 配置文件管理 -->
+              <div class="wallpaper-config-section">
+                <h4>配置文件</h4>
+                <div class="wallpaper-config-actions">
+                  <button class="wallpaper-export-btn">📁 导出配置</button>
+                  <button class="wallpaper-import-btn">📂 导入配置</button>
+                </div>
+                <p class="wallpaper-config-tip">导出配置文件可在其他设备或浏览器中使用</p>
               </div>
             </div>
 
@@ -402,25 +467,74 @@
     },
 
     // 保存壁纸历史记录
-    saveWallpaperHistory() {
+    async saveWallpaperHistory() {
       try {
         const data = {
           currentWallpaper: this.currentWallpaper,
           history: this.wallpaperHistory,
         };
-        localStorage.setItem('wallpaper_data', JSON.stringify(data));
+
+        if (this.useFileStorage) {
+          // 使用文件存储
+          await this.saveToFile(data);
+        } else {
+          // 使用localStorage存储
+          localStorage.setItem('wallpaper_data', JSON.stringify(data));
+        }
+
+        // 自动导出配置文件（如果启用）
+        if (this.useAutoExport) {
+          this.autoExportConfig(data);
+        }
+
         console.log('💾 壁纸数据已保存');
       } catch (error) {
         console.error('❌ 保存壁纸数据失败:', error);
       }
     },
 
-    // 加载壁纸历史记录
-    loadWallpaperHistory() {
+    // 保存到文件
+    async saveToFile(data) {
       try {
-        const saved = localStorage.getItem('wallpaper_data');
-        if (saved) {
-          const data = JSON.parse(saved);
+        const response = await fetch(`${this.apiBaseUrl}/wallpaper-config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('📁 壁纸数据已保存到文件:', result);
+      } catch (error) {
+        console.error('❌ 保存到文件失败:', error);
+        // 回退到localStorage
+        localStorage.setItem('wallpaper_data', JSON.stringify(data));
+        console.log('🔄 已回退到localStorage存储');
+      }
+    },
+
+    // 加载壁纸历史记录
+    async loadWallpaperHistory() {
+      try {
+        let data = null;
+
+        if (this.useFileStorage) {
+          // 从文件加载
+          data = await this.loadFromFile();
+        } else {
+          // 从localStorage加载
+          const saved = localStorage.getItem('wallpaper_data');
+          if (saved) {
+            data = JSON.parse(saved);
+          }
+        }
+
+        if (data) {
           this.currentWallpaper = data.currentWallpaper || '';
           this.wallpaperHistory = data.history || [];
           console.log('📂 壁纸数据已加载');
@@ -430,6 +544,140 @@
         this.wallpaperHistory = [];
         this.currentWallpaper = '';
       }
+    },
+
+    // 从文件加载
+    async loadFromFile() {
+      try {
+        const response = await fetch(`${this.apiBaseUrl}/wallpaper-config`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('📁 从文件加载壁纸数据:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ 从文件加载失败:', error);
+        // 回退到localStorage
+        const saved = localStorage.getItem('wallpaper_data');
+        if (saved) {
+          console.log('🔄 已回退到localStorage加载');
+          return JSON.parse(saved);
+        }
+        return null;
+      }
+    },
+
+    // 自动导出配置文件
+    autoExportConfig(data) {
+      try {
+        // 创建配置文件内容
+        const configContent = JSON.stringify(data, null, 2);
+
+        // 创建Blob对象
+        const blob = new Blob([configContent], { type: 'application/json' });
+
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = this.configFileName;
+
+        // 设置样式和属性，避免触发外部点击检测
+        link.style.display = 'none';
+        link.style.position = 'absolute';
+        link.style.left = '-9999px';
+        link.setAttribute('data-mobile-ui-element', 'true'); // 标记为移动UI元素
+
+        // 添加到手机界面内部，而不是body
+        const phoneInterface = document.getElementById('phone_interface');
+        if (phoneInterface) {
+          phoneInterface.appendChild(link);
+        } else {
+          document.body.appendChild(link);
+        }
+
+        // 延迟触发下载，避免与点击事件冲突
+        setTimeout(() => {
+          link.click();
+
+          // 延迟清理
+          setTimeout(() => {
+            if (link.parentNode) {
+              link.parentNode.removeChild(link);
+            }
+            URL.revokeObjectURL(url);
+          }, 100);
+        }, 50);
+
+        console.log('📁 配置文件已自动导出:', this.configFileName);
+      } catch (error) {
+        console.error('❌ 自动导出失败:', error);
+      }
+    },
+
+    // 导入配置文件
+    importConfig() {
+      return new Promise((resolve, reject) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.style.display = 'none';
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        input.setAttribute('data-mobile-ui-element', 'true'); // 标记为移动UI元素
+
+        input.onchange = event => {
+          const file = event.target.files[0];
+          if (!file) {
+            reject(new Error('未选择文件'));
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = e => {
+            try {
+              const data = JSON.parse(e.target.result);
+              this.currentWallpaper = data.currentWallpaper || '';
+              this.wallpaperHistory = data.history || [];
+
+              // 应用导入的壁纸
+              if (this.currentWallpaper) {
+                this.updatePhoneBackground(this.currentWallpaper);
+              }
+
+              // 保存到localStorage
+              localStorage.setItem('wallpaper_data', JSON.stringify(data));
+
+              console.log('📁 配置文件已导入');
+              resolve(data);
+            } catch (error) {
+              reject(new Error('配置文件格式错误'));
+            }
+          };
+
+          reader.readAsText(file);
+        };
+
+        // 添加到手机界面内部，而不是body
+        const phoneInterface = document.getElementById('phone_interface');
+        if (phoneInterface) {
+          phoneInterface.appendChild(input);
+        } else {
+          document.body.appendChild(input);
+        }
+
+        input.click();
+
+        // 延迟清理
+        setTimeout(() => {
+          if (input.parentNode) {
+            input.parentNode.removeChild(input);
+          }
+        }, 100);
+      });
     },
 
     // 应用当前壁纸（在初始化时调用）
