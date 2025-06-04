@@ -7,16 +7,52 @@
     currentEditTarget: null, // 'user' | 'contact'
     currentContactInfo: null, // {qqNumber, contactName}
 
-    // 编辑器状态
-    editorState: {
-      avatarUrl: '',
-      imagePosition: { x: 0, y: 0 },
-      imageScale: 100,
-      imageRotation: 0,
-      isDragging: false,
-      dragStart: { x: 0, y: 0 },
-      history: [],
-      historyIndex: -1,
+    // 为每个用户/角色独立保存编辑器状态
+    editorStates: {
+      user: {
+        avatarUrl: '',
+        imagePosition: { x: 0, y: 0 },
+        imageScale: 150,
+        imageRotation: 0,
+        isDragging: false,
+        dragStart: { x: 0, y: 0 },
+        history: [],
+        historyIndex: -1,
+      },
+      // 角色状态会动态添加，格式为: contact_${qqNumber}: { ... }
+    },
+
+    // 获取当前编辑状态的方法
+    getCurrentState() {
+      const stateKey = this.currentEditTarget === 'user' ? 'user' : `contact_${this.currentContactInfo?.qqNumber}`;
+
+      // 如果状态不存在，创建默认状态
+      if (!this.editorStates[stateKey]) {
+        console.log(`🔄 创建新的编辑状态: ${stateKey}`);
+        this.editorStates[stateKey] = {
+          avatarUrl: '',
+          imagePosition: { x: 0, y: 0 },
+          imageScale: 150,
+          imageRotation: 0,
+          isDragging: false,
+          dragStart: { x: 0, y: 0 },
+          history: [],
+          historyIndex: -1,
+        };
+      }
+
+      return this.editorStates[stateKey];
+    },
+
+    // 为了兼容性，保留 editorState 属性
+    get editorState() {
+      return this.getCurrentState();
+    },
+
+    set editorState(value) {
+      const stateKey = this.currentEditTarget === 'user' ? 'user' : `contact_${this.currentContactInfo?.qqNumber}`;
+      console.log(`🔄 设置编辑状态: ${stateKey}`, value);
+      this.editorStates[stateKey] = value;
     },
 
     // 初始化编辑器
@@ -66,7 +102,7 @@
             <div class="avatar-preview-section">
               <div class="avatar-preview-container">
                 <div class="avatar-preview-frame">
-                  <img class="avatar-preview-image" src="" alt="头像预览">
+                  <div class="avatar-preview-image"></div>
                   <div class="preview-overlay"></div>
                 </div>
                 <div class="preview-info">
@@ -299,19 +335,57 @@
       this.currentEditTarget = 'user';
       this.currentContactInfo = null;
 
-      // 获取当前用户信息
+      // 获取当前用户信息和配置
       const userData = window.QQApp ? window.QQApp.userData : { name: '用户', avatar: '' };
+      const userConfig = userData.avatarConfig || null;
 
       // 设置界面标题
       $('.editor-title').text('设置用户头像');
 
-      // 如果有现有头像，预填URL
-      if (userData.avatar) {
-        $('.avatar-url-input').val(userData.avatar);
-        this.handleUrlChange(userData.avatar);
-      }
-
+      // 先显示编辑器界面
       this.showEditor();
+
+      // 延迟加载配置，确保界面已经渲染完成
+      setTimeout(() => {
+        this.loadUserAvatarConfig(userData, userConfig);
+      }, 100);
+    },
+
+    // 加载用户头像配置
+    loadUserAvatarConfig(userData, userConfig) {
+      console.log('🔄 开始加载用户头像配置:', { userData, userConfig });
+
+      // 如果有现有头像，预填URL和配置
+      if (userData.avatar) {
+        console.log('🔄 加载用户现有头像配置');
+        $('.avatar-url-input').val(userData.avatar);
+        this.editorState.avatarUrl = userData.avatar;
+
+        // 如果有变换配置，加载它
+        if (userConfig && userConfig.transform) {
+          const transform = userConfig.transform;
+          this.editorState.imagePosition = {
+            x: transform.translateX || 0,
+            y: transform.translateY || 0,
+          };
+          this.editorState.imageScale = (transform.scale || 1) * 100;
+          this.editorState.imageRotation = transform.rotate || 0;
+
+          // 更新界面控件
+          $('.scale-slider').val(this.editorState.imageScale);
+          $('.scale-value').text(this.editorState.imageScale);
+          $('.rotation-slider').val(this.editorState.imageRotation);
+          $('.rotation-value').text(this.editorState.imageRotation);
+
+          console.log('✅ 已加载用户头像变换配置:', this.editorState);
+        }
+
+        this.handleUrlChange(userData.avatar);
+      } else {
+        // 如果没有现有头像，重置状态
+        console.log('🔄 没有现有用户头像，重置状态');
+        this.resetAdjustments();
+      }
     },
 
     // 显示编辑器 - 联系人头像
@@ -323,19 +397,63 @@
       this.currentEditTarget = 'contact';
       this.currentContactInfo = { qqNumber, contactName };
 
-      // 获取当前头像
-      const currentAvatar = window.QQApp ? window.QQApp.getAvatarUrl(qqNumber) : '';
-
       // 设置界面标题
       $('.editor-title').text(`设置 ${contactName} 的头像`);
 
-      // 如果有现有头像，预填URL
-      if (currentAvatar) {
-        $('.avatar-url-input').val(currentAvatar);
-        this.handleUrlChange(currentAvatar);
-      }
-
+      // 先显示编辑器界面
       this.showEditor();
+
+      // 延迟加载配置，确保界面已经渲染完成
+      setTimeout(() => {
+        this.loadContactAvatarConfig(qqNumber, contactName);
+      }, 100);
+    },
+
+    // 加载联系人头像配置
+    loadContactAvatarConfig(qqNumber, contactName) {
+      const stateKey = `contact_${qqNumber}`;
+      console.log(`🔄 开始加载联系人 ${qqNumber} (${contactName}) 头像配置`);
+      console.log(`🔍 当前编辑状态键: ${stateKey}`);
+
+      // 获取当前头像和配置
+      const currentAvatar = window.QQApp ? window.QQApp.getAvatarUrl(qqNumber) : '';
+      const currentConfig =
+        window.QQApp && window.QQApp.avatarData ? window.QQApp.avatarData[`${qqNumber}_config`] : null;
+
+      console.log('🔍 联系人头像数据:', { currentAvatar, currentConfig });
+      console.log(`🔍 编辑器状态 ${stateKey}:`, this.editorStates[stateKey]);
+
+      // 如果有现有头像，预填URL和配置
+      if (currentAvatar) {
+        console.log('🔄 加载联系人现有头像配置');
+        $('.avatar-url-input').val(currentAvatar);
+        this.editorState.avatarUrl = currentAvatar;
+
+        // 如果有变换配置，加载它
+        if (currentConfig && currentConfig.transform) {
+          const transform = currentConfig.transform;
+          this.editorState.imagePosition = {
+            x: transform.translateX || 0,
+            y: transform.translateY || 0,
+          };
+          this.editorState.imageScale = (transform.scale || 1) * 100;
+          this.editorState.imageRotation = transform.rotate || 0;
+
+          // 更新界面控件
+          $('.scale-slider').val(this.editorState.imageScale);
+          $('.scale-value').text(this.editorState.imageScale);
+          $('.rotation-slider').val(this.editorState.imageRotation);
+          $('.rotation-value').text(this.editorState.imageRotation);
+
+          console.log('✅ 已加载联系人头像变换配置:', this.editorState);
+        }
+
+        this.handleUrlChange(currentAvatar);
+      } else {
+        // 如果没有现有头像，重置状态
+        console.log('🔄 没有现有联系人头像，重置状态');
+        this.resetAdjustments();
+      }
     },
 
     // 显示编辑器界面
@@ -591,32 +709,38 @@
 
     // 加载预览图片
     loadPreviewImage(url) {
-      const $img = $('.avatar-preview-image');
-      const $container = $('.avatar-preview-frame');
+      const $preview = $('.avatar-preview-image');
 
       // 检查是否是新的图片URL
-      const currentUrl = $img.attr('src');
+      const currentUrl = this.editorState.avatarUrl;
       const isNewImage = currentUrl !== url;
 
-      $img.off('load error');
+      // 创建临时图片元素来检测图片是否能正常加载
+      const tempImg = new Image();
 
-      $img.on('load', () => {
+      tempImg.onload = () => {
         console.log('图片加载成功');
+
+        // 设置背景图片
+        $preview.css('background-image', `url(${url})`).show();
+
         // 只在加载新图片时重置调整，避免丢失用户的调整
         if (isNewImage) {
           console.log('🔄 新图片加载，重置调整参数');
           this.resetAdjustments();
         } else {
           console.log('🔄 相同图片重新加载，保持当前调整参数');
+          // 如果是相同图片，直接应用当前的变换
+          this.updateImageTransform();
         }
-      });
+      };
 
-      $img.on('error', () => {
+      tempImg.onerror = () => {
         console.error('图片加载失败:', url);
-        $img.hide();
-      });
+        $preview.css('background-image', 'none').hide();
+      };
 
-      $img.attr('src', url).show();
+      tempImg.src = url;
     },
 
     // 开始拖拽
@@ -664,18 +788,18 @@
     // 重置调整
     resetAdjustments() {
       this.editorState.imagePosition = { x: 0, y: 0 };
-      this.editorState.imageScale = 100;
+      this.editorState.imageScale = 150; // 初始缩放设为150%，让用户能看到更多图片细节
       this.editorState.imageRotation = 0;
 
-      $('.scale-slider').val(100);
-      $('.scale-value').text('100');
+      $('.scale-slider').val(150);
+      $('.scale-value').text('150');
       $('.rotation-slider').val(0);
       $('.rotation-value').text('0');
 
       this.updateImageTransform();
     },
 
-    // 更新图片变换
+    // 更新图片变换 - 使用与实际头像显示相同的CSS属性
     updateImageTransform() {
       const { imagePosition, imageScale, imageRotation } = this.editorState;
 
@@ -685,19 +809,35 @@
       const safeY = Math.max(-200, Math.min(200, imagePosition.y));
       const safeRotation = imageRotation % 360; // 确保旋转角度在0-360度之间
 
-      // 调整变换顺序：先缩放和旋转，再平移，避免异常放大
-      const transform = `scale(${safeScale}) rotate(${safeRotation}deg) translate(${safeX}px, ${safeY}px)`;
+      // 使用与实际头像显示相同的CSS属性
+      const backgroundSize = `${safeScale * 100}%`;
+      const backgroundPositionX = `${50 - safeX * 0.5}%`;
+      const backgroundPositionY = `${50 - safeY * 0.5}%`;
 
-      $('.avatar-preview-image').css({
-        transform: transform,
-        'transform-origin': 'center center',
-      });
+      let css = {
+        'background-image': `url(${this.editorState.avatarUrl})`,
+        'background-size': backgroundSize,
+        'background-position': `${backgroundPositionX} ${backgroundPositionY}`,
+        'background-repeat': 'no-repeat',
+        'background-color': 'transparent',
+      };
+
+      // 应用旋转（如果有）
+      if (safeRotation !== 0) {
+        css['transform'] = `rotate(${safeRotation}deg)`;
+        css['transform-origin'] = 'center center';
+      } else {
+        css['transform'] = 'none';
+      }
+
+      $('.avatar-preview-image').css(css);
 
       console.log('🔧 应用图片变换:', {
         scale: safeScale,
         translate: { x: safeX, y: safeY },
         rotate: safeRotation,
-        transform: transform,
+        backgroundSize,
+        backgroundPosition: `${backgroundPositionX} ${backgroundPositionY}`,
       });
     },
 
@@ -761,19 +901,46 @@
 
           if (window.QQApp) {
             if (this.currentEditTarget === 'user') {
-              // 用户头像更新
-              if (typeof window.QQApp.updateUserDisplay === 'function') {
-                console.log('🔄 更新用户头像显示');
-                window.QQApp.updateUserDisplay();
+              // 用户头像更新 - 直接调用实际更新方法，绕过防抖
+              console.log('🔄 立即强制更新用户头像显示');
+
+              // 强制清除缓存状态
+              if (window.QQApp.lastUpdateStates) {
+                window.QQApp.lastUpdateStates.userAvatar = null;
+              }
+              if (window.QQApp.lastUpdateTime) {
+                window.QQApp.lastUpdateTime.userAvatar = 0;
+              }
+
+              // 直接调用实际更新方法，不使用防抖
+              if (typeof window.QQApp.performUserAvatarUpdate === 'function') {
+                window.QQApp.performUserAvatarUpdate(true); // 强制更新
+              }
+
+              // 强制刷新所有头像显示
+              if (typeof window.QQApp.forceRefreshAllAvatars === 'function') {
+                setTimeout(() => {
+                  window.QQApp.forceRefreshAllAvatars();
+                }, 200);
               }
             } else if (this.currentEditTarget === 'contact' && this.currentContactInfo) {
-              // 联系人头像更新
+              // 联系人头像更新 - 直接调用实际更新方法
               const { qqNumber } = this.currentContactInfo;
-              console.log('🔄 更新联系人头像显示:', qqNumber);
+              console.log('🔄 立即强制更新联系人头像显示:', qqNumber);
 
-              // 只调用数据更新，避免重复调用
-              if (typeof window.QQApp.updateAllAvatarDisplaysFromData === 'function') {
-                window.QQApp.updateAllAvatarDisplaysFromData();
+              // 强制清除缓存状态
+              if (window.QQApp.lastUpdateStates && window.QQApp.lastUpdateStates.contactAvatars) {
+                delete window.QQApp.lastUpdateStates.contactAvatars[qqNumber];
+              }
+              if (window.QQApp.lastUpdateTime && window.QQApp.lastUpdateTime.contactAvatars) {
+                delete window.QQApp.lastUpdateTime.contactAvatars[qqNumber];
+              }
+
+              // 强制刷新所有头像显示
+              if (typeof window.QQApp.forceRefreshAllAvatars === 'function') {
+                setTimeout(() => {
+                  window.QQApp.forceRefreshAllAvatars();
+                }, 200);
               }
             }
 
@@ -815,6 +982,11 @@
       if (window.QQApp && typeof window.QQApp.setAvatarUrlEnhanced === 'function') {
         try {
           const { qqNumber, contactName } = this.currentContactInfo;
+          const stateKey = `contact_${qqNumber}`;
+
+          console.log(`💾 保存联系人 ${qqNumber} (${contactName}) 的头像配置:`, avatarConfig);
+          console.log(`🔍 当前编辑状态 ${stateKey}:`, this.editorStates[stateKey]);
+
           window.QQApp.setAvatarUrlEnhanced(qqNumber, avatarConfig);
           console.log('✅ 联系人头像已保存');
 
@@ -876,17 +1048,38 @@
       }, 2000);
     },
 
-    // 重置编辑器状态
+    // 重置编辑器状态（只重置当前角色的状态）
     resetEditorState() {
-      this.editorState = {
+      const stateKey = this.currentEditTarget === 'user' ? 'user' : `contact_${this.currentContactInfo?.qqNumber}`;
+
+      console.log(`🔄 重置编辑状态: ${stateKey}`);
+
+      this.editorStates[stateKey] = {
         avatarUrl: '',
         imagePosition: { x: 0, y: 0 },
-        imageScale: 100,
+        imageScale: 150, // 初始缩放设为150%，让用户能看到更多图片细节
         imageRotation: 0,
         isDragging: false,
         dragStart: { x: 0, y: 0 },
         history: [],
         historyIndex: -1,
+      };
+    },
+
+    // 重置所有编辑器状态（清空所有角色的状态）
+    resetAllEditorStates() {
+      console.log('🔄 重置所有编辑器状态');
+      this.editorStates = {
+        user: {
+          avatarUrl: '',
+          imagePosition: { x: 0, y: 0 },
+          imageScale: 150,
+          imageRotation: 0,
+          isDragging: false,
+          dragStart: { x: 0, y: 0 },
+          history: [],
+          historyIndex: -1,
+        },
       };
     },
 

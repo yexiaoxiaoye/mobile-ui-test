@@ -74,7 +74,7 @@
         while ((match = regex.exec(content)) !== null) {
           results.push({
             messageId: message.id,
-            messageIndex: message.id, // 使用message.id而不是forEach的索引
+            messageIndex: messageIndex, // 使用forEach的索引，这是消息在聊天记录中的实际位置
             matchIndex: matchIndex, // 在同一条消息中的匹配顺序
             timestamp: message.timestamp,
             sender: message.sender,
@@ -164,11 +164,9 @@
       const groupRegex = /\[创建群聊\|(.*?)\|(.*?)\|(.*?)\]/gs;
       const groups = this.extractDataWithRegex(messages, groupRegex, '群聊');
 
-      const groupMessageRegex = /\[群聊消息\|(.*?)\|(.*?)\|(.*?)\|(.*?)\]/gs;
-      const myGroupMessageRegex = /\[我方群聊消息\|(.*?)\|(.*?)\|(.*?)\|(.*?)\]/gs;
-
-      const groupMessages = this.extractDataWithRegex(messages, groupMessageRegex, '群聊消息');
-      const myGroupMessages = this.extractDataWithRegex(messages, myGroupMessageRegex, '我方群聊消息');
+      // 使用单一正则表达式提取所有群聊消息，保持原始顺序
+      const allGroupMessageRegex = /\[(群聊消息|我方群聊消息)\|(.*?)\|(.*?)\|(.*?)\|(.*?)\]/gs;
+      const allGroupMessages = this.extractDataWithRegex(messages, allGroupMessageRegex, '群聊消息');
 
       const groupMap = new Map();
 
@@ -194,17 +192,10 @@
       const chatData = await this.getChatData();
       const allChatMessages = chatData ? chatData.messages : [];
 
-      // 从群聊消息中推断群组信息
-      const allGroupMessages = [...groupMessages, ...myGroupMessages].sort((a, b) => a.messageIndex - b.messageIndex);
-
       allGroupMessages.forEach(item => {
-        let groupId, sender, content, time;
-
-        if (item.dataType === '群聊消息') {
-          [groupId, sender, content, time] = item.groups;
-        } else if (item.dataType === '我方群聊消息') {
-          [groupId, sender, content, time] = item.groups;
-        }
+        // 新的正则表达式捕获组结构: [消息类型, 群号, 发送者, 内容, 时间]
+        const [messageType, groupId, sender, content, time] = item.groups;
+        const isMyMessage = messageType === '我方群聊消息';
 
         // 确保所有变量都已正确赋值
         if (!groupId) {
@@ -275,14 +266,16 @@
             messageIndex: item.messageIndex,
             matchIndex: item.matchIndex, // 添加匹配索引
             timestamp: item.timestamp,
-            isMyMessage: item.dataType === '我方群聊消息',
+            isMyMessage: isMyMessage,
           };
 
           console.log(
             `添加群聊消息: [${messageData.isMyMessage ? '我方' : messageData.sender}] ${messageData.content.substring(
               0,
               20,
-            )}... (messageIndex: ${messageData.messageIndex}, matchIndex: ${messageData.matchIndex})`,
+            )}... (messageIndex: ${messageData.messageIndex}, matchIndex: ${
+              messageData.matchIndex
+            }, 消息类型: ${messageType})`,
           );
 
           groupMap.get(groupId).messages.push(messageData);

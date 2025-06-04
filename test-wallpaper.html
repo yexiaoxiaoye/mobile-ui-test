@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>美化应用测试</title>
+    <script src="jquery-3.js"></script>
+    <link rel="stylesheet" href="styles/phone-interface.css" />
+    <link rel="stylesheet" href="styles/wallpaper-app.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh;
+      }
+
+      .test-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .test-title {
+        color: white;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .test-buttons {
+        margin-bottom: 30px;
+      }
+
+      .test-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 12px 24px;
+        margin: 0 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .test-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .test-info {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px auto;
+        max-width: 600px;
+        color: white;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1 class="test-title">🎨 美化应用测试页面</h1>
+
+      <div class="test-buttons">
+        <button class="test-btn" onclick="showPhoneInterface()">显示手机界面</button>
+        <button class="test-btn" onclick="showWallpaperApp()">打开美化应用</button>
+        <button class="test-btn" onclick="testWallpaper()">测试壁纸更换</button>
+      </div>
+
+      <div class="test-info">
+        <p><strong>测试说明：</strong></p>
+        <p>1. 点击"显示手机界面"查看手机主页</p>
+        <p>2. 确认美化应用图标（🎨）在第二行与"背包"和"抽卡"并列显示</p>
+        <p>3. 点击"美化"应用图标，确认手机界面不会关闭</p>
+        <p>4. 在美化应用中输入图片URL测试壁纸更换功能</p>
+        <p>5. 点击"返回"按钮，确认能正确返回手机主界面</p>
+        <p>6. 测试历史记录和恢复默认功能</p>
+        <p><strong>修复内容：</strong></p>
+        <p>✅ 修复了美化应用图标布局（现在正确显示3个应用并列）</p>
+        <p>✅ 修复了点击美化应用导致手机关闭的问题</p>
+        <p>✅ 修复了美化应用的返回逻辑</p>
+      </div>
+    </div>
+
+    <!-- 手机界面将在这里动态创建 -->
+
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+
+    <script>
+      // 测试函数
+      function showPhoneInterface() {
+        if (window.PhoneInterface) {
+          window.PhoneInterface.init();
+          window.PhoneInterface.show();
+        } else {
+          alert('手机界面未加载');
+        }
+      }
+
+      function showWallpaperApp() {
+        if (window.WallpaperApp) {
+          window.WallpaperApp.init();
+          window.WallpaperApp.show();
+        } else {
+          alert('美化应用未加载');
+        }
+      }
+
+      function testWallpaper() {
+        if (window.WallpaperApp) {
+          // 测试壁纸URL
+          const testUrl = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
+          window.WallpaperApp.init();
+          window.WallpaperApp.show();
+
+          // 延迟填入测试URL
+          setTimeout(() => {
+            $('.wallpaper-url-input').val(testUrl);
+            window.WallpaperApp.previewWallpaper(testUrl);
+          }, 500);
+        } else {
+          alert('美化应用未加载');
+        }
+      }
+
+      // 页面加载完成后初始化
+      $(document).ready(function () {
+        console.log('🎨 美化应用测试页面已加载');
+
+        // 初始化手机界面
+        if (window.PhoneInterface) {
+          window.PhoneInterface.init();
+          console.log('✅ 手机界面已初始化');
+        }
+
+        // 初始化美化应用
+        if (window.WallpaperApp) {
+          window.WallpaperApp.init();
+          console.log('✅ 美化应用已初始化');
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+/* 美化应用样式 - 内嵌在手机界面中 */
+
+/* 美化应用容器 - 在手机界面内显示 */
+.wallpaper-app-container {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 美化应用内容 */
+.wallpaper-app-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+/* 应用头部 */
+.wallpaper-app-header {
+  display: flex;
+  align-items: center;
+  padding: 60px 20px 15px 20px; /* 增加顶部内边距，为状态栏和灵动岛留出空间 */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.wallpaper-back-btn {
+  background: none;
+  border: none;
+  color: #007aff;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 15px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.wallpaper-back-btn:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.wallpaper-app-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+/* 应用主体 */
+.wallpaper-app-body {
+  flex: 1;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+}
+
+/* 预览区域 */
+.wallpaper-preview-section {
+  margin-bottom: 25px;
+}
+
+.wallpaper-preview-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 15px 0;
+}
+
+.wallpaper-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wallpaper-preview-frame {
+  width: 120px;
+  height: 200px;
+  border-radius: 20px;
+  border: 3px solid #ddd;
+  overflow: hidden;
+  background: #f5f5f5;
+  position: relative;
+}
+
+.wallpaper-preview-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.wallpaper-preview-tip {
+  margin: 10px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* 设置区域 */
+.wallpaper-settings-section {
+  margin-bottom: 25px;
+}
+
+.wallpaper-settings-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 15px 0;
+}
+
+.wallpaper-url-input-section {
+  margin-bottom: 15px;
+}
+
+.wallpaper-url-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 14px;
+  background: white;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.wallpaper-url-input:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+.wallpaper-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.wallpaper-apply-btn,
+.wallpaper-reset-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallpaper-apply-btn {
+  background: #34c759;
+  color: white;
+}
+
+.wallpaper-apply-btn:hover {
+  background: #28a745;
+}
+
+.wallpaper-reset-btn {
+  background: #ff3b30;
+  color: white;
+}
+
+.wallpaper-reset-btn:hover {
+  background: #dc3545;
+}
+
+/* 历史记录区域 */
+.wallpaper-history-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 15px 0;
+}
+
+.wallpaper-history-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.wallpaper-no-history {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  padding: 20px;
+  margin: 0;
+}
+
+.wallpaper-history-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.wallpaper-history-item:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.wallpaper-history-preview {
+  width: 40px;
+  height: 60px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  margin-right: 12px;
+}
+
+.wallpaper-history-info {
+  flex: 1;
+}
+
+.wallpaper-history-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.wallpaper-history-time {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 成功消息 */
+.wallpaper-success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  animation: wallpaperFadeIn 0.3s ease;
+}
+
+.wallpaper-success-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallpaper-success-icon {
+  font-size: 18px;
+}
+
+.wallpaper-success-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@keyframes wallpaperFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .wallpaper-app-container {
+    width: 95%;
+    height: 85vh;
+  }
+
+  .wallpaper-app-body {
+    padding: 15px;
+  }
+
+  .wallpaper-url-input-section {
+    flex-direction: column;
+  }
+
+  .wallpaper-actions {
+    flex-direction: column;
+  }
+
+  .wallpaper-preview-frame {
+    width: 100px;
+    height: 160px;
+  }
+}
+
+/* 滚动条样式 */
+.wallpaper-app-body::-webkit-scrollbar,
+.wallpaper-history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.wallpaper-app-body::-webkit-scrollbar-track,
+.wallpaper-history-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.wallpaper-app-body::-webkit-scrollbar-thumb,
+.wallpaper-history-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.wallpaper-app-body::-webkit-scrollbar-thumb:hover,
+.wallpaper-history-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

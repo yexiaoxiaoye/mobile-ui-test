@@ -85,6 +85,39 @@
         body.qq-app-mode #chat_history_dialog {
           display: none !important;
         }
+
+        /* 美化应用容器 - 默认隐藏 */
+        .wallpaper-app-container {
+          display: none !important;
+        }
+
+        /* 美化应用容器 inside phone screen - 只在美化应用激活时显示 */
+        #phone_interface.show-wallpaper-app-content .phone-screen .wallpaper-app-container {
+          display: block !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 50px !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          z-index: 10 !important;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Hide other phone elements when wallpaper app is active */
+        #phone_interface.show-wallpaper-app-content .phone-home-screen,
+        #phone_interface.show-wallpaper-app-content .phone-dock {
+          display: none !important;
+        }
+
+        /* Hide the original wallpaper interface when in phone mode */
+        body.wallpaper-app-mode #wallpaper_interface {
+          display: none !important;
+        }
       `;
       document.head.appendChild(styleElement);
     },
@@ -110,6 +143,9 @@
 
                         <!-- QQ应用容器 - 当QQ应用激活时显示 -->
                         <div class="qq-app-container"></div>
+
+                        <!-- 美化应用容器 - 当美化应用激活时显示 -->
+                        <div class="wallpaper-app-container"></div>
 
                         <!-- Dynamic Island -->
                         <div class="dynamic-island"></div>
@@ -222,6 +258,16 @@
                                     </div>
                                     <div class="app-name">抽卡</div>
                                 </div>
+
+                                <!-- 美化应用 -->
+                                <div class="app-icon" data-app="wallpaper">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">🎨</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">美化</div>
+                                </div>
                             </div>
                         </div>
 
@@ -291,6 +337,7 @@
             '#task_interface',
             '#backpack_interface',
             '#chouka_interface',
+            '#wallpaper_interface',
             '#avatar_dialog',
             '#user_avatar_dialog',
             '#group_create_dialog',
@@ -423,13 +470,17 @@
                 $('#phone_interface').addClass('show show-qq-app-content');
                 $('body').addClass('qq-app-mode');
                 console.log(`Set QQ content mode BEFORE calling show(), #phone_interface is now in QQ content mode.`);
+              } else if (appName === 'WallpaperApp') {
+                // 美化应用也保持手机界面显示，但不需要特殊的QQ模式
+                $('#phone_interface').addClass('show');
+                console.log(`Opened ${appName}, keeping phone_interface visible.`);
               }
 
               // 调用应用的show方法
               appObject.show();
 
-              if (appName !== 'QQApp') {
-                // For other apps, hide the entire phone_interface
+              if (appName !== 'QQApp' && appName !== 'WallpaperApp') {
+                // For other apps (except QQ and Wallpaper), hide the entire phone_interface
                 setTimeout(() => {
                   // Ensure qq-mode is also removed if another app is opened.
                   $('#phone_interface').removeClass('show show-qq-app-content');
@@ -461,6 +512,9 @@
               break;
             case 'chouka':
               openApp('ChoukaApp', window.ChoukaApp);
+              break;
+            case 'wallpaper':
+              openApp('WallpaperApp', window.WallpaperApp);
               break;
           }
         });
@@ -521,8 +575,9 @@
       $('#phone_interface').addClass('show').removeClass('show-qq-app-content');
       $('body').removeClass('qq-app-mode');
 
-      // 强制隐藏QQ容器，确保手机主页内容优先显示
+      // 强制隐藏QQ容器和美化应用容器，确保手机主页内容优先显示
       $('#phone_interface .qq-app-container').hide();
+      $('#phone_interface .wallpaper-app-container').hide();
 
       // 强制显示手机主屏幕的核心元素
       $('#phone_interface .phone-background').show();
@@ -584,6 +639,9 @@
       // 关闭抽卡应用界面
       $('#chouka_interface').hide();
 
+      // 关闭美化应用界面
+      $('#wallpaper_interface').hide();
+
       // 关闭任何其他可能的弹窗界面
       $('.app-dialog').hide();
       $('.app-interface').hide();
@@ -621,7 +679,8 @@
         $('#taobao_interface').is(':visible') ||
         $('#task_interface').is(':visible') ||
         $('#backpack_interface').is(':visible') ||
-        $('#chouka_interface').is(':visible')
+        $('#chouka_interface').is(':visible') ||
+        $('#wallpaper_interface').is(':visible')
       ) {
         return true;
       }
@@ -656,9 +715,11 @@
       $('#task_interface').hide();
       $('#backpack_interface').hide();
       $('#chouka_interface').hide();
+      $('#wallpaper_interface').hide();
 
-      // 清理QQ应用容器
+      // 清理QQ应用容器和美化应用容器
       $('#phone_interface .qq-app-container').empty().hide();
+      $('#phone_interface .wallpaper-app-container').empty().hide();
 
       // 移除所有临时弹窗
       $('#group_create_dialog').remove();
@@ -677,6 +738,7 @@
       $('#task_interface').css('z-index', '');
       $('#backpack_interface').css('z-index', '');
       $('#chouka_interface').css('z-index', '');
+      $('#wallpaper_interface').css('z-index', '');
       $('.chat-page').css('z-index', '');
 
       console.log('状态清理完成');

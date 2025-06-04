@@ -46,6 +46,10 @@
       userAvatar: null,
       contactAvatars: {},
     },
+    lastUpdateTime: {
+      userAvatar: 0,
+      contactAvatars: {},
+    },
 
     // 初始化应用
     init() {
@@ -401,7 +405,7 @@
     },
 
     // 更新用户头像显示（增强版）- 添加防抖和缓存
-    updateUserAvatarEnhanced() {
+    updateUserAvatarEnhanced(forceUpdate = false) {
       // 清除之前的定时器
       if (this.updateTimers.userAvatar) {
         clearTimeout(this.updateTimers.userAvatar);
@@ -409,26 +413,31 @@
 
       // 防抖处理
       this.updateTimers.userAvatar = setTimeout(() => {
-        this.performUserAvatarUpdate();
+        this.performUserAvatarUpdate(forceUpdate);
       }, 100);
     },
 
     // 执行用户头像更新
-    performUserAvatarUpdate() {
+    performUserAvatarUpdate(forceUpdate = false) {
       const avatarConfig = this.getUserAvatarConfig();
       const currentState = JSON.stringify({
         avatar: this.userData.avatar,
         config: avatarConfig,
       });
 
-      // 检查是否需要更新（状态是否改变）
-      if (this.lastUpdateStates.userAvatar === currentState) {
-        console.log('🔄 用户头像状态未改变，跳过更新');
+      // 减少状态缓存的严格性，允许更多的更新
+      if (
+        !forceUpdate &&
+        this.lastUpdateStates.userAvatar === currentState &&
+        Date.now() - (this.lastUpdateTime?.userAvatar || 0) < 1000
+      ) {
+        console.log('🔄 用户头像状态未改变且更新间隔过短，跳过更新');
         return;
       }
 
       console.log('🔄 执行用户头像更新');
       this.lastUpdateStates.userAvatar = currentState;
+      this.lastUpdateTime.userAvatar = Date.now();
 
       const $userAvatarElements = this.getUserAvatarElements();
 
@@ -738,6 +747,29 @@
         console.log('🔄 [数据应用] 更新好友管理界面头像');
         window.QQDataManager.updateFriendManagerAvatars();
       }
+    },
+
+    // 强制刷新所有头像显示（清除缓存）
+    forceRefreshAllAvatars() {
+      console.log('🔄 强制刷新所有头像显示');
+
+      // 清除所有缓存状态
+      this.lastUpdateStates = {
+        userAvatar: null,
+        contactAvatars: {},
+      };
+      this.lastUpdateTime = {
+        userAvatar: 0,
+        contactAvatars: {},
+      };
+
+      // 重新加载数据
+      this.loadAvatarDataEnhanced();
+
+      // 强制更新显示
+      setTimeout(() => {
+        this.updateAllAvatarDisplaysFromData();
+      }, 200);
     },
 
     // 在聊天记录中更新头像信息
@@ -1733,7 +1765,8 @@
               const messageTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
               // 判断是否为用户发送的消息
-              const isUserMessage = msg.isUser || senderName === this.userData.name || senderName === '我';
+              const isUserMessage =
+                msg.isUser || msg.isMyMessage || senderName === this.userData.name || senderName === '我';
 
               if (isUserMessage) {
                 // 用户发送的群聊消息 - 显示在右侧

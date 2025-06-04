@@ -63,6 +63,7 @@ async function init() {
       'task-app.css',
       'backpack-app.css',
       'chouka-app.css',
+      'wallpaper-app.css',
       'phone-interface.css',
     ];
 
@@ -82,6 +83,7 @@ async function init() {
       'task-app.js',
       'backpack-app.js',
       'chouka-app.js',
+      'wallpaper-app.js',
       'phone-interface.js',
     ];
 
@@ -154,6 +156,11 @@ async function init() {
           console.log('抽卡应用初始化完成');
         }
 
+        if (window['WallpaperApp']) {
+          window['WallpaperApp'].init();
+          console.log('美化应用初始化完成');
+        }
+
         if (window['PhoneInterface']) {
           window['PhoneInterface'].init();
           console.log('手机界面初始化完成');
@@ -181,6 +188,7 @@ function unload() {
   if (window['TaskApp']) delete window['TaskApp'];
   if (window['BackpackApp']) delete window['BackpackApp'];
   if (window['ChoukaApp']) delete window['ChoukaApp'];
+  if (window['WallpaperApp']) delete window['WallpaperApp'];
   if (window['PhoneInterface']) delete window['PhoneInterface'];
   if (window['HQDataExtractor']) delete window['HQDataExtractor'];
 
@@ -188,6 +196,7 @@ function unload() {
   $('#qq_interface').remove();
   $('#group_create_dialog').remove();
   $('#taobao_interface').remove();
+  $('#wallpaper_interface').remove();
   $('#phone_interface').remove();
 
   console.log('mobile-ui-test插件已卸载');

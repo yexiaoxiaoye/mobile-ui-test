@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美化应用测试 - 无预览按钮版本</title>
+    <script src="jquery-3.js"></script>
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <link rel="stylesheet" href="styles/wallpaper-app.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .test-title {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .storage-info {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .storage-key {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .storage-location {
+            color: #98FB98;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🎨 美化应用测试</h1>
+        <p style="color: rgba(255,255,255,0.9); font-size: 18px;">无预览按钮版本 + 壁纸存储位置说明</p>
+        
+        <div class="test-info">
+            <h3 style="margin-top: 0; color: #FFD700;">✅ 预览按钮已移除</h3>
+            <p>现在美化应用中不再有"预览"按钮，输入URL后会自动实时预览，点击"应用壁纸"直接应用。</p>
+            
+            <h3 style="color: #FFD700;">💾 壁纸保存位置</h3>
+            <div class="storage-info">
+                <div><span class="storage-key">存储方式：</span> 浏览器 localStorage</div>
+                <div><span class="storage-key">存储键名：</span> <span class="storage-location">'wallpaper_data'</span></div>
+                <div><span class="storage-key">存储内容：</span> JSON格式，包含当前壁纸URL和历史记录</div>
+                <div><span class="storage-key">存储位置：</span> <span class="storage-location">浏览器本地存储</span></div>
+            </div>
+            
+            <p><strong>数据结构：</strong></p>
+            <div class="storage-info">
+{<br>
+&nbsp;&nbsp;"currentWallpaper": "当前壁纸的URL",<br>
+&nbsp;&nbsp;"history": [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"url": "壁纸URL",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"name": "壁纸名称",<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"timestamp": "使用时间"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;]<br>
+}
+            </div>
+            
+            <p><strong>查看方法：</strong></p>
+            <ol style="text-align: left;">
+                <li>打开浏览器开发者工具 (F12)</li>
+                <li>切换到 "Application" 或 "存储" 标签</li>
+                <li>在左侧找到 "Local Storage"</li>
+                <li>选择当前网站域名</li>
+                <li>查找键名为 "wallpaper_data" 的项目</li>
+            </ol>
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <button class="test-btn" onclick="showPhoneInterface()">📱 显示手机界面</button>
+            <button class="test-btn" onclick="openWallpaperApp()">🎨 打开美化应用</button>
+            <button class="test-btn" onclick="showStorageData()">💾 查看存储数据</button>
+            <button class="test-btn" onclick="clearStorageData()">🗑️ 清除存储数据</button>
+        </div>
+    </div>
+
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+    
+    <script>
+        function showPhoneInterface() {
+            if (window.PhoneInterface) {
+                window.PhoneInterface.init();
+                window.PhoneInterface.show();
+                console.log('📱 手机界面已显示');
+            }
+        }
+        
+        function openWallpaperApp() {
+            if (window.WallpaperApp && window.PhoneInterface) {
+                window.PhoneInterface.init();
+                window.WallpaperApp.init();
+                
+                window.PhoneInterface.show();
+                setTimeout(() => {
+                    window.WallpaperApp.show();
+                    console.log('🎨 美化应用已显示（无预览按钮）');
+                }, 500);
+            }
+        }
+        
+        function showStorageData() {
+            try {
+                const data = localStorage.getItem('wallpaper_data');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    console.log('💾 当前存储的壁纸数据:', parsed);
+                    alert('壁纸数据已输出到控制台，请按F12查看');
+                } else {
+                    alert('暂无存储的壁纸数据');
+                }
+            } catch (error) {
+                console.error('读取存储数据失败:', error);
+                alert('读取存储数据失败');
+            }
+        }
+        
+        function clearStorageData() {
+            if (confirm('确定要清除所有壁纸数据吗？')) {
+                localStorage.removeItem('wallpaper_data');
+                alert('壁纸数据已清除');
+                console.log('🗑️ 壁纸数据已清除');
+            }
+        }
+        
+        $(document).ready(function() {
+            console.log('🎨 美化应用测试页面已加载');
+            
+            if (window.PhoneInterface) {
+                window.PhoneInterface.init();
+            }
+            
+            if (window.WallpaperApp) {
+                window.WallpaperApp.init();
+            }
+        });
+    </script>
+</body>
+</html>
