@@ -480,6 +480,10 @@
                 // 美化应用也保持手机界面显示，但不需要特殊的QQ模式
                 $('#phone_interface').addClass('show');
                 console.log(`Opened ${appName}, keeping phone_interface visible.`);
+
+                // 确保美化应用始终打开手机壁纸编辑器
+                appObject.openPhoneEditor();
+                return; // 直接返回，不调用通用的show方法
               }
 
               // 调用应用的show方法

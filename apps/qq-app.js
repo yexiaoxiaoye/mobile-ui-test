@@ -1141,6 +1141,7 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <button id="create_group_btn">+</button>
+                                <button class="wallpaper-btn" id="qq_home_wallpaper_btn" title="设置QQ主页背景">🎨</button>
                                 <button class="home-btn" id="home_btn_main" title="返回手机首页">🏠︎</button>
                             </div>
                         </div>
@@ -1297,6 +1298,29 @@
       // 确认添加群员 - 使用事件委托
       $(document).on('click', '#confirm_add_member_btn', function () {
         self.addGroupMembers();
+      });
+
+      // QQ主页背景设置按钮点击事件
+      $(document).on('click', '#qq_home_wallpaper_btn', function (e) {
+        e.stopPropagation();
+        console.log('点击了QQ主页背景设置按钮');
+        if (window.WallpaperApp && typeof window.WallpaperApp.openQQHomeEditor === 'function') {
+          window.WallpaperApp.openQQHomeEditor();
+        } else {
+          console.error('WallpaperApp未找到或openQQHomeEditor方法不存在');
+        }
+      });
+
+      // 聊天背景设置按钮点击事件
+      $(document).on('click', '.chat-wallpaper-btn', function (e) {
+        e.stopPropagation();
+        const chatId = $(this).data('chat-id');
+        console.log('点击了聊天背景设置按钮，聊天ID:', chatId);
+        if (window.WallpaperApp && typeof window.WallpaperApp.openQQChatEditor === 'function') {
+          window.WallpaperApp.openQQChatEditor(chatId);
+        } else {
+          console.error('WallpaperApp未找到或openQQChatEditor方法不存在');
+        }
       });
 
       this.addClickEventsToQQHao();
@@ -1619,6 +1643,9 @@
                                         <div>${contact.name}</div>
                                         <div class="contact-status-qq">QQ: ${contact.number}</div>
                                     </div>
+                                    <button class="chat-wallpaper-btn" data-chat-id="${
+                                      contact.number
+                                    }" title="设置聊天背景">🎨</button>
                                     <button class="home-btn chat-home-btn" title="返回手机首页">🏠︎</button>
                                 </div>
 
@@ -1739,6 +1766,9 @@
                                     <button class="add-member-btn" data-group-id="${group.id}" data-group-name="${
             group.name
           }">+</button>
+                                    <button class="chat-wallpaper-btn" data-chat-id="${
+                                      group.id
+                                    }" title="设置聊天背景">🎨</button>
                                     <button class="home-btn chat-home-btn" title="返回手机首页">🏠︎</button>
                                 </div>
 

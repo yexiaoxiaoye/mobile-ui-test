@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ背景最终修复测试</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <link rel="stylesheet" href="styles/qq-app.css">
+    <link rel="stylesheet" href="styles/wallpaper-app.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .test-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .test-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .test-btn.primary { background: #007bff; color: white; }
+        .test-btn.success { background: #28a745; color: white; }
+        .test-btn.warning { background: #ffc107; color: #212529; }
+        .test-btn.danger { background: #dc3545; color: white; }
+        .test-btn.info { background: #17a2b8; color: white; }
+        .test-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .test-status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .test-url-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .status-item {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .status-item.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-item.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-item.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status-item.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .phone-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .phone-mini {
+            transform: scale(0.7);
+            transform-origin: top center;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎨 QQ背景最终修复测试</h1>
+            <p>测试QQ主页背景、聊天背景、白色界面背景的完整功能</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 1. 系统初始化</h3>
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="initializeSystem()">初始化系统</button>
+                <button class="test-btn info" onclick="checkSystemStatus()">检查系统状态</button>
+                <button class="test-btn warning" onclick="showAllCSSRules()">显示所有CSS规则</button>
+            </div>
+            <div class="status-grid">
+                <div class="status-item info" id="wallpaper-status">WallpaperApp: 未初始化</div>
+                <div class="status-item info" id="qq-status">QQApp: 未初始化</div>
+                <div class="status-item info" id="phone-status">PhoneInterface: 未初始化</div>
+                <div class="status-item info" id="stylesheet-status">样式表: 未创建</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🏠 2. QQ主页背景测试</h3>
+            <input type="text" class="test-url-input" id="qq-home-url" 
+                   value="https://files.catbox.moe/5kqdkh.jpg" placeholder="QQ主页背景URL">
+            <div class="test-buttons">
+                <button class="test-btn success" onclick="testQQHomeBackground()">应用QQ主页背景</button>
+                <button class="test-btn warning" onclick="testQQHomeBlur()">测试模糊效果(5px)</button>
+                <button class="test-btn info" onclick="openQQApp()">打开QQ应用查看</button>
+                <button class="test-btn danger" onclick="clearQQHomeBackground()">清除QQ主页背景</button>
+            </div>
+            <div class="test-status" id="qq-home-test-status">等待测试...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>💬 3. QQ聊天背景测试</h3>
+            <input type="text" class="test-url-input" id="qq-chat-url" 
+                   value="https://files.catbox.moe/abc123.jpg" placeholder="QQ聊天背景URL">
+            <div class="test-buttons">
+                <button class="test-btn success" onclick="testChatBackground('123456')">应用聊天背景(123456)</button>
+                <button class="test-btn success" onclick="testChatBackground('789012')">应用聊天背景(789012)</button>
+                <button class="test-btn warning" onclick="testChatBlur('123456')">测试聊天模糊(123456)</button>
+                <button class="test-btn danger" onclick="clearChatBackground('123456')">清除聊天背景(123456)</button>
+            </div>
+            <div class="test-status" id="qq-chat-test-status">等待测试...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🤍 4. 白色背景界面测试</h3>
+            <div class="test-buttons">
+                <button class="test-btn info" onclick="testAvatarInterface()">测试头像修改界面</button>
+                <button class="test-btn info" onclick="testFriendManagement()">测试好友管理界面</button>
+                <button class="test-btn info" onclick="testGroupManagement()">测试群聊管理界面</button>
+                <button class="test-btn success" onclick="ensureWhiteBackgrounds()">强制白色背景</button>
+            </div>
+            <div class="test-status" id="white-bg-test-status">等待测试...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 5. 综合功能测试</h3>
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="testAllBackgroundTypes()">测试所有背景类型</button>
+                <button class="test-btn warning" onclick="testBackgroundConflicts()">测试背景冲突处理</button>
+                <button class="test-btn info" onclick="testBackgroundPersistence()">测试背景持久化</button>
+                <button class="test-btn danger" onclick="resetAllBackgrounds()">重置所有背景</button>
+            </div>
+            <div class="test-status" id="comprehensive-test-status">等待测试...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 6. 测试结果总览</h3>
+            <div class="status-grid">
+                <div class="status-item info" id="qq-home-result">QQ主页背景: 未测试</div>
+                <div class="status-item info" id="qq-chat-result">QQ聊天背景: 未测试</div>
+                <div class="status-item info" id="white-bg-result">白色界面: 未测试</div>
+                <div class="status-item info" id="persistence-result">背景持久化: 未测试</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 迷你手机界面 -->
+    <div class="phone-container">
+        <div class="phone-mini">
+            <div id="phone_interface">
+                <!-- 手机界面内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- QQ对话框 -->
+    <div id="chat_history_dialog" style="display: none;">
+        <!-- QQ应用内容 -->
+    </div>
+
+    <!-- 引入脚本 -->
+    <script src="jquery-3.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+    <script src="apps/qq-data-manager.js"></script>
+    <script src="apps/data-extractor.js"></script>
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/qq-app.js"></script>
+
+    <script>
+        // 测试脚本
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const timestamp = new Date().toLocaleTimeString();
+                element.textContent = `[${timestamp}] ${message}`;
+                element.className = `test-status ${type}`;
+            }
+        }
+
+        function updateStatusItem(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.className = `status-item ${type}`;
+            }
+        }
+
+        // 初始化系统
+        function initializeSystem() {
+            try {
+                console.log('🚀 开始初始化系统...');
+                
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.init();
+                    updateStatusItem('wallpaper-status', 'WallpaperApp: ✅ 已初始化', 'success');
+                } else {
+                    updateStatusItem('wallpaper-status', 'WallpaperApp: ❌ 未加载', 'error');
+                }
+                
+                if (window.PhoneInterface) {
+                    window.PhoneInterface.init();
+                    updateStatusItem('phone-status', 'PhoneInterface: ✅ 已初始化', 'success');
+                } else {
+                    updateStatusItem('phone-status', 'PhoneInterface: ❌ 未加载', 'error');
+                }
+                
+                if (window.QQApp) {
+                    updateStatusItem('qq-status', 'QQApp: ✅ 已加载', 'success');
+                } else {
+                    updateStatusItem('qq-status', 'QQApp: ❌ 未加载', 'error');
+                }
+                
+                setTimeout(checkSystemStatus, 1000);
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                updateStatus('comprehensive-test-status', '系统初始化失败: ' + error.message, 'error');
+            }
+        }
+
+        // 检查系统状态
+        function checkSystemStatus() {
+            try {
+                if (window.WallpaperApp && window.WallpaperApp.styleSheet) {
+                    const rulesCount = window.WallpaperApp.styleSheet.cssRules.length;
+                    updateStatusItem('stylesheet-status', `样式表: ✅ 已创建(${rulesCount}规则)`, 'success');
+                } else {
+                    updateStatusItem('stylesheet-status', '样式表: ❌ 未创建', 'error');
+                }
+            } catch (error) {
+                updateStatusItem('stylesheet-status', '样式表: ❌ 检查失败', 'error');
+            }
+        }
+
+        // 显示所有CSS规则
+        function showAllCSSRules() {
+            try {
+                if (window.WallpaperApp && window.WallpaperApp.styleSheet) {
+                    const rules = Array.from(window.WallpaperApp.styleSheet.cssRules);
+                    console.log('📋 当前CSS规则:', rules.map(rule => rule.cssText));
+                    updateStatus('comprehensive-test-status', `已输出${rules.length}个CSS规则到控制台`, 'info');
+                } else {
+                    updateStatus('comprehensive-test-status', '样式表未创建，无法显示CSS规则', 'error');
+                }
+            } catch (error) {
+                updateStatus('comprehensive-test-status', '显示CSS规则失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试QQ主页背景
+        function testQQHomeBackground() {
+            try {
+                const url = document.getElementById('qq-home-url').value.trim();
+                if (!url) {
+                    updateStatus('qq-home-test-status', '请输入背景URL', 'error');
+                    return;
+                }
+                
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.updateQQHomeBackground(url, 0);
+                    updateStatus('qq-home-test-status', 'QQ主页背景已应用: ' + url, 'success');
+                    updateStatusItem('qq-home-result', 'QQ主页背景: ✅ 测试通过', 'success');
+                } else {
+                    updateStatus('qq-home-test-status', 'WallpaperApp未加载', 'error');
+                    updateStatusItem('qq-home-result', 'QQ主页背景: ❌ 测试失败', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-home-test-status', '应用QQ主页背景失败: ' + error.message, 'error');
+                updateStatusItem('qq-home-result', 'QQ主页背景: ❌ 测试失败', 'error');
+            }
+        }
+
+        // 测试QQ主页模糊效果
+        function testQQHomeBlur() {
+            try {
+                const url = document.getElementById('qq-home-url').value.trim();
+                if (!url) {
+                    updateStatus('qq-home-test-status', '请输入背景URL', 'error');
+                    return;
+                }
+                
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.updateQQHomeBackground(url, 5);
+                    updateStatus('qq-home-test-status', 'QQ主页背景已应用(模糊5px): ' + url, 'success');
+                } else {
+                    updateStatus('qq-home-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-home-test-status', '应用模糊效果失败: ' + error.message, 'error');
+            }
+        }
+
+        // 清除QQ主页背景
+        function clearQQHomeBackground() {
+            try {
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.removeCSSRule('qq-home-background');
+                    updateStatus('qq-home-test-status', 'QQ主页背景已清除', 'success');
+                } else {
+                    updateStatus('qq-home-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-home-test-status', '清除QQ主页背景失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试聊天背景
+        function testChatBackground(chatId) {
+            try {
+                const url = document.getElementById('qq-chat-url').value.trim();
+                if (!url) {
+                    updateStatus('qq-chat-test-status', '请输入背景URL', 'error');
+                    return;
+                }
+                
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.updateQQChatBackground(chatId, url, 0);
+                    updateStatus('qq-chat-test-status', `聊天${chatId}背景已应用: ${url}`, 'success');
+                    updateStatusItem('qq-chat-result', 'QQ聊天背景: ✅ 测试通过', 'success');
+                } else {
+                    updateStatus('qq-chat-test-status', 'WallpaperApp未加载', 'error');
+                    updateStatusItem('qq-chat-result', 'QQ聊天背景: ❌ 测试失败', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-chat-test-status', '应用聊天背景失败: ' + error.message, 'error');
+                updateStatusItem('qq-chat-result', 'QQ聊天背景: ❌ 测试失败', 'error');
+            }
+        }
+
+        // 测试聊天模糊效果
+        function testChatBlur(chatId) {
+            try {
+                const url = document.getElementById('qq-chat-url').value.trim();
+                if (!url) {
+                    updateStatus('qq-chat-test-status', '请输入背景URL', 'error');
+                    return;
+                }
+                
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.updateQQChatBackground(chatId, url, 8);
+                    updateStatus('qq-chat-test-status', `聊天${chatId}背景已应用(模糊8px): ${url}`, 'success');
+                } else {
+                    updateStatus('qq-chat-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-chat-test-status', '应用聊天模糊效果失败: ' + error.message, 'error');
+            }
+        }
+
+        // 清除聊天背景
+        function clearChatBackground(chatId) {
+            try {
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.removeCSSRule(`qq-chat-background-${chatId}`);
+                    updateStatus('qq-chat-test-status', `聊天${chatId}背景已清除`, 'success');
+                } else {
+                    updateStatus('qq-chat-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-chat-test-status', '清除聊天背景失败: ' + error.message, 'error');
+            }
+        }
+
+        // 确保白色背景
+        function ensureWhiteBackgrounds() {
+            try {
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.ensureWhiteBackgrounds();
+                    updateStatus('white-bg-test-status', '已强制设置白色背景', 'success');
+                    updateStatusItem('white-bg-result', '白色界面: ✅ 测试通过', 'success');
+                } else {
+                    updateStatus('white-bg-test-status', 'WallpaperApp未加载', 'error');
+                    updateStatusItem('white-bg-result', '白色界面: ❌ 测试失败', 'error');
+                }
+            } catch (error) {
+                updateStatus('white-bg-test-status', '设置白色背景失败: ' + error.message, 'error');
+                updateStatusItem('white-bg-result', '白色界面: ❌ 测试失败', 'error');
+            }
+        }
+
+        // 打开QQ应用
+        function openQQApp() {
+            try {
+                if (window.QQApp) {
+                    window.QQApp.show();
+                    updateStatus('qq-home-test-status', 'QQ应用已打开，请查看背景效果', 'info');
+                } else {
+                    updateStatus('qq-home-test-status', 'QQApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('qq-home-test-status', '打开QQ应用失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试所有背景类型
+        function testAllBackgroundTypes() {
+            try {
+                if (window.WallpaperApp) {
+                    // 测试手机背景
+                    window.WallpaperApp.updatePhoneBackground('https://files.catbox.moe/phone.jpg');
+                    
+                    // 测试QQ主页背景
+                    window.WallpaperApp.updateQQHomeBackground('https://files.catbox.moe/qqhome.jpg', 3);
+                    
+                    // 测试聊天背景
+                    window.WallpaperApp.updateQQChatBackground('test123', 'https://files.catbox.moe/chat.jpg', 2);
+                    
+                    // 确保白色背景
+                    window.WallpaperApp.ensureWhiteBackgrounds();
+                    
+                    updateStatus('comprehensive-test-status', '所有背景类型测试完成', 'success');
+                    updateStatusItem('qq-home-result', 'QQ主页背景: ✅ 测试通过', 'success');
+                    updateStatusItem('qq-chat-result', 'QQ聊天背景: ✅ 测试通过', 'success');
+                    updateStatusItem('white-bg-result', '白色界面: ✅ 测试通过', 'success');
+                } else {
+                    updateStatus('comprehensive-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('comprehensive-test-status', '测试所有背景类型失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试背景冲突处理
+        function testBackgroundConflicts() {
+            try {
+                if (window.WallpaperApp) {
+                    // 快速应用多个背景，测试冲突处理
+                    window.WallpaperApp.updateQQHomeBackground('https://files.catbox.moe/test1.jpg', 0);
+                    setTimeout(() => {
+                        window.WallpaperApp.updateQQHomeBackground('https://files.catbox.moe/test2.jpg', 5);
+                        updateStatus('comprehensive-test-status', '背景冲突处理测试完成，最后的背景应该生效', 'success');
+                    }, 500);
+                } else {
+                    updateStatus('comprehensive-test-status', 'WallpaperApp未加载', 'error');
+                }
+            } catch (error) {
+                updateStatus('comprehensive-test-status', '测试背景冲突处理失败: ' + error.message, 'error');
+            }
+        }
+
+        // 测试背景持久化
+        function testBackgroundPersistence() {
+            try {
+                if (window.WallpaperApp) {
+                    // 保存当前状态
+                    window.WallpaperApp.saveWallpaperHistory();
+                    
+                    // 模拟重新加载
+                    setTimeout(() => {
+                        window.WallpaperApp.applyCurrentQQBackgrounds();
+                        updateStatus('comprehensive-test-status', '背景持久化测试完成', 'success');
+                        updateStatusItem('persistence-result', '背景持久化: ✅ 测试通过', 'success');
+                    }, 1000);
+                } else {
+                    updateStatus('comprehensive-test-status', 'WallpaperApp未加载', 'error');
+                    updateStatusItem('persistence-result', '背景持久化: ❌ 测试失败', 'error');
+                }
+            } catch (error) {
+                updateStatus('comprehensive-test-status', '测试背景持久化失败: ' + error.message, 'error');
+                updateStatusItem('persistence-result', '背景持久化: ❌ 测试失败', 'error');
+            }
+        }
+
+        // 重置所有背景
+        function resetAllBackgrounds() {
+            try {
+                if (window.WallpaperApp && window.WallpaperApp.cssRuleMap) {
+                    const ruleIds = Array.from(window.WallpaperApp.cssRuleMap.keys());
+                    ruleIds.forEach(id => {
+                        if (id !== 'white-backgrounds') { // 保留白色背景规则
+                            window.WallpaperApp.removeCSSRule(id);
+                        }
+                    });
+                    updateStatus('comprehensive-test-status', `已重置${ruleIds.length - 1}个背景规则`, 'success');
+                    
+                    // 重置状态显示
+                    updateStatusItem('qq-home-result', 'QQ主页背景: 未测试', 'info');
+                    updateStatusItem('qq-chat-result', 'QQ聊天背景: 未测试', 'info');
+                    updateStatusItem('persistence-result', '背景持久化: 未测试', 'info');
+                } else {
+                    updateStatus('comprehensive-test-status', 'CSS规则映射未创建', 'error');
+                }
+            } catch (error) {
+                updateStatus('comprehensive-test-status', '重置背景失败: ' + error.message, 'error');
+            }
+        }
+
+        // 页面加载完成后自动初始化
+        $(document).ready(function() {
+            console.log('🚀 QQ背景最终修复测试页面已加载');
+            setTimeout(initializeSystem, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -548,6 +548,58 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   background: none;
 }
 
+/* 调色盘按钮样式 */
+.wallpaper-btn,
+.chat-wallpaper-btn {
+  background: none;
+  color: black;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.wallpaper-btn:hover,
+.chat-wallpaper-btn:hover {
+  transform: scale(1.1);
+  background: none;
+}
+
+.wallpaper-btn:active,
+.chat-wallpaper-btn:active {
+  transform: scale(0.9);
+  background: none;
+}
+
+/* QQ主页调色盘按钮特定样式 */
+#qq_home_wallpaper_btn {
+  padding: 8px 12px;
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+}
+
+/* 聊天页面调色盘按钮位置调整 */
+.chat-wallpaper-btn {
+  position: absolute;
+  right: 56px; /* 在小房子按钮左边 */
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 /* 主页内容区域 */
 #history_content {
   flex: 1 !important;

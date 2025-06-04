@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ调色盘按钮测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        .button-test {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .wallpaper-btn,
+        .chat-wallpaper-btn {
+            background: none;
+            color: black;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+            user-select: none;
+            padding: 0;
+            position: relative;
+            z-index: 10;
+            border: 1px solid #ccc;
+        }
+        .wallpaper-btn:hover,
+        .chat-wallpaper-btn:hover {
+            transform: scale(1.1);
+            background: #f0f0f0;
+        }
+        .wallpaper-btn:active,
+        .chat-wallpaper-btn:active {
+            transform: scale(0.9);
+            background: #e0e0e0;
+        }
+        #qq_home_wallpaper_btn {
+            padding: 8px 12px;
+            font-size: 20px;
+            background: none;
+            border: 1px solid #ccc;
+            color: black;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .log-area {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .log-entry.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .log-entry.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log-entry.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 QQ调色盘按钮测试</h1>
+        
+        <div class="test-section">
+            <h3>1. QQ主页调色盘按钮</h3>
+            <div class="button-test">
+                <button class="wallpaper-btn" id="qq_home_wallpaper_btn" title="设置QQ主页背景">🎨</button>
+                <span>QQ主页背景设置按钮</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 聊天页面调色盘按钮</h3>
+            <div class="button-test">
+                <button class="chat-wallpaper-btn" data-chat-id="123456789" title="设置聊天背景">🎨</button>
+                <span>联系人聊天背景设置按钮 (ID: 123456789)</span>
+            </div>
+            <div class="button-test">
+                <button class="chat-wallpaper-btn" data-chat-id="987654321" title="设置聊天背景">🎨</button>
+                <span>群聊背景设置按钮 (ID: 987654321)</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 事件日志</h3>
+            <div class="log-area" id="log-area">
+                <div class="log-entry info">测试页面已加载，等待按钮点击...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 功能测试</h3>
+            <button onclick="testWallpaperApp()" style="padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">测试WallpaperApp</button>
+            <button onclick="clearLog()" style="padding: 10px 20px; margin: 5px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">清空日志</button>
+        </div>
+    </div>
+
+    <!-- 引入jQuery -->
+    <script src="jquery-3.js"></script>
+    
+    <!-- 模拟WallpaperApp -->
+    <script>
+        // 模拟WallpaperApp对象
+        window.WallpaperApp = {
+            openQQHomeEditor: function() {
+                addLog('success', 'WallpaperApp.openQQHomeEditor() 被调用');
+                alert('QQ主页背景编辑器已打开！');
+            },
+            openQQChatEditor: function(chatId) {
+                addLog('success', `WallpaperApp.openQQChatEditor(${chatId}) 被调用`);
+                alert(`聊天背景编辑器已打开！聊天ID: ${chatId}`);
+            }
+        };
+
+        // 日志函数
+        function addLog(type, message) {
+            const logArea = document.getElementById('log-area');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log-area').innerHTML = '<div class="log-entry info">日志已清空</div>';
+        }
+
+        function testWallpaperApp() {
+            if (window.WallpaperApp) {
+                addLog('success', 'WallpaperApp 对象存在');
+                if (typeof window.WallpaperApp.openQQHomeEditor === 'function') {
+                    addLog('success', 'openQQHomeEditor 方法存在');
+                } else {
+                    addLog('error', 'openQQHomeEditor 方法不存在');
+                }
+                if (typeof window.WallpaperApp.openQQChatEditor === 'function') {
+                    addLog('success', 'openQQChatEditor 方法存在');
+                } else {
+                    addLog('error', 'openQQChatEditor 方法不存在');
+                }
+            } else {
+                addLog('error', 'WallpaperApp 对象不存在');
+            }
+        }
+
+        // 页面加载完成后绑定事件
+        $(document).ready(function() {
+            addLog('info', 'jQuery 已加载');
+            
+            // QQ主页背景设置按钮点击事件
+            $(document).on('click', '#qq_home_wallpaper_btn', function (e) {
+                e.stopPropagation();
+                addLog('info', '点击了QQ主页背景设置按钮');
+                if (window.WallpaperApp && typeof window.WallpaperApp.openQQHomeEditor === 'function') {
+                    window.WallpaperApp.openQQHomeEditor();
+                } else {
+                    addLog('error', 'WallpaperApp未找到或openQQHomeEditor方法不存在');
+                }
+            });
+
+            // 聊天背景设置按钮点击事件
+            $(document).on('click', '.chat-wallpaper-btn', function (e) {
+                e.stopPropagation();
+                const chatId = $(this).data('chat-id');
+                addLog('info', `点击了聊天背景设置按钮，聊天ID: ${chatId}`);
+                if (window.WallpaperApp && typeof window.WallpaperApp.openQQChatEditor === 'function') {
+                    window.WallpaperApp.openQQChatEditor(chatId);
+                } else {
+                    addLog('error', 'WallpaperApp未找到或openQQChatEditor方法不存在');
+                }
+            });
+
+            addLog('success', '事件绑定完成');
+            
+            // 自动测试WallpaperApp
+            setTimeout(testWallpaperApp, 500);
+        });
+    </script>
+</body>
+</html>

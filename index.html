@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="styles/phone-interface.css" />
     <link rel="stylesheet" href="styles/qq-app.css" />
     <link rel="stylesheet" href="styles/qq-avatar-editor.css" />
+    <link rel="stylesheet" href="styles/wallpaper-app.css" />
     <link rel="stylesheet" href="styles/taobao-app.css" />
     <link rel="stylesheet" href="styles/task-app.css" />
     <link rel="stylesheet" href="styles/backpack-app.css" />
@@ -34,6 +35,7 @@
   <script src="apps/task-data-extractor.js"></script>
   <script src="apps/qq-data-manager.js"></script>
   <script src="apps/qq-avatar-editor.js"></script>
+  <script src="apps/wallpaper-app.js"></script>
   <script src="apps/phone-interface.js"></script>
   <script src="apps/qq-app.js"></script>
   <script src="apps/taobao-app.js"></script>
@@ -71,6 +73,11 @@
 
           if (window.QQAvatarEditor) {
             console.log('QQ头像编辑器已加载');
+          }
+
+          if (window.WallpaperApp) {
+            window.WallpaperApp.init();
+            console.log('美化应用初始化完成');
           }
 
           if (window.PhoneInterface) {
