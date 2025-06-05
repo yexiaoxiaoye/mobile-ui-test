@@ -33,11 +33,9 @@
 
       this.bindEvents();
 
-      // 延迟应用当前壁纸和QQ背景，确保手机界面已经创建
-      setTimeout(() => {
-        this.applyCurrentWallpaper();
-        this.applyCurrentQQBackgrounds();
-      }, 500);
+      // 立即应用当前壁纸和QQ背景
+      this.applyCurrentWallpaper();
+      this.applyCurrentQQBackgrounds();
 
       console.log('✅ 美化应用初始化完成');
     },

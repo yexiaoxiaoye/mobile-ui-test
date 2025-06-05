@@ -95,14 +95,14 @@
 /* 大屏幕 (桌面) - 宽度1024px-1440px */
 @media (min-width: 1024px) and (max-width: 1440px) {
   .phone-interface {
-    --phone-scale: 1.1;
+    --phone-scale: 1; /* 保持原始尺寸，不再放大 */
   }
 }
 
 /* 超大屏幕 (大桌面) - 宽度大于1440px */
 @media (min-width: 1440px) {
   .phone-interface {
-    --phone-scale: 1.2;
+    --phone-scale: 1; /* 保持原始尺寸，不再放大 */
   }
 }
 

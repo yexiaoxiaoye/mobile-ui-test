@@ -1141,7 +1141,7 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <button id="create_group_btn">+</button>
-                                <button class="wallpaper-btn" id="qq_home_wallpaper_btn" title="设置QQ主页背景">🎨</button>
+                                <button class="qq-home-palette-btn" id="new_qq_home_palette_btn" title="设置QQ主页背景">🎨</button>
                                 <button class="home-btn" id="home_btn_main" title="返回手机首页">🏠︎</button>
                             </div>
                         </div>
@@ -1300,14 +1300,21 @@
         self.addGroupMembers();
       });
 
-      // QQ主页背景设置按钮点击事件
-      $(document).on('click', '#qq_home_wallpaper_btn', function (e) {
+      // 新的QQ主页背景设置按钮点击事件
+      $(document).on('click', '#new_qq_home_palette_btn', function (e) {
         e.stopPropagation();
-        console.log('点击了QQ主页背景设置按钮');
+        console.log('🎨 点击了新的QQ主页调色板按钮');
+
+        // 检查美化应用是否可用
         if (window.WallpaperApp && typeof window.WallpaperApp.openQQHomeEditor === 'function') {
+          console.log('✅ 调用美化应用的QQ主页编辑器');
           window.WallpaperApp.openQQHomeEditor();
         } else {
-          console.error('WallpaperApp未找到或openQQHomeEditor方法不存在');
+          console.error('❌ WallpaperApp未找到或openQQHomeEditor方法不存在');
+          console.log(
+            '🔍 可用的WallpaperApp方法:',
+            window.WallpaperApp ? Object.keys(window.WallpaperApp) : 'WallpaperApp不存在',
+          );
         }
       });
 

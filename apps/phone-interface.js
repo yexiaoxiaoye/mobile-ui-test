@@ -631,6 +631,12 @@
       this.updateTime();
       this.updateResponsiveScale(); // 更新响应式缩放
 
+      // 立即应用保存的手机壁纸，无延迟
+      if (window.WallpaperApp && typeof window.WallpaperApp.applyCurrentWallpaper === 'function') {
+        window.WallpaperApp.applyCurrentWallpaper();
+        console.log('📱 已立即应用保存的手机壁纸');
+      }
+
       // 验证显示状态
       setTimeout(() => {
         const $currentInterface = $('#phone_interface');
@@ -1017,6 +1023,14 @@
       // 重新绑定应用图标事件
       this.bindAppIconEvents();
 
+      // 重新应用保存的手机壁纸
+      if (window.WallpaperApp && typeof window.WallpaperApp.applyCurrentWallpaper === 'function') {
+        setTimeout(() => {
+          window.WallpaperApp.applyCurrentWallpaper();
+          console.log('📱 手机界面重新创建后已恢复保存的壁纸');
+        }, 100);
+      }
+
       console.log('✅ 手机界面元素创建完成');
     },
 
@@ -1066,8 +1080,8 @@
       // 选择较小的缩放比例以确保完全适配
       let scale = Math.min(scaleByWidth, scaleByHeight);
 
-      // 设置缩放范围限制
-      scale = Math.max(0.3, Math.min(1.5, scale)); // 最小30%，最大150%
+      // 设置缩放范围限制 - 添加最大尺寸限制
+      scale = Math.max(0.3, Math.min(1.0, scale)); // 最小30%，最大100%（不再放大）
 
       // 应用缩放
       $phoneInterface.css('--phone-scale', scale);
