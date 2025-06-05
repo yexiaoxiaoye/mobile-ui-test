@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SillyTavern 组件保护测试</title>
+    <script src="jquery-3.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .test-button.danger {
+            background: #dc3545;
+        }
+        
+        .test-button.success {
+            background: #28a745;
+        }
+        
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .component-item {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .component-item.protected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .component-item.mobile-plugin {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .status-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>SillyTavern 组件保护全面测试</h1>
+        <p>这个测试验证手机插件的新保护机制是否能正确保护所有 SillyTavern 原生组件。</p>
+        
+        <div>
+            <h2>测试控制</h2>
+            <button class="test-button" onclick="createTestComponents()">创建测试组件</button>
+            <button class="test-button danger" onclick="testMobilePluginCleanup()">测试手机插件清理</button>
+            <button class="test-button success" onclick="checkAllComponents()">检查所有组件状态</button>
+            <button class="test-button" onclick="clearLog()">清空日志</button>
+        </div>
+        
+        <div class="component-grid" id="component-grid">
+            <!-- 组件将动态添加到这里 -->
+        </div>
+        
+        <div class="status-info" id="status-info">
+            点击"创建测试组件"开始测试...
+        </div>
+    </div>
+    
+    <script>
+        // 测试组件定义
+        const testComponents = {
+            // SillyTavern 原生组件（应该被保护）
+            protected: [
+                { id: 'world_popup', name: 'World Popup', description: '世界书弹窗' },
+                { id: 'completion_prompt_manager_popup_edit', name: 'Prompt Manager', description: '提示管理器编辑弹窗' },
+                { id: 'character_popup_edit', name: 'Character Popup', description: '角色编辑弹窗' },
+                { id: 'preset_popup_settings', name: 'Preset Popup', description: '预设设置弹窗' },
+                { id: 'WorldInfo', name: 'World Info', description: '世界信息界面' },
+                { id: 'textgen_settings', name: 'TextGen Settings', description: '文本生成设置' },
+                { id: 'openai_settings', name: 'OpenAI Settings', description: 'OpenAI设置' }
+            ],
+            
+            // 手机插件组件（应该被清理）
+            mobilePlugin: [
+                { id: 'group_create_dialog', name: 'Group Create Dialog', description: 'QQ群创建弹窗' },
+                { id: 'add_member_dialog', name: 'Add Member Dialog', description: '添加成员弹窗' },
+                { id: 'avatar_dialog', name: 'Avatar Dialog', description: '头像编辑弹窗' },
+                { id: 'accept_task_dialog', name: 'Accept Task Dialog', description: '任务接受弹窗' },
+                { id: 'use_item_dialog', name: 'Use Item Dialog', description: '使用物品弹窗' },
+                { id: 'mobile_test_popup', name: 'Mobile Test Popup', description: '手机测试弹窗' },
+                { id: 'qq_test_dialog', name: 'QQ Test Dialog', description: 'QQ测试对话框' }
+            ]
+        };
+        
+        function log(message) {
+            const statusInfo = document.getElementById('status-info');
+            const timestamp = new Date().toLocaleTimeString();
+            statusInfo.innerHTML += `[${timestamp}] ${message}<br>`;
+            statusInfo.scrollTop = statusInfo.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('status-info').innerHTML = '';
+        }
+        
+        function createTestComponents() {
+            log('🏗️ 开始创建测试组件...');
+            
+            const grid = document.getElementById('component-grid');
+            grid.innerHTML = '';
+            
+            // 创建受保护的组件
+            testComponents.protected.forEach(comp => {
+                const div = document.createElement('div');
+                div.id = comp.id;
+                div.className = 'component-item protected';
+                div.innerHTML = `
+                    <h4>🛡️ ${comp.name}</h4>
+                    <p>${comp.description}</p>
+                    <small>ID: ${comp.id}</small>
+                `;
+                grid.appendChild(div);
+                $('body').append(`<div id="${comp.id}_hidden" style="display:none;">${comp.name} 隐藏元素</div>`);
+            });
+            
+            // 创建手机插件组件
+            testComponents.mobilePlugin.forEach(comp => {
+                const div = document.createElement('div');
+                div.id = comp.id;
+                div.className = 'component-item mobile-plugin';
+                div.innerHTML = `
+                    <h4>📱 ${comp.name}</h4>
+                    <p>${comp.description}</p>
+                    <small>ID: ${comp.id}</small>
+                `;
+                grid.appendChild(div);
+                $('body').append(`<div id="${comp.id}_hidden" style="display:none;">${comp.name} 隐藏元素</div>`);
+            });
+            
+            log(`✅ 已创建 ${testComponents.protected.length} 个受保护组件和 ${testComponents.mobilePlugin.length} 个手机插件组件`);
+        }
+        
+        function testMobilePluginCleanup() {
+            log('🧹 测试手机插件清理功能...');
+            
+            // 模拟手机插件的清理函数
+            if (window.PhoneInterface && typeof window.PhoneInterface.removeMobilePluginDialogs === 'function') {
+                window.PhoneInterface.removeMobilePluginDialogs();
+            } else {
+                log('⚠️ PhoneInterface.removeMobilePluginDialogs 函数不存在，使用模拟清理');
+                
+                // 模拟清理逻辑
+                const mobilePluginSelectors = [
+                    '#group_create_dialog',
+                    '#add_member_dialog',
+                    '#avatar_dialog',
+                    '#accept_task_dialog',
+                    '#use_item_dialog',
+                    '[id^="mobile_"]',
+                    '[id^="qq_"]'
+                ];
+                
+                mobilePluginSelectors.forEach(selector => {
+                    const elements = $(selector);
+                    if (elements.length > 0) {
+                        log(`  - 删除 ${selector}: ${elements.length} 个元素`);
+                        elements.remove();
+                    }
+                });
+            }
+            
+            log('🔍 清理完成，开始检查结果...');
+            setTimeout(checkAllComponents, 500);
+        }
+        
+        function checkAllComponents() {
+            log('📊 检查所有组件状态...');
+            
+            let protectedCount = 0;
+            let removedCount = 0;
+            
+            // 检查受保护的组件
+            log('🛡️ 受保护组件状态:');
+            testComponents.protected.forEach(comp => {
+                const exists = $(`#${comp.id}`).length > 0;
+                if (exists) {
+                    log(`  ✅ ${comp.name} (${comp.id}) - 存在`);
+                    protectedCount++;
+                } else {
+                    log(`  ❌ ${comp.name} (${comp.id}) - 被误删！`);
+                }
+            });
+            
+            // 检查手机插件组件
+            log('📱 手机插件组件状态:');
+            testComponents.mobilePlugin.forEach(comp => {
+                const exists = $(`#${comp.id}`).length > 0;
+                if (exists) {
+                    log(`  ⚠️ ${comp.name} (${comp.id}) - 仍然存在（应该被删除）`);
+                } else {
+                    log(`  ✅ ${comp.name} (${comp.id}) - 已正确删除`);
+                    removedCount++;
+                }
+            });
+            
+            // 总结
+            log('📈 测试结果总结:');
+            log(`  - 受保护组件: ${protectedCount}/${testComponents.protected.length} 个保护成功`);
+            log(`  - 手机插件组件: ${removedCount}/${testComponents.mobilePlugin.length} 个正确删除`);
+            
+            if (protectedCount === testComponents.protected.length && removedCount === testComponents.mobilePlugin.length) {
+                log('🎉 测试完全通过！所有组件都得到了正确处理。');
+            } else {
+                log('⚠️ 测试发现问题，请检查保护机制。');
+            }
+        }
+        
+        // 页面加载时的初始化
+        $(document).ready(function() {
+            log('页面加载完成，准备开始测试');
+            
+            // 检查是否加载了手机界面插件
+            if (window.PhoneInterface) {
+                log('✅ PhoneInterface 已加载');
+            } else {
+                log('⚠️ PhoneInterface 未加载，将使用模拟测试');
+            }
+        });
+    </script>
+</body>
+</html>

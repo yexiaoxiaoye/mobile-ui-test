@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机界面显示调试</title>
+    <script src="jquery-3.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        .debug-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .debug-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        
+        .debug-button:hover {
+            background: #0056b3;
+        }
+        
+        .debug-button.danger {
+            background: #dc3545;
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .test-phone {
+            width: 200px;
+            height: 400px;
+            border: 2px solid #333;
+            border-radius: 20px;
+            margin: 20px auto;
+            background: #000;
+            position: relative;
+            display: none;
+        }
+        
+        .test-phone.show {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>手机界面显示调试工具</h1>
+        <p>这个工具用于调试手机界面的显示问题。</p>
+        
+        <div>
+            <h2>基础测试</h2>
+            <button class="debug-button" onclick="testBasicDisplay()">测试基础显示</button>
+            <button class="debug-button" onclick="testCSSForce()">测试CSS强制显示</button>
+            <button class="debug-button" onclick="testJQueryShow()">测试jQuery显示</button>
+            <button class="debug-button danger" onclick="clearAll()">清空所有</button>
+        </div>
+        
+        <div>
+            <h2>手机界面测试</h2>
+            <button class="debug-button" onclick="checkPhoneInterface()">检查手机界面状态</button>
+            <button class="debug-button" onclick="forceShowPhone()">强制显示手机界面</button>
+            <button class="debug-button" onclick="createPhoneInterface()">创建手机界面元素</button>
+        </div>
+        
+        <!-- 测试用的手机界面 -->
+        <div class="test-phone" id="test-phone">
+            <div style="color: white; text-align: center; padding: 20px;">
+                测试手机界面
+            </div>
+        </div>
+        
+        <div class="debug-info" id="debug-info">
+            点击按钮开始调试...
+        </div>
+    </div>
+    
+    <script>
+        function log(message) {
+            const debugInfo = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        function clearAll() {
+            document.getElementById('debug-info').textContent = '';
+            $('#test-phone').removeClass('show').hide();
+            $('#phone_interface').removeClass('show').hide();
+        }
+        
+        function testBasicDisplay() {
+            log('测试基础显示功能...');
+            
+            const $testPhone = $('#test-phone');
+            $testPhone.addClass('show');
+            
+            setTimeout(() => {
+                const isVisible = $testPhone.is(':visible');
+                const hasShowClass = $testPhone.hasClass('show');
+                const displayValue = $testPhone.css('display');
+                
+                log(`基础测试结果: 可见=${isVisible}, show类=${hasShowClass}, display=${displayValue}`);
+            }, 100);
+        }
+        
+        function testCSSForce() {
+            log('测试CSS强制显示...');
+            
+            const $testPhone = $('#test-phone');
+            $testPhone.css({
+                'display': 'block',
+                'visibility': 'visible',
+                'opacity': '1'
+            });
+            
+            setTimeout(() => {
+                const isVisible = $testPhone.is(':visible');
+                log(`CSS强制显示结果: 可见=${isVisible}`);
+            }, 100);
+        }
+        
+        function testJQueryShow() {
+            log('测试jQuery显示方法...');
+            
+            const $testPhone = $('#test-phone');
+            $testPhone.show();
+            
+            setTimeout(() => {
+                const isVisible = $testPhone.is(':visible');
+                log(`jQuery显示结果: 可见=${isVisible}`);
+            }, 100);
+        }
+        
+        function checkPhoneInterface() {
+            log('检查手机界面状态...');
+            
+            const $phoneInterface = $('#phone_interface');
+            
+            if ($phoneInterface.length === 0) {
+                log('❌ phone_interface 元素不存在');
+                return;
+            }
+            
+            const isVisible = $phoneInterface.is(':visible');
+            const hasShowClass = $phoneInterface.hasClass('show');
+            const displayValue = $phoneInterface.css('display');
+            const visibilityValue = $phoneInterface.css('visibility');
+            const opacityValue = $phoneInterface.css('opacity');
+            const zIndexValue = $phoneInterface.css('z-index');
+            const position = $phoneInterface.offset();
+            const size = {
+                width: $phoneInterface.width(),
+                height: $phoneInterface.height()
+            };
+            
+            log('手机界面状态详情:');
+            log(`  - 元素存在: true`);
+            log(`  - 可见性: ${isVisible}`);
+            log(`  - show类: ${hasShowClass}`);
+            log(`  - display: ${displayValue}`);
+            log(`  - visibility: ${visibilityValue}`);
+            log(`  - opacity: ${opacityValue}`);
+            log(`  - z-index: ${zIndexValue}`);
+            log(`  - 位置: top=${position?.top}, left=${position?.left}`);
+            log(`  - 尺寸: ${size.width}x${size.height}`);
+            
+            // 检查父元素
+            const $parent = $phoneInterface.parent();
+            log(`  - 父元素: ${$parent[0]?.tagName}${$parent[0]?.id ? '#' + $parent[0].id : ''}`);
+            log(`  - 父元素可见: ${$parent.is(':visible')}`);
+        }
+        
+        function forceShowPhone() {
+            log('强制显示手机界面...');
+            
+            const $phoneInterface = $('#phone_interface');
+            
+            if ($phoneInterface.length === 0) {
+                log('❌ phone_interface 元素不存在，无法显示');
+                return;
+            }
+            
+            // 多种方式强制显示
+            $phoneInterface
+                .addClass('show')
+                .removeClass('hide')
+                .css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1',
+                    'z-index': '500',
+                    'position': 'absolute',
+                    'top': '50%',
+                    'left': '50%',
+                    'transform': 'translate(-50%, -50%)'
+                })
+                .show();
+            
+            setTimeout(() => {
+                const isVisible = $phoneInterface.is(':visible');
+                log(`强制显示结果: ${isVisible ? '成功' : '失败'}`);
+                
+                if (!isVisible) {
+                    log('尝试移除所有可能的隐藏样式...');
+                    $phoneInterface.attr('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 500 !important; position: absolute !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important;');
+                }
+            }, 100);
+        }
+        
+        function createPhoneInterface() {
+            log('创建手机界面元素...');
+            
+            if ($('#phone_interface').length > 0) {
+                log('手机界面元素已存在');
+                return;
+            }
+            
+            const phoneHTML = `
+                <div id="phone_interface" class="phone-interface">
+                    <div class="phone-screen">
+                        <div class="phone-background"></div>
+                        <div class="dynamic-island"></div>
+                        <div class="phone-status-bar">
+                            <div class="status-time">12:34</div>
+                            <div class="status-icons">
+                                <span class="signal-icon">📶</span>
+                                <span class="battery-icon">🔋</span>
+                            </div>
+                        </div>
+                        <div class="phone-home-screen">
+                            <div style="color: white; text-align: center; padding: 50px;">
+                                <h2>手机界面测试</h2>
+                                <p>如果你能看到这个，说明手机界面显示正常</p>
+                            </div>
+                        </div>
+                        <div class="phone-dock">
+                            <div class="dock-indicator"></div>
+                        </div>
+                        <div class="home-indicator"></div>
+                    </div>
+                </div>
+            `;
+            
+            $('body').append(phoneHTML);
+            log('手机界面元素已创建');
+        }
+        
+        // 页面加载时检查
+        $(document).ready(function() {
+            log('调试工具已加载');
+            
+            // 检查是否已有手机界面
+            if ($('#phone_interface').length > 0) {
+                log('发现现有的手机界面元素');
+                checkPhoneInterface();
+            } else {
+                log('未发现手机界面元素');
+            }
+        });
+    </script>
+</body>
+</html>

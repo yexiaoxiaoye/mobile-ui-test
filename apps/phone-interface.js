@@ -579,10 +579,41 @@
 
     // 显示手机界面
     show: function () {
-      // 首先确保完全清理之前的状态
-      this.forceCleanState();
+      console.log('🔄 开始显示手机界面...');
 
-      $('#phone_interface').addClass('show').removeClass('show-qq-app-content');
+      // 清理应用状态，但不影响手机界面本身的显示
+      this.closeAllApps();
+
+      // 检查手机界面元素是否存在，如果不存在则重新创建
+      let $phoneInterface = $('#phone_interface');
+
+      if ($phoneInterface.length === 0) {
+        console.log('⚠️ 手机界面元素不存在，重新创建...');
+        this.createPhoneInterfaceElement();
+        $phoneInterface = $('#phone_interface');
+
+        if ($phoneInterface.length === 0) {
+          console.error('❌ 无法创建手机界面元素');
+          return;
+        }
+        console.log('✅ 手机界面元素已重新创建');
+      }
+
+      console.log(
+        `📱 手机界面元素状态: 存在=${$phoneInterface.length > 0}, 当前display=${$phoneInterface.css('display')}`,
+      );
+
+      // 添加show类
+      $phoneInterface.addClass('show').removeClass('show-qq-app-content');
+
+      // 强制设置CSS显示属性
+      $phoneInterface.css({
+        display: 'block',
+        visibility: 'visible',
+        opacity: '1',
+        'z-index': '500',
+      });
+
       $('body').removeClass('qq-app-mode');
 
       // 强制隐藏QQ容器和美化应用容器，确保手机主页内容优先显示
@@ -597,7 +628,31 @@
       $('#phone_interface .phone-dock').show();
 
       this.updateTime();
-      console.log('PhoneInterface.show() executed, ensured QQ container hidden and home screen elements visible.');
+
+      // 验证显示状态
+      setTimeout(() => {
+        const $currentInterface = $('#phone_interface');
+        const isVisible = $currentInterface.is(':visible');
+        const hasShowClass = $currentInterface.hasClass('show');
+        const displayValue = $currentInterface.css('display');
+
+        console.log('📊 手机界面显示状态验证:');
+        console.log(`  - 元素存在: ${$currentInterface.length > 0}`);
+        console.log(`  - 元素可见: ${isVisible}`);
+        console.log(`  - 有show类: ${hasShowClass}`);
+        console.log(`  - CSS display: ${displayValue}`);
+
+        if ($currentInterface.length === 0) {
+          console.error('❌ 验证时发现手机界面元素已消失');
+        } else if (!isVisible) {
+          console.log('⚠️ 手机界面仍然不可见，尝试强制修复...');
+          $currentInterface.show().css('display', 'block !important');
+        } else {
+          console.log('✅ 手机界面显示成功');
+        }
+      }, 100);
+
+      console.log('✅ PhoneInterface.show() executed, ensured QQ container hidden and home screen elements visible.');
     },
 
     // 切换手机界面显示状态
@@ -611,11 +666,12 @@
 
     // 隐藏手机界面
     hide: function () {
-      // 完全清理状态
-      this.forceCleanState();
-      $('#phone_interface').removeClass('show show-qq-app-content');
-      $('body').removeClass('qq-app-mode');
-      console.log('PhoneInterface.hide() executed, all states cleaned.');
+      console.log('🔄 开始隐藏手机界面...');
+
+      // 完全隐藏手机界面（包括移除show类）
+      this.forceHidePhoneInterface();
+
+      console.log('✅ PhoneInterface.hide() executed, all states cleaned.');
     },
 
     // 关闭所有应用界面
@@ -656,9 +712,9 @@
       $('.app-dialog').hide();
       $('.app-interface').hide();
 
-      // 关闭可能的临时弹窗（使用remove方式），但保留QQ应用的原始对话框
-      $('[id*="_dialog"]:not(#chat_history_dialog)').remove();
-      $('[id*="_popup"]').remove();
+      // 关闭可能的临时弹窗（使用remove方式），但保留QQ应用的原始对话框和SillyTavern原生组件
+      // 使用白名单方式，只删除手机插件创建的特定弹窗，避免误删SillyTavern原生组件
+      this.removeMobilePluginDialogs();
 
       // Reset phone_interface from QQ mode, but don't hide #phone_interface itself here.
       // The decision to hide #phone_interface is usually up to the phone button or click-outside logic.
@@ -708,12 +764,12 @@
       return false;
     },
 
-    // 强制清理所有状态 - 新增方法
+    // 强制清理所有状态 - 修改版本（不影响手机界面显示）
     forceCleanState: function () {
-      console.log('强制清理所有手机插件状态...');
+      console.log('🧹 强制清理所有手机插件状态...');
 
-      // 清理所有CSS类
-      $('#phone_interface').removeClass('show show-qq-app-content');
+      // 清理应用相关的CSS类，但保留手机界面的显示状态
+      $('#phone_interface').removeClass('show-qq-app-content');
       $('body').removeClass('qq-app-mode chat-detail-active');
 
       // 清理所有聊天页面状态
@@ -731,16 +787,10 @@
       $('#phone_interface .qq-app-container').empty().hide();
       $('#phone_interface .wallpaper-app-container').empty().hide();
 
-      // 移除所有临时弹窗
-      $('#group_create_dialog').remove();
-      $('#add_member_dialog').remove();
-      $('#avatar_dialog').remove();
-      $('#user_avatar_dialog').remove();
-      $('#accept_task_dialog').remove();
-      $('#use_item_dialog').remove();
+      // 使用安全的弹窗清理
+      this.removeMobilePluginDialogs();
 
       // 清理任何可能的内联样式覆盖
-      $('#phone_interface').css('z-index', '');
       $('#chat_history_dialog').css('z-index', '');
       $('.qq-app-container').css('z-index', '');
       $('#chat_history_btn').css('z-index', '');
@@ -751,7 +801,221 @@
       $('#wallpaper_interface').css('z-index', '');
       $('.chat-page').css('z-index', '');
 
-      console.log('状态清理完成');
+      console.log('✅ 状态清理完成');
+    },
+
+    // 完全隐藏手机界面（包括移除show类）
+    forceHidePhoneInterface: function () {
+      console.log('🔒 完全隐藏手机界面...');
+
+      // 先清理所有状态
+      this.forceCleanState();
+
+      // 然后隐藏手机界面本身
+      $('#phone_interface').removeClass('show show-qq-app-content');
+
+      console.log('✅ 手机界面已完全隐藏');
+    },
+
+    // 安全地移除手机插件创建的弹窗，保护SillyTavern原生组件
+    removeMobilePluginDialogs: function () {
+      console.log('🧹 开始清理手机插件弹窗...');
+
+      // 手机插件创建的弹窗ID列表（白名单方式）
+      const mobilePluginDialogs = [
+        // QQ应用相关弹窗（除了chat_history_dialog）
+        '#group_create_dialog',
+        '#add_member_dialog',
+        '#avatar_dialog',
+        '#user_avatar_dialog',
+
+        // 任务应用弹窗
+        '#accept_task_dialog',
+
+        // 背包应用弹窗
+        '#use_item_dialog',
+
+        // 其他手机插件可能创建的弹窗
+        '.mobile-plugin-dialog',
+        '.mobile-app-dialog',
+
+        // 通用的临时弹窗（但排除SillyTavern原生的）
+        '[id^="mobile_"]',
+        '[id^="phone_"]',
+        '[id^="qq_"]',
+        '[id^="taobao_"]',
+        '[id^="task_"]',
+        '[id^="backpack_"]',
+        '[id^="chouka_"]',
+        '[id^="wallpaper_"]',
+      ];
+
+      // SillyTavern原生组件保护列表（确保不被删除）
+      const sillyTavernProtectedComponents = [
+        '#world_popup',
+        '#WorldInfo',
+        '#WIDrawerIcon',
+        '#wi_menu',
+        '[id*="completion_prompt_manager"]',
+        '[id*="character_popup"]',
+        '[id*="preset_popup"]',
+        '[id*="dialogue_popup"]',
+        '[id*="shadow_popup"]',
+        '[id*="ghost_popup"]',
+        '#textgen_settings',
+        '#openai_settings',
+        '#novel_settings',
+        '#kobold_settings',
+        '#claude_settings',
+        '#poe_settings',
+        '#context_menu',
+        '#form_create',
+        '#form_favorite_tags',
+        '#form_import_tags',
+        '#cfgConfig',
+        '#sampler_view',
+        '#loader',
+        '.drawer-content',
+        '.ui-dialog',
+        '.select2-container',
+      ];
+
+      // 只删除手机插件创建的弹窗
+      let removedCount = 0;
+      mobilePluginDialogs.forEach(selector => {
+        const $elements = $(selector);
+        if ($elements.length > 0) {
+          console.log(`  - 删除 ${selector}: ${$elements.length} 个元素`);
+          $elements.remove();
+          removedCount += $elements.length;
+        }
+      });
+
+      // 验证保护的组件是否仍然存在
+      console.log('🛡️ 验证SillyTavern原生组件保护状态:');
+      sillyTavernProtectedComponents.forEach(selector => {
+        const $elements = $(selector);
+        if ($elements.length > 0) {
+          console.log(`  ✅ ${selector}: ${$elements.length} 个元素已保护`);
+        }
+      });
+
+      console.log(`✅ 手机插件弹窗清理完成，共删除 ${removedCount} 个元素`);
+    },
+
+    // 单独创建手机界面元素（用于重新创建）
+    createPhoneInterfaceElement: function () {
+      console.log('🏗️ 创建手机界面元素...');
+
+      // 先移除可能存在的旧元素
+      $('#phone_interface').remove();
+
+      // 创建手机界面元素
+      const $phoneInterface = $(`
+        <div id="phone_interface" class="phone-interface">
+          <div class="phone-screen">
+            <div class="phone-background"></div>
+            <div class="qq-app-container"></div>
+            <div class="wallpaper-app-container"></div>
+            <div class="dynamic-island"></div>
+            <div class="phone-status-bar">
+              <div class="status-time" id="status_time">8:00</div>
+              <div class="status-icons">
+                <span class="signal-icon"></span>
+                <span class="battery-icon"></span>
+              </div>
+            </div>
+            <div class="phone-home-screen">
+              <div class="home-time">
+                <div class="home-time-main" id="home_time_main">21:09</div>
+                <div class="home-time-date" id="home_time_date">星期三，12月18日</div>
+              </div>
+              <div class="welcome-message animate-float">
+                <div class="welcome-header">
+                  <div class="welcome-title">
+                    <span style="color: white; font-size: 18px;">❥</span>
+                    <span style="color: white; font-weight: 500; font-size: 14px;">Message</span>
+                  </div>
+                  <div class="close-welcome" style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <span style="color: white; font-size: 12px;">×</span>
+                  </div>
+                </div>
+                <div class="welcome-content">
+                  <div class="welcome-content-item">💌 纯爱统治世界(つ ω つ)</div>
+                  <div class="welcome-content-item">☀️ 今天也是元气满满的一天呢◊</div>
+                  <div class="welcome-content-item">💙 (=^-ω-^=)好运来咯！请接好</div>
+                </div>
+                <div class="welcome-buttons">
+                  <button class="welcome-btn">OK</button>
+                  <button class="welcome-btn">GOOD</button>
+                  <button class="welcome-btn">PERFECT</button>
+                </div>
+              </div>
+              <div class="app-grid">
+                <div class="app-icon" data-app="qq">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">💭</span>
+                    </div>
+                  </div>
+                  <div class="app-name">消息</div>
+                </div>
+                <div class="app-icon" data-app="taobao">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">🛒</span>
+                    </div>
+                  </div>
+                  <div class="app-name">淘宝</div>
+                </div>
+                <div class="app-icon" data-app="renwu">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">✓</span>
+                    </div>
+                  </div>
+                  <div class="app-name">任务</div>
+                </div>
+              </div>
+              <div class="app-grid-row2">
+                <div class="app-icon" data-app="backpack">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">🎒</span>
+                    </div>
+                  </div>
+                  <div class="app-name">背包</div>
+                </div>
+                <div class="app-icon" data-app="chouka">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">🎴</span>
+                    </div>
+                  </div>
+                  <div class="app-name">抽卡</div>
+                </div>
+                <div class="app-icon" data-app="wallpaper">
+                  <div class="app-icon-img">
+                    <div class="app-icon-inner">
+                      <span class="simple-icon">🎨</span>
+                    </div>
+                  </div>
+                  <div class="app-name">美化</div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-dock"></div>
+          </div>
+        </div>
+      `);
+
+      // 添加到body
+      $('body').append($phoneInterface);
+
+      // 重新绑定应用图标事件
+      this.bindAppIconEvents();
+
+      console.log('✅ 手机界面元素创建完成');
     },
   };
 

@@ -39,8 +39,17 @@
 }
 
 .phone-interface.show {
-  display: block;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
   animation: fadeIn 0.3s ease;
+}
+
+/* 强制显示规则 - 确保手机界面能够正常显示 */
+#phone_interface.show {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 @keyframes fadeIn {

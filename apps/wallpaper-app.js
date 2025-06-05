@@ -422,7 +422,7 @@
 
     // 更新手机界面背景
     updatePhoneBackground(url) {
-      // 更新手机屏幕背景（这是主要的背景容器）
+      // 只更新手机屏幕背景（这是主要的背景容器）
       $('#phone_interface .phone-screen').css({
         'background-image': `url(${url})`,
         'background-size': 'cover',
@@ -430,15 +430,15 @@
         'background-repeat': 'no-repeat',
       });
 
-      // 也更新手机主屏幕背景作为备用
+      // 清除主屏幕的背景设置，避免影响状态栏布局
       $('#phone_interface .phone-home-screen').css({
-        'background-image': `url(${url})`,
-        'background-size': 'cover',
-        'background-position': 'center',
-        'background-repeat': 'no-repeat',
+        'background-image': 'none',
+        'background-size': '',
+        'background-position': '',
+        'background-repeat': '',
       });
 
-      console.log('🖼️ 手机背景已更新');
+      console.log('🖼️ 手机背景已更新，状态栏布局已保护');
     },
 
     // 更新当前背景（根据编辑类型）
