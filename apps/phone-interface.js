@@ -9,6 +9,7 @@
       this.bindEvents();
       this.addAnimationStyles();
       this.startTimeUpdate(); // 添加时间更新功能
+      this.initResponsiveScaling(); // 初始化响应式缩放
       console.log('手机界面已初始化');
     },
 
@@ -628,6 +629,7 @@
       $('#phone_interface .phone-dock').show();
 
       this.updateTime();
+      this.updateResponsiveScale(); // 更新响应式缩放
 
       // 验证显示状态
       setTimeout(() => {
@@ -1016,6 +1018,67 @@
       this.bindAppIconEvents();
 
       console.log('✅ 手机界面元素创建完成');
+    },
+
+    // 初始化响应式缩放
+    initResponsiveScaling: function () {
+      console.log('🔧 初始化响应式缩放系统...');
+
+      // 初始缩放计算
+      this.updateResponsiveScale();
+
+      // 监听窗口大小变化
+      $(window).on('resize.phoneInterface', () => {
+        this.updateResponsiveScale();
+      });
+
+      // 监听设备方向变化
+      $(window).on('orientationchange.phoneInterface', () => {
+        setTimeout(() => {
+          this.updateResponsiveScale();
+        }, 100);
+      });
+
+      console.log('✅ 响应式缩放系统初始化完成');
+    },
+
+    // 更新响应式缩放
+    updateResponsiveScale: function () {
+      const $phoneInterface = $('#phone_interface');
+      if ($phoneInterface.length === 0) return;
+
+      const windowWidth = $(window).width();
+      const windowHeight = $(window).height();
+
+      // 基础手机尺寸
+      const baseWidth = 375;
+      const baseHeight = 812;
+      const baseBorder = 8; // 边框宽度
+
+      // 计算可用空间（留出边距）
+      const availableWidth = windowWidth * 0.9; // 留出10%边距
+      const availableHeight = windowHeight * 0.9; // 留出10%边距
+
+      // 计算缩放比例
+      const scaleByWidth = availableWidth / (baseWidth + baseBorder * 2);
+      const scaleByHeight = availableHeight / (baseHeight + baseBorder * 2);
+
+      // 选择较小的缩放比例以确保完全适配
+      let scale = Math.min(scaleByWidth, scaleByHeight);
+
+      // 设置缩放范围限制
+      scale = Math.max(0.3, Math.min(1.5, scale)); // 最小30%，最大150%
+
+      // 应用缩放
+      $phoneInterface.css('--phone-scale', scale);
+
+      console.log(`📱 响应式缩放更新: 窗口${windowWidth}x${windowHeight}, 缩放比例${scale.toFixed(2)}`);
+    },
+
+    // 销毁响应式缩放监听器
+    destroyResponsiveScaling: function () {
+      $(window).off('resize.phoneInterface orientationchange.phoneInterface');
+      console.log('🗑️ 响应式缩放监听器已销毁');
     },
   };
 

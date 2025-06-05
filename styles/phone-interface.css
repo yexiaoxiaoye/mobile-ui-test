@@ -21,7 +21,7 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* 手机界面容器 */
+/* 手机界面容器 - 响应式设计 */
 .phone-interface {
   position: absolute;
   top: 50%;
@@ -36,6 +36,15 @@
   z-index: 500; /* 降低z-index，确保不会覆盖SillyTavern界面 */
   background: white;
   display: none;
+
+  /* 响应式缩放变量 */
+  --phone-scale: 1;
+  --phone-base-width: 375px;
+  --phone-base-height: 812px;
+
+  /* 应用缩放 */
+  transform: translate(-50%, -50%) scale(var(--phone-scale));
+  transform-origin: center center;
 }
 
 .phone-interface.show {
@@ -58,6 +67,70 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* 响应式缩放规则 */
+/* 超小屏幕 (手机竖屏) - 宽度小于400px */
+@media (max-width: 400px) {
+  .phone-interface {
+    --phone-scale: 0.85;
+  }
+}
+
+/* 小屏幕 (手机横屏/小平板) - 宽度400px-768px */
+@media (min-width: 400px) and (max-width: 768px) {
+  .phone-interface {
+    --phone-scale: 0.9;
+  }
+}
+
+/* 中等屏幕 (平板) - 宽度768px-1024px */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .phone-interface {
+    --phone-scale: 1;
+  }
+}
+
+/* 大屏幕 (桌面) - 宽度1024px-1440px */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .phone-interface {
+    --phone-scale: 1.1;
+  }
+}
+
+/* 超大屏幕 (大桌面) - 宽度大于1440px */
+@media (min-width: 1440px) {
+  .phone-interface {
+    --phone-scale: 1.2;
+  }
+}
+
+/* 高度适配 - 当屏幕高度不足时进一步缩小 */
+@media (max-height: 700px) {
+  .phone-interface {
+    --phone-scale: calc(var(--phone-scale) * 0.8);
+  }
+}
+
+@media (max-height: 600px) {
+  .phone-interface {
+    --phone-scale: calc(var(--phone-scale) * 0.7);
+  }
+}
+
+@media (max-height: 500px) {
+  .phone-interface {
+    --phone-scale: calc(var(--phone-scale) * 0.6);
+  }
+}
+
+/* 确保在极小屏幕上仍然可见 */
+@media (max-width: 320px), (max-height: 400px) {
+  .phone-interface {
+    --phone-scale: 0.5;
+    width: 300px;
+    height: 650px;
   }
 }
 

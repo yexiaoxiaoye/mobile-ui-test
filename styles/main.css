@@ -255,6 +255,42 @@
     display: none !important;
   }
 }
+
+/* 手机界面响应式增强 */
+@media (max-width: 480px) {
+  /* 确保手机按钮在小屏幕上仍然可见 */
+  .mobile-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  /* 调整弹窗应用在小屏幕上的显示 */
+  #taobao_interface,
+  #task_interface,
+  #backpack_interface,
+  #chouka_interface {
+    padding: 10px;
+  }
+}
+
+/* 超小屏幕优化 */
+@media (max-width: 360px) {
+  .mobile-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    margin-left: 5px;
+  }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* 在横屏且高度较小时，确保手机界面不会超出屏幕 */
+  .phone-interface {
+    --phone-scale: calc(var(--phone-scale) * 0.8);
+  }
+}
 @media screen and (max-width: 450px) {
   #leftSendForm,
   #rightSendForm {
