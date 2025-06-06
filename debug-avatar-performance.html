@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ头像性能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .button.danger:hover {
+            background: #c82333;
+        }
+        .status {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .performance-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 QQ头像性能测试工具</h1>
+        
+        <div class="performance-info">
+            <h4>📊 性能优化说明</h4>
+            <p>新的头像系统采用了以下优化策略：</p>
+            <ul>
+                <li><strong>智能缓存</strong>：头像数据缓存5分钟，避免重复解析聊天记录</li>
+                <li><strong>批量更新</strong>：每批处理3个联系人，50ms间隔，避免UI阻塞</li>
+                <li><strong>防抖机制</strong>：100ms防抖，避免重复更新</li>
+                <li><strong>状态检查</strong>：只在头像状态改变时才更新DOM</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>🔍 缓存状态检查</h3>
+            <button class="button" onclick="checkCacheStatus()">检查缓存状态</button>
+            <button class="button" onclick="showPerformanceConfig()">显示性能配置</button>
+            <div id="cacheStatus" class="status"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔄 头像数据操作</h3>
+            <button class="button" onclick="loadAvatarData()">智能加载头像数据</button>
+            <button class="button" onclick="forceReloadAvatarData()">强制重新加载</button>
+            <button class="button danger" onclick="invalidateCache()">使缓存失效</button>
+            <div id="loadStatus" class="status"></div>
+        </div>
+
+        <div class="section">
+            <h3>⚡ 性能测试</h3>
+            <button class="button" onclick="performanceTest()">执行性能测试</button>
+            <button class="button" onclick="simulateMultipleContacts()">模拟多联系人场景</button>
+            <div id="performanceResults" class="status"></div>
+        </div>
+
+        <div class="section">
+            <h3>🛠️ 调试工具</h3>
+            <button class="button" onclick="toggleDebugMode()">切换调试模式</button>
+            <button class="button" onclick="clearConsole()">清空控制台</button>
+            <button class="button" onclick="exportCacheData()">导出缓存数据</button>
+            <div id="debugInfo" class="status"></div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ 注意：</strong>此工具仅用于开发和调试。在生产环境中，头像系统会自动优化性能。
+        </div>
+    </div>
+
+    <script>
+        // 检查QQ应用是否可用
+        function checkQQApp() {
+            if (!window.QQApp) {
+                alert('QQ应用未加载，请先加载QQ应用模块');
+                return false;
+            }
+            return true;
+        }
+
+        // 检查缓存状态
+        function checkCacheStatus() {
+            if (!checkQQApp()) return;
+            
+            const status = window.QQApp.getCacheStatus();
+            const statusText = `缓存状态信息：
+版本: ${status.version}
+有效性: ${status.isValid ? '✅ 有效' : '❌ 无效'}
+年龄: ${status.ageSeconds}秒
+是否过期: ${status.isExpired ? '⏰ 已过期' : '✅ 未过期'}
+联系人数量: ${status.contactCount}个
+
+缓存配置：
+有效期: ${window.QQApp.performanceConfig.cacheValidityTime / 1000}秒
+批量大小: ${window.QQApp.performanceConfig.maxBatchSize}个
+更新间隔: ${window.QQApp.performanceConfig.batchUpdateDelay}ms`;
+            
+            document.getElementById('cacheStatus').textContent = statusText;
+        }
+
+        // 显示性能配置
+        function showPerformanceConfig() {
+            if (!checkQQApp()) return;
+            
+            const config = window.QQApp.performanceConfig;
+            const configText = `性能配置：
+缓存有效期: ${config.cacheValidityTime / 1000}秒
+强制重载阈值: ${config.forceReloadThreshold}个联系人
+批量更新延迟: ${config.batchUpdateDelay}ms
+最大批量大小: ${config.maxBatchSize}个`;
+            
+            document.getElementById('cacheStatus').textContent = configText;
+        }
+
+        // 智能加载头像数据
+        function loadAvatarData() {
+            if (!checkQQApp()) return;
+            
+            const startTime = performance.now();
+            document.getElementById('loadStatus').textContent = '正在智能加载头像数据...';
+            
+            window.QQApp.loadAvatarDataEnhanced(false);
+            
+            setTimeout(() => {
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                document.getElementById('loadStatus').textContent = `智能加载完成，耗时: ${duration}ms`;
+            }, 100);
+        }
+
+        // 强制重新加载
+        function forceReloadAvatarData() {
+            if (!checkQQApp()) return;
+            
+            const startTime = performance.now();
+            document.getElementById('loadStatus').textContent = '正在强制重新加载头像数据...';
+            
+            window.QQApp.refreshAvatarData();
+            
+            setTimeout(() => {
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                document.getElementById('loadStatus').textContent = `强制重载完成，耗时: ${duration}ms`;
+            }, 600);
+        }
+
+        // 使缓存失效
+        function invalidateCache() {
+            if (!checkQQApp()) return;
+            
+            window.QQApp.invalidateAvatarCache();
+            document.getElementById('loadStatus').textContent = '缓存已失效';
+        }
+
+        // 性能测试
+        function performanceTest() {
+            if (!checkQQApp()) return;
+            
+            document.getElementById('performanceResults').textContent = '正在执行性能测试...';
+            
+            const tests = [];
+            
+            // 测试1：缓存命中性能
+            const test1Start = performance.now();
+            window.QQApp.loadAvatarDataEnhanced(false);
+            setTimeout(() => {
+                const test1End = performance.now();
+                tests.push(`缓存命中测试: ${Math.round(test1End - test1Start)}ms`);
+                
+                // 测试2：强制重载性能
+                const test2Start = performance.now();
+                window.QQApp.loadAvatarDataEnhanced(true);
+                setTimeout(() => {
+                    const test2End = performance.now();
+                    tests.push(`强制重载测试: ${Math.round(test2End - test2Start)}ms`);
+                    
+                    document.getElementById('performanceResults').textContent = tests.join('\n');
+                }, 600);
+            }, 100);
+        }
+
+        // 模拟多联系人场景
+        function simulateMultipleContacts() {
+            if (!checkQQApp()) return;
+            
+            const contactCount = Object.keys(window.QQApp.avatarData).filter(k => !k.endsWith('_config')).length;
+            const resultText = `当前联系人数量: ${contactCount}个
+
+性能建议：
+${contactCount <= 5 ? '✅ 联系人数量较少，性能表现良好' : 
+  contactCount <= 10 ? '⚠️ 联系人数量适中，建议启用缓存优化' : 
+  '🔥 联系人数量较多，强烈建议使用缓存和批量更新'}
+
+当前优化状态：
+缓存: ${window.QQApp.avatarDataCache.isValid ? '✅ 已启用' : '❌ 未启用'}
+批量更新: ✅ 已启用 (${window.QQApp.performanceConfig.maxBatchSize}个/批)
+防抖: ✅ 已启用 (${window.QQApp.performanceConfig.batchUpdateDelay}ms)`;
+            
+            document.getElementById('performanceResults').textContent = resultText;
+        }
+
+        // 切换调试模式
+        function toggleDebugMode() {
+            if (!checkQQApp()) return;
+            
+            const newMode = window.QQApp.toggleDebugMode();
+            document.getElementById('debugInfo').textContent = `调试模式: ${newMode ? '✅ 已开启' : '❌ 已关闭'}`;
+        }
+
+        // 清空控制台
+        function clearConsole() {
+            console.clear();
+            document.getElementById('debugInfo').textContent = '控制台已清空';
+        }
+
+        // 导出缓存数据
+        function exportCacheData() {
+            if (!checkQQApp()) return;
+            
+            const cacheData = {
+                cache: window.QQApp.avatarDataCache,
+                config: window.QQApp.performanceConfig,
+                currentData: window.QQApp.avatarData,
+                timestamp: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(cacheData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qq-avatar-cache-${Date.now()}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            document.getElementById('debugInfo').textContent = '缓存数据已导出';
+        }
+
+        // 页面加载时检查状态
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.QQApp) {
+                    checkCacheStatus();
+                } else {
+                    document.getElementById('cacheStatus').textContent = '⚠️ QQ应用未加载，请先加载相关模块';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

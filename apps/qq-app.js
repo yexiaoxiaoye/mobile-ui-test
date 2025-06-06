@@ -57,10 +57,29 @@
     // 调试模式开关，减少不必要的日志输出
     debugMode: false,
 
+    // 新增：头像数据缓存和版本控制
+    avatarDataCache: {
+      data: {},
+      version: 0,
+      lastLoadTime: 0,
+      isValid: false,
+    },
+
+    // 新增：性能优化配置
+    performanceConfig: {
+      cacheValidityTime: 300000, // 5分钟缓存有效期
+      forceReloadThreshold: 10, // 超过10个联系人时启用更激进的缓存策略
+      batchUpdateDelay: 50, // 批量更新间隔
+      maxBatchSize: 3, // 每批最大处理数量
+    },
+
     // 初始化应用
     init() {
       try {
         if (!this.checkDependencies()) return;
+
+        // 初始化缓存系统
+        this.initAvatarCache();
 
         this.createInterface();
         this.bindEvents();
@@ -69,6 +88,33 @@
         setTimeout(() => this.updateUserDisplay(), CONFIG.DELAYS.UPDATE_USER_DISPLAY);
       } catch (error) {
         console.error('QQ应用初始化失败:', error);
+      }
+    },
+
+    // 初始化头像缓存系统
+    initAvatarCache() {
+      try {
+        // 尝试从localStorage恢复缓存
+        const savedCache = localStorage.getItem('qq_avatar_cache');
+        if (savedCache) {
+          const parsedCache = JSON.parse(savedCache);
+          const now = Date.now();
+          const cacheAge = now - parsedCache.lastLoadTime;
+
+          // 如果缓存未过期，恢复缓存数据
+          if (cacheAge < this.performanceConfig.cacheValidityTime) {
+            this.avatarDataCache = parsedCache;
+            this.avatarData = { ...parsedCache.data };
+            console.log(`📋 [缓存恢复] 从localStorage恢复头像缓存，年龄: ${Math.round(cacheAge / 1000)}秒`);
+            return;
+          } else {
+            console.log(`🗑️ [缓存过期] localStorage中的缓存已过期，年龄: ${Math.round(cacheAge / 1000)}秒`);
+          }
+        }
+
+        console.log('🔄 [缓存初始化] 未找到有效缓存，将重新加载数据');
+      } catch (error) {
+        console.error('初始化头像缓存失败:', error);
       }
     },
 
@@ -95,14 +141,45 @@
       this.loadUserData();
     },
 
-    // 加载头像数据（增强版）
-    loadAvatarDataEnhanced() {
+    // 加载头像数据（增强版）- 添加智能缓存
+    loadAvatarDataEnhanced(forceReload = false) {
       try {
+        const now = Date.now();
+        const cacheAge = now - this.avatarDataCache.lastLoadTime;
+        const isExpired = cacheAge > this.performanceConfig.cacheValidityTime;
+
+        // 检查是否可以使用缓存
+        if (!forceReload && this.avatarDataCache.isValid && !isExpired) {
+          console.log(`📋 [缓存命中] 使用缓存的头像数据，缓存年龄: ${Math.round(cacheAge / 1000)}秒`);
+          this.avatarData = { ...this.avatarDataCache.data };
+
+          // 使用缓存数据更新显示
+          setTimeout(() => {
+            this.updateAllAvatarDisplaysFromData();
+          }, 100);
+          return;
+        }
+
         console.log('🔄 [数据加载] 开始加载增强头像数据');
         this.avatarData = {};
         this.extractAvatarDataFromChatEnhanced();
 
-        console.log('🔄 [数据加载] 数据提取完成，avatarData:', this.avatarData);
+        // 更新缓存
+        this.avatarDataCache = {
+          data: { ...this.avatarData },
+          version: this.avatarDataCache.version + 1,
+          lastLoadTime: now,
+          isValid: true,
+        };
+
+        // 保存缓存到localStorage
+        this.saveAvatarCacheToStorage();
+
+        console.log(
+          `🔄 [数据加载] 数据提取完成，联系人数量: ${
+            Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length
+          }`,
+        );
 
         // 加载完成后，更新所有头像显示
         setTimeout(() => {
@@ -111,7 +188,112 @@
       } catch (error) {
         console.error('加载增强头像数据失败:', error);
         this.avatarData = {};
+        this.avatarDataCache.isValid = false;
       }
+    },
+
+    // 使缓存失效（当头像被修改时调用）
+    invalidateAvatarCache() {
+      console.log('🗑️ [缓存管理] 头像缓存已失效');
+      this.avatarDataCache.isValid = false;
+      // 清除localStorage中的缓存
+      this.clearAvatarCacheFromStorage();
+    },
+
+    // 保存缓存到localStorage
+    saveAvatarCacheToStorage() {
+      try {
+        localStorage.setItem('qq_avatar_cache', JSON.stringify(this.avatarDataCache));
+        console.log('💾 [缓存保存] 头像缓存已保存到localStorage');
+      } catch (error) {
+        console.error('保存头像缓存失败:', error);
+      }
+    },
+
+    // 清除localStorage中的缓存
+    clearAvatarCacheFromStorage() {
+      try {
+        localStorage.removeItem('qq_avatar_cache');
+        console.log('🗑️ [缓存清理] localStorage中的头像缓存已清除');
+      } catch (error) {
+        console.error('清除头像缓存失败:', error);
+      }
+    },
+
+    // 手动刷新头像数据（供用户调用）
+    refreshAvatarData() {
+      console.log('🔄 [手动刷新] 强制重新加载所有头像数据');
+      this.invalidateAvatarCache();
+      this.loadAvatarDataEnhanced(true); // 强制重新加载
+    },
+
+    // 获取缓存状态信息（调试用）
+    getCacheStatus() {
+      const now = Date.now();
+      const cacheAge = now - this.avatarDataCache.lastLoadTime;
+      const isExpired = cacheAge > this.performanceConfig.cacheValidityTime;
+
+      return {
+        isValid: this.avatarDataCache.isValid,
+        version: this.avatarDataCache.version,
+        ageSeconds: Math.round(cacheAge / 1000),
+        isExpired,
+        contactCount: Object.keys(this.avatarDataCache.data).filter(k => !k.endsWith('_config')).length,
+      };
+    },
+
+    // 调试头像数据状态
+    debugAvatarData() {
+      console.log('=== 头像数据调试信息 ===');
+      console.log('当前 avatarData:', this.avatarData);
+      console.log('缓存状态:', this.getCacheStatus());
+
+      // 检查有变换配置的联系人
+      const contactsWithTransform = [];
+      Object.keys(this.avatarData).forEach(key => {
+        if (key.endsWith('_config')) {
+          const qqNumber = key.replace('_config', '');
+          const config = this.avatarData[key];
+          if (config && config.transform) {
+            contactsWithTransform.push({
+              qqNumber,
+              transform: config.transform,
+              url: this.avatarData[qqNumber],
+            });
+          }
+        }
+      });
+
+      console.log('有变换配置的联系人:', contactsWithTransform);
+
+      // 检查localStorage缓存
+      let localStorageCache = null;
+      try {
+        const savedCache = localStorage.getItem('qq_avatar_cache');
+        if (savedCache) {
+          localStorageCache = JSON.parse(savedCache);
+          console.log('localStorage缓存:', localStorageCache);
+        } else {
+          console.log('localStorage缓存: 无');
+        }
+      } catch (error) {
+        console.log('localStorage缓存读取失败:', error);
+      }
+
+      // 检查DOM中的头像元素
+      const avatarElements = $('.custom-avatar').length;
+      const transformedElements = $('.custom-avatar[style*="transform"]').length;
+      console.log(`DOM中的头像元素数量: ${avatarElements}`);
+      console.log(`应用变换效果的头像元素数量: ${transformedElements}`);
+
+      return {
+        avatarData: this.avatarData,
+        cacheStatus: this.getCacheStatus(),
+        localStorageCache,
+        contactsWithTransform,
+        avatarElements,
+        transformedElements,
+      };
     },
 
     // 从聊天记录提取头像数据（增强版）
@@ -1401,10 +1583,10 @@
         $('#chat_history_dialog').show();
       }
 
-      // 每次显示主界面时重新加载头像数据
-      console.log('🔄 主界面显示时重新加载头像数据');
+      // 智能加载头像数据 - 优先使用缓存
+      console.log('🔄 主界面显示时智能加载头像数据');
       setTimeout(() => {
-        this.loadAvatarDataEnhanced();
+        this.loadAvatarDataEnhanced(false); // 不强制重新加载
       }, 100);
 
       console.log('✅ QQ应用主界面已显示');
@@ -1511,9 +1693,9 @@
         }
       }
 
-      // 重新加载头像数据以确保角色头像配置正确
-      console.log('🔄 重新加载头像数据以确保配置同步');
-      this.loadAvatarDataEnhanced();
+      // 智能加载头像数据 - 优先使用缓存
+      console.log('🔄 智能加载头像数据以确保配置同步');
+      this.loadAvatarDataEnhanced(false); // 不强制重新加载，优先使用缓存
 
       // 确保用户头像和角色头像都正确显示
       setTimeout(() => {
@@ -1521,7 +1703,7 @@
         this.updateUserDisplay();
         // 更新所有角色头像显示
         this.updateAllAvatarDisplaysFromData();
-      }, 300);
+      }, 200); // 减少延迟时间
     },
 
     // 隐藏QQ应用
@@ -1549,8 +1731,8 @@
       try {
         console.log('📊 开始从聊天记录抓取数据...');
 
-        // 每次加载消息时，重新从聊天记录中读取最新的头像数据和用户数据
-        this.loadAvatarDataEnhanced();
+        // 每次加载消息时，智能加载头像数据（优先使用缓存以保持变换效果）
+        this.loadAvatarDataEnhanced(false); // 不强制重新加载，保持已有的头像变换配置
         this.loadUserData();
 
         // 确保原始对话框存在
@@ -1945,10 +2127,25 @@
         // 绑定新的包装容器点击事件
         this.bindWrapperClickEvents();
 
-        // 消息加载完成后，再次更新用户显示
+        // 消息加载完成后，确保头像变换效果正确应用
         setTimeout(() => {
           this.updateUserDisplay();
-        }, 100);
+
+          // 调试：检查头像数据状态
+          console.log('🔍 [调试] 检查消息加载后的头像数据状态');
+          this.debugAvatarData();
+
+          // 重新应用所有头像变换效果，确保刷新后头像保持修改状态
+          console.log('🔄 重新应用所有头像变换效果');
+          this.updateAllAvatarDisplaysFromData();
+
+          // 额外延迟后再次检查，确保变换效果已应用
+          setTimeout(() => {
+            console.log('🔍 [验证] 检查变换效果应用后的状态');
+            const transformedElements = $('.custom-avatar[style*="transform"]').length;
+            console.log(`✅ 应用变换效果的头像元素数量: ${transformedElements}`);
+          }, 300);
+        }, 300); // 增加延迟时间，确保DOM完全更新
 
         console.log('QQ聊天历史加载完成');
       } catch (error) {
@@ -3010,6 +3207,14 @@
         this.userData.avatarConfig = avatarConfig;
       }
 
+      // 更新缓存中的用户数据而不是使其失效
+      if (this.avatarDataCache.isValid) {
+        // 用户数据不存储在avatarData中，但我们需要触发缓存更新以保持一致性
+        this.avatarDataCache.lastLoadTime = Date.now();
+        this.saveAvatarCacheToStorage();
+        console.log('💾 [缓存更新] 用户头像配置已更新');
+      }
+
       this.updateUserDisplay();
       this.updateUserInfoInChatEnhanced(name, avatarConfig);
     },
@@ -3061,6 +3266,16 @@
         // 新格式 - 存储完整配置
         this.avatarData[qqNumber] = avatarConfig.url;
         this.avatarData[`${qqNumber}_config`] = avatarConfig;
+      }
+
+      // 更新缓存数据而不是使其失效
+      if (this.avatarDataCache.isValid) {
+        this.avatarDataCache.data[qqNumber] = this.avatarData[qqNumber];
+        if (this.avatarData[`${qqNumber}_config`]) {
+          this.avatarDataCache.data[`${qqNumber}_config`] = this.avatarData[`${qqNumber}_config`];
+        }
+        this.saveAvatarCacheToStorage();
+        console.log(`💾 [缓存更新] 角色 ${qqNumber} 的头像配置已更新到缓存`);
       }
 
       this.updateAvatarInChatEnhanced(qqNumber, avatarConfig);
@@ -3327,12 +3542,34 @@
     // 导出到全局
     window.QQApp = QQApp;
 
-    // 自动初始化应用
-    if (typeof QQApp.init === 'function') {
-      QQApp.init();
-    }
+    // 延迟初始化，确保聊天记录完全加载
+    setTimeout(() => {
+      console.log('🔄 [延迟初始化] 开始初始化QQ应用');
+      if (typeof QQApp.init === 'function') {
+        QQApp.init();
+      }
+    }, 1000); // 延迟1秒，确保聊天记录加载完成
   });
 
   // 导出到全局
   window['QQApp'] = QQApp;
+
+  // 添加全局调试函数
+  window.debugQQAvatars = function () {
+    if (window.QQApp) {
+      return window.QQApp.debugAvatarData();
+    } else {
+      console.error('QQ应用未加载');
+      return null;
+    }
+  };
+
+  window.refreshQQAvatars = function () {
+    if (window.QQApp) {
+      console.log('🔄 手动刷新QQ头像数据');
+      window.QQApp.refreshAvatarData();
+    } else {
+      console.error('QQ应用未加载');
+    }
+  };
 })(window);
