@@ -34,60 +34,9 @@
   z-index: 50;
 }
 
-/* 状态栏 */
-.friend-manager .status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 48px 24px 8px;
-  background: #f8f9fa;
-  flex-shrink: 0;
-}
-
-.friend-manager .status-time {
-  color: black;
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.friend-manager .status-icons {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.friend-manager .signal-icon,
-.friend-manager .battery-icon {
-  width: 4px;
-  height: 12px;
-  background: black;
-  border-radius: 2px;
-  margin-right: 4px;
-}
-
-.friend-manager .battery-icon {
-  width: 24px;
-  height: 12px;
-  border: 1px solid black;
-  border-radius: 2px;
-  position: relative;
-}
-
-.friend-manager .battery-icon::after {
-  content: '';
-  position: absolute;
-  right: -4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 8px;
-  background: black;
-  border-radius: 0 2px 2px 0;
-}
-
-/* 页面头部 */
+/* 页面头部 - 增加顶部间距避免与状态栏重叠 */
 .friend-manager .page-header {
-  padding: 12px 16px;
+  padding: 48px 16px 12px 16px; /* 增加顶部padding避免与状态栏重叠 */
   background: #f8f9fa;
   border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;

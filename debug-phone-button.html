@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机按键调试工具</title>
+    
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .debug-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .debug-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .debug-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-section h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .debug-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .debug-item:last-child {
+            border-bottom: none;
+        }
+        
+        .debug-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .debug-value {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .debug-value.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .debug-value.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .debug-value.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .debug-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .debug-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .debug-btn:hover {
+            background: #0056b3;
+        }
+        
+        .debug-btn.success {
+            background: #28a745;
+        }
+        
+        .debug-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .debug-btn.danger {
+            background: #dc3545;
+        }
+        
+        .console-output {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        /* 模拟SillyTavern的发送表单 */
+        #send_form {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px dashed #ccc;
+        }
+        
+        #rightSendForm {
+            background: #e0e0e0;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            color: #666;
+        }
+        
+        /* 手机按钮样式 */
+        .mobile-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            margin-right: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 450 !important;
+        }
+        
+        .mobile-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <div class="debug-header">
+            <h1>🔧 手机按键调试工具</h1>
+            <p>检查手机按键的创建和显示状态</p>
+        </div>
+        
+        <div class="debug-buttons">
+            <button class="debug-btn" onclick="createPhoneButton()">创建手机按键</button>
+            <button class="debug-btn success" onclick="checkButtonStatus()">检查按键状态</button>
+            <button class="debug-btn warning" onclick="forceShowButton()">强制显示按键</button>
+            <button class="debug-btn danger" onclick="removeButton()">移除按键</button>
+            <button class="debug-btn" onclick="clearConsole()">清空控制台</button>
+        </div>
+        
+        <!-- 模拟SillyTavern的发送表单 -->
+        <div id="send_form">
+            <div style="margin-bottom: 10px; font-weight: bold;">模拟 SillyTavern 发送表单</div>
+            <div id="rightSendForm">rightSendForm 区域 (手机按键应该出现在这里的前面)</div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>📊 按键状态检查</h3>
+            <div class="debug-item">
+                <span class="debug-label">按键元素存在:</span>
+                <span class="debug-value" id="button_exists">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">按键可见性:</span>
+                <span class="debug-value" id="button_visible">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">CSS Display:</span>
+                <span class="debug-value" id="button_display">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">CSS Z-Index:</span>
+                <span class="debug-value" id="button_zindex">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">按键位置:</span>
+                <span class="debug-value" id="button_position">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">父元素:</span>
+                <span class="debug-value" id="button_parent">未检测</span>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>🔍 DOM 结构检查</h3>
+            <div class="debug-item">
+                <span class="debug-label">send_form 存在:</span>
+                <span class="debug-value" id="sendform_exists">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">rightSendForm 存在:</span>
+                <span class="debug-value" id="rightsendform_exists">未检测</span>
+            </div>
+            <div class="debug-item">
+                <span class="debug-label">jQuery 版本:</span>
+                <span class="debug-value" id="jquery_version">未检测</span>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>📝 控制台输出</h3>
+            <div class="console-output" id="console_output">等待操作...</div>
+        </div>
+    </div>
+
+    <script>
+        // 控制台输出函数
+        function logToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            const output = `[${timestamp}] ${prefix} ${message}\n`;
+            
+            const consoleElement = document.getElementById('console_output');
+            consoleElement.textContent += output;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            
+            // 同时输出到浏览器控制台
+            console.log(message);
+        }
+        
+        // 创建手机按键
+        function createPhoneButton() {
+            logToConsole('开始创建手机按键...');
+            
+            // 移除可能存在的旧按键
+            $('#chat_history_btn').remove();
+            
+            // 创建手机按键
+            const $phoneButton = $(`
+                <div id="chat_history_btn" class="mobile-btn">
+                    <span style="color: white; font-size: 20px;">📱</span>
+                </div>
+            `);
+            
+            // 添加点击事件
+            $phoneButton.on('click', function(e) {
+                e.stopPropagation();
+                logToConsole('手机按键被点击！', 'success');
+                alert('手机按键工作正常！');
+            });
+            
+            // 将按键添加到发送表单
+            const $sendForm = $('#send_form');
+            const $rightSendForm = $sendForm.find('#rightSendForm');
+            
+            if ($sendForm.length > 0 && $rightSendForm.length > 0) {
+                $rightSendForm.before($phoneButton);
+                logToConsole('手机按键已添加到发送表单中', 'success');
+            } else {
+                $('body').append($phoneButton);
+                logToConsole('发送表单未找到，按键已添加到body', 'warning');
+            }
+            
+            // 检查按键状态
+            setTimeout(() => {
+                checkButtonStatus();
+            }, 100);
+        }
+        
+        // 检查按键状态
+        function checkButtonStatus() {
+            logToConsole('检查按键状态...');
+            
+            const $button = $('#chat_history_btn');
+            const $sendForm = $('#send_form');
+            const $rightSendForm = $('#rightSendForm');
+            
+            // 更新状态显示
+            updateStatus('button_exists', $button.length > 0 ? '✅ 存在' : '❌ 不存在', $button.length > 0 ? 'success' : 'error');
+            updateStatus('button_visible', $button.is(':visible') ? '✅ 可见' : '❌ 隐藏', $button.is(':visible') ? 'success' : 'error');
+            updateStatus('button_display', $button.css('display') || '未设置');
+            updateStatus('button_zindex', $button.css('z-index') || '未设置');
+            updateStatus('button_position', $button.length > 0 ? JSON.stringify($button.offset()) : '无位置信息');
+            updateStatus('button_parent', $button.parent().length > 0 ? $button.parent()[0].tagName + '#' + $button.parent().attr('id') : '无父元素');
+            
+            updateStatus('sendform_exists', $sendForm.length > 0 ? '✅ 存在' : '❌ 不存在', $sendForm.length > 0 ? 'success' : 'error');
+            updateStatus('rightsendform_exists', $rightSendForm.length > 0 ? '✅ 存在' : '❌ 不存在', $rightSendForm.length > 0 ? 'success' : 'error');
+            updateStatus('jquery_version', $.fn.jquery || '未知版本');
+            
+            if ($button.length > 0) {
+                logToConsole(`按键状态: 存在=${$button.length > 0}, 可见=${$button.is(':visible')}, display=${$button.css('display')}`, 'info');
+            } else {
+                logToConsole('按键不存在！', 'error');
+            }
+        }
+        
+        // 强制显示按键
+        function forceShowButton() {
+            logToConsole('强制显示按键...');
+            
+            const $button = $('#chat_history_btn');
+            if ($button.length > 0) {
+                $button.show().css({
+                    'display': 'flex !important',
+                    'visibility': 'visible !important',
+                    'opacity': '1 !important'
+                });
+                logToConsole('已强制设置按键为可见状态', 'success');
+            } else {
+                logToConsole('按键不存在，无法强制显示', 'error');
+            }
+            
+            setTimeout(() => {
+                checkButtonStatus();
+            }, 100);
+        }
+        
+        // 移除按键
+        function removeButton() {
+            logToConsole('移除按键...');
+            $('#chat_history_btn').remove();
+            logToConsole('按键已移除', 'success');
+            
+            setTimeout(() => {
+                checkButtonStatus();
+            }, 100);
+        }
+        
+        // 清空控制台
+        function clearConsole() {
+            document.getElementById('console_output').textContent = '';
+            logToConsole('控制台已清空');
+        }
+        
+        // 更新状态显示
+        function updateStatus(elementId, text, className = '') {
+            const $element = $(`#${elementId}`);
+            $element.text(text);
+            $element.removeClass('success error warning');
+            if (className) {
+                $element.addClass(className);
+            }
+        }
+        
+        // 页面加载完成后自动检查状态
+        $(document).ready(function() {
+            logToConsole('调试工具已加载');
+            checkButtonStatus();
+        });
+    </script>
+</body>
+</html>

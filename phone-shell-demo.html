@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机外观系统演示</title>
+    
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 引入手机外观系统 -->
+    <link rel="stylesheet" href="styles/phone-shell.css">
+    <script src="apps/phone-shell.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .demo-app {
+            padding: 60px 20px 20px; /* 为状态栏留出空间 */
+            height: calc(100% - 60px);
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            color: #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .demo-app h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 20px 0;
+            color: #2d3748;
+        }
+        
+        .demo-app p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 15px 0;
+            color: #4a5568;
+        }
+        
+        .demo-features {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-features h3 {
+            margin: 0 0 15px 0;
+            color: #2d3748;
+            font-size: 18px;
+        }
+        
+        .demo-features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        
+        .demo-features li {
+            padding: 5px 0;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        .demo-features li:before {
+            content: "✅ ";
+            margin-right: 8px;
+        }
+        
+        .theme-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .theme-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-btn:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .theme-btn.classic { background: linear-gradient(45deg, #ffffff, #f5f5f5); }
+        .theme-btn.dark { background: linear-gradient(45deg, #1a1a1a, #2d2d2d); color: white; }
+        .theme-btn.pink { background: linear-gradient(45deg, #fdf2f8, #fce7f3); }
+        .theme-btn.blue { background: linear-gradient(45deg, #eff6ff, #dbeafe); }
+        .theme-btn.green { background: linear-gradient(45deg, #f0fdf4, #dcfce7); }
+        
+        .current-time {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3748;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 10000;
+        }
+        
+        @media (max-width: 768px) {
+            .status-indicator {
+                top: 10px;
+                right: 10px;
+                font-size: 10px;
+                padding: 8px 12px;
+            }
+            
+            .demo-app h1 {
+                font-size: 24px;
+            }
+            
+            .demo-app p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator" id="status_indicator">
+        初始化中...
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            console.log('🚀 启动手机外观系统演示...');
+            
+            // 初始化手机外壳系统
+            window.PhoneShell.init();
+            
+            // 创建演示应用内容
+            const demoContent = `
+                <div class="demo-app">
+                    <h1>🎉 手机外观系统</h1>
+                    <p>这是一个完善的手机外壳系统演示</p>
+                    
+                    <div class="current-time" id="demo_current_time">
+                        加载中...
+                    </div>
+                    
+                    <div class="demo-features">
+                        <h3>✨ 主要特性</h3>
+                        <ul>
+                            <li>状态栏标准化 (37px高度)</li>
+                            <li>响应式缩放适配</li>
+                            <li>实时时间同步</li>
+                            <li>多主题支持</li>
+                            <li>SVG图标统一</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="theme-buttons">
+                        <button class="theme-btn classic" onclick="changeTheme('classic')">经典白色</button>
+                        <button class="theme-btn dark" onclick="changeTheme('dark')">深色主题</button>
+                        <button class="theme-btn pink" onclick="changeTheme('pink')">粉色主题</button>
+                        <button class="theme-btn blue" onclick="changeTheme('blue')">蓝色主题</button>
+                        <button class="theme-btn green" onclick="changeTheme('green')">绿色主题</button>
+                    </div>
+                    
+                    <p>🔄 时间每分钟自动更新</p>
+                    <p>📱 支持各种设备尺寸</p>
+                    <p>🎨 点击按钮切换主题</p>
+                </div>
+            `;
+            
+            // 创建手机外壳
+            const phoneHTML = window.PhoneShell.createShellHTML(demoContent, 'demo_phone');
+            $('body').append(phoneHTML);
+            
+            // 显示手机并启动功能
+            window.PhoneShell.show('demo_phone');
+            window.PhoneShell.startTimeUpdate('demo_phone');
+            
+            // 更新状态指示器
+            updateStatusIndicator();
+            
+            // 定期更新演示时间显示
+            updateDemoTime();
+            setInterval(updateDemoTime, 1000);
+            
+            // 定期更新状态
+            setInterval(updateStatusIndicator, 5000);
+            
+            console.log('✅ 手机外观系统演示启动完成');
+        });
+        
+        // 主题切换函数
+        function changeTheme(themeName) {
+            window.PhoneShell.setTheme(themeName, 'demo_phone');
+            updateStatusIndicator();
+            
+            // 视觉反馈
+            const buttons = document.querySelectorAll('.theme-btn');
+            buttons.forEach(btn => btn.style.transform = 'scale(1)');
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                event.target.style.transform = 'scale(1)';
+            }, 150);
+        }
+        
+        // 更新演示时间显示
+        function updateDemoTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            $('#demo_current_time').text(`当前时间: ${timeString}`);
+        }
+        
+        // 更新状态指示器
+        function updateStatusIndicator() {
+            const info = window.PhoneShell.getSystemInfo();
+            const validation = window.PhoneShell.validateShell('demo_phone');
+            
+            const statusText = `
+                主题: ${info.currentTheme} | 
+                时间: ${info.timeUpdateActive ? '运行' : '停止'} | 
+                状态: ${validation.valid ? '正常' : '异常'}
+            `.trim();
+            
+            $('#status_indicator').text(statusText);
+        }
+        
+        // 窗口大小变化时更新缩放
+        $(window).on('resize', function() {
+            window.PhoneShell.updateResponsiveScale('demo_phone');
+        });
+        
+        // 页面卸载时清理
+        $(window).on('beforeunload', function() {
+            window.PhoneShell.destroy();
+        });
+    </script>
+</body>
+</html>

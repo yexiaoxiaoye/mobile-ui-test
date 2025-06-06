@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Shell 迁移测试</title>
+    
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 引入phone-shell系统 -->
+    <link rel="stylesheet" href="styles/phone-shell.css">
+    <script src="apps/phone-shell.js"></script>
+    
+    <!-- 引入phone-interface -->
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <script src="apps/phone-interface.js"></script>
+    
+    <!-- 引入QQ应用 -->
+    <link rel="stylesheet" href="styles/qq-app.css">
+    <script src="apps/qq-app.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .test-btn.success {
+            background: #28a745;
+        }
+        
+        .test-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .test-status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .status-value {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .status-value.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-value.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>📱 Phone Shell 系统迁移测试</h1>
+            <p>测试所有应用的状态栏组件是否成功迁移到统一的phone-shell系统</p>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testPhoneInterface()">测试手机界面</button>
+            <button class="test-btn" onclick="testPhoneShell()">测试Phone Shell</button>
+            <button class="test-btn" onclick="testTimeUpdate()">测试时间更新</button>
+            <button class="test-btn" onclick="testThemeSwitch()">测试主题切换</button>
+            <button class="test-btn warning" onclick="checkSystemStatus()">检查系统状态</button>
+        </div>
+        
+        <div class="test-status" id="test_status">
+            <div class="status-item">
+                <span class="status-label">Phone Shell 系统:</span>
+                <span class="status-value" id="phone_shell_status">未检测</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Phone Interface:</span>
+                <span class="status-value" id="phone_interface_status">未检测</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">时间更新:</span>
+                <span class="status-value" id="time_update_status">未检测</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">当前时间:</span>
+                <span class="status-value" id="current_time">--:--</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">状态栏元素:</span>
+                <span class="status-value" id="status_bar_elements">未检测</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化测试
+        $(document).ready(function() {
+            console.log('🚀 开始Phone Shell迁移测试...');
+            
+            // 检查系统状态
+            setTimeout(() => {
+                checkSystemStatus();
+                updateCurrentTime();
+                setInterval(updateCurrentTime, 1000);
+            }, 1000);
+        });
+        
+        // 测试手机界面
+        function testPhoneInterface() {
+            console.log('📱 测试手机界面...');
+            
+            if (typeof window.PhoneInterface !== 'undefined') {
+                try {
+                    window.PhoneInterface.init();
+                    window.PhoneInterface.show();
+                    updateStatus('phone_interface_status', '✅ 正常', 'success');
+                } catch (error) {
+                    console.error('手机界面测试失败:', error);
+                    updateStatus('phone_interface_status', '❌ 错误', 'error');
+                }
+            } else {
+                updateStatus('phone_interface_status', '❌ 未找到', 'error');
+            }
+        }
+        
+        // 测试Phone Shell系统
+        function testPhoneShell() {
+            console.log('🏗️ 测试Phone Shell系统...');
+            
+            if (typeof window.PhoneShell !== 'undefined') {
+                try {
+                    const testContent = '<div style="padding: 20px; text-align: center;"><h2>测试内容</h2><p>Phone Shell系统正常工作</p></div>';
+                    const shellHTML = window.PhoneShell.createShellHTML(testContent, 'test_shell');
+                    
+                    // 移除之前的测试shell
+                    $('#test_shell').remove();
+                    
+                    // 添加新的测试shell
+                    $('body').append(shellHTML);
+                    window.PhoneShell.show('test_shell');
+                    window.PhoneShell.startTimeUpdate('test_shell');
+                    
+                    updateStatus('phone_shell_status', '✅ 正常', 'success');
+                } catch (error) {
+                    console.error('Phone Shell测试失败:', error);
+                    updateStatus('phone_shell_status', '❌ 错误', 'error');
+                }
+            } else {
+                updateStatus('phone_shell_status', '❌ 未找到', 'error');
+            }
+        }
+        
+        // 测试时间更新
+        function testTimeUpdate() {
+            console.log('⏰ 测试时间更新...');
+            
+            if (typeof window.PhoneShell !== 'undefined') {
+                try {
+                    window.PhoneShell.startTimeUpdate('test_shell');
+                    updateStatus('time_update_status', '✅ 正常', 'success');
+                } catch (error) {
+                    console.error('时间更新测试失败:', error);
+                    updateStatus('time_update_status', '❌ 错误', 'error');
+                }
+            } else {
+                updateStatus('time_update_status', '❌ 系统未找到', 'error');
+            }
+        }
+        
+        // 测试主题切换
+        function testThemeSwitch() {
+            console.log('🎨 测试主题切换...');
+            
+            if (typeof window.PhoneShell !== 'undefined') {
+                try {
+                    const themes = ['classic', 'dark', 'pink', 'blue', 'green'];
+                    let currentIndex = 0;
+                    
+                    const switchTheme = () => {
+                        const theme = themes[currentIndex];
+                        window.PhoneShell.setTheme(theme, 'test_shell');
+                        console.log(`切换到主题: ${theme}`);
+                        
+                        currentIndex = (currentIndex + 1) % themes.length;
+                        
+                        if (currentIndex === 0) {
+                            console.log('主题切换测试完成');
+                            return;
+                        }
+                        
+                        setTimeout(switchTheme, 1000);
+                    };
+                    
+                    switchTheme();
+                } catch (error) {
+                    console.error('主题切换测试失败:', error);
+                }
+            }
+        }
+        
+        // 检查系统状态
+        function checkSystemStatus() {
+            console.log('🔍 检查系统状态...');
+            
+            // 检查Phone Shell
+            if (typeof window.PhoneShell !== 'undefined') {
+                updateStatus('phone_shell_status', '✅ 已加载', 'success');
+            } else {
+                updateStatus('phone_shell_status', '❌ 未加载', 'error');
+            }
+            
+            // 检查Phone Interface
+            if (typeof window.PhoneInterface !== 'undefined') {
+                updateStatus('phone_interface_status', '✅ 已加载', 'success');
+            } else {
+                updateStatus('phone_interface_status', '❌ 未加载', 'error');
+            }
+            
+            // 检查状态栏元素
+            const statusBarElements = $('.phone-shell-status-bar, .phone-shell-status-time, .phone-shell-status-icons').length;
+            if (statusBarElements > 0) {
+                updateStatus('status_bar_elements', `✅ 找到 ${statusBarElements} 个`, 'success');
+            } else {
+                updateStatus('status_bar_elements', '❌ 未找到', 'error');
+            }
+        }
+        
+        // 更新状态显示
+        function updateStatus(elementId, text, className = '') {
+            const $element = $(`#${elementId}`);
+            $element.text(text);
+            $element.removeClass('success error');
+            if (className) {
+                $element.addClass(className);
+            }
+        }
+        
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            updateStatus('current_time', timeStr);
+        }
+    </script>
+</body>
+</html>

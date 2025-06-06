@@ -440,3 +440,308 @@
 .wallpaper-history-list::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* 头部右侧按钮 */
+.wallpaper-home-btn {
+  background: none;
+  border: none;
+  color: #007aff;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: auto;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.wallpaper-home-btn:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+/* 模式切换按钮 */
+.wallpaper-mode-switcher {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 4px;
+  margin: 15px 20px;
+  gap: 4px;
+}
+
+.wallpaper-mode-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallpaper-mode-btn.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.wallpaper-mode-btn:hover:not(.active) {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* 主题相关样式 */
+.current-theme-section {
+  margin-bottom: 25px;
+}
+
+.current-theme-display {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.current-theme-preview {
+  width: 50px;
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid var(--phone-shell-primary, #ffffff);
+  background: var(--phone-shell-secondary, #f5f5f5);
+  margin-right: 15px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.current-theme-phone {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.current-theme-island {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 4px;
+  background: #000000;
+  border-radius: 2px;
+}
+
+.current-theme-status {
+  position: absolute;
+  top: 8px;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--status-bar-text, #000) 30%,
+    transparent 30%,
+    transparent 70%,
+    var(--status-bar-text, #000) 70%
+  );
+  border-radius: 1px;
+}
+
+.current-theme-info {
+  flex: 1;
+}
+
+.current-theme-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.current-theme-desc {
+  font-size: 13px;
+  color: #666;
+}
+
+.theme-selection-section {
+  margin-bottom: 25px;
+}
+
+.theme-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.theme-option-btn:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+  transform: translateY(-1px);
+}
+
+.theme-option-btn.active {
+  border-color: #007bff;
+  background: #e3f2fd;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.theme-preview {
+  width: 40px;
+  height: 60px;
+  border-radius: 6px;
+  border: 2px solid var(--phone-shell-primary, #ffffff);
+  background: var(--phone-shell-secondary, #f5f5f5);
+  margin-right: 15px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.theme-preview-phone {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-preview-island {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 3px;
+  background: #000000;
+  border-radius: 2px;
+}
+
+.theme-preview-status {
+  position: absolute;
+  top: 6px;
+  left: 3px;
+  right: 3px;
+  height: 1.5px;
+  background: linear-gradient(
+    to right,
+    var(--status-bar-text, #000) 30%,
+    transparent 30%,
+    transparent 70%,
+    var(--status-bar-text, #000) 70%
+  );
+  border-radius: 1px;
+}
+
+.theme-info {
+  flex: 1;
+}
+
+.theme-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.theme-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.theme-active-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.theme-info-section {
+  margin-top: 20px;
+}
+
+.theme-tip {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+  gap: 8px;
+}
+
+.theme-tip svg {
+  color: #2196f3;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.theme-tip span {
+  font-size: 13px;
+  color: #1565c0;
+  line-height: 1.4;
+}
+
+/* 响应式设计增强 */
+@media (max-width: 480px) {
+  .wallpaper-mode-switcher {
+    margin: 10px 15px;
+  }
+
+  .theme-option-btn {
+    padding: 12px;
+  }
+
+  .theme-preview {
+    width: 32px;
+    height: 48px;
+    margin-right: 12px;
+  }
+
+  .theme-name {
+    font-size: 14px;
+  }
+
+  .theme-description {
+    font-size: 11px;
+  }
+
+  .current-theme-preview {
+    width: 40px;
+    height: 64px;
+    margin-right: 12px;
+  }
+
+  .current-theme-name {
+    font-size: 15px;
+  }
+
+  .current-theme-desc {
+    font-size: 12px;
+  }
+}

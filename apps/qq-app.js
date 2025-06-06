@@ -1068,64 +1068,14 @@
       // 启动时间更新
       this.startTimeUpdate();
 
-      // 延迟检查并移动已存在的chat_history_btn
-      const moveButton = () => {
-        const $existingBtn = $('#chat_history_btn');
-        if ($existingBtn.length > 0) {
-          console.log('找到现有的chat_history_btn，准备移动到body');
-
-          // 从原位置移除并添加到body
-          $existingBtn.detach().appendTo('body');
-
-          // 调整样式为浮动按钮
-          $existingBtn.css({
-            position: 'absolute',
-            bottom: '138px',
-            left: '10px',
-            'z-index': '999',
-            width: '32px',
-            height: '32px',
-            'border-radius': '50%',
-            'z-index': '1000',
-            cursor: 'pointer',
-            margin: '0',
-            'box-shadow': '0 4px 12px rgba(0,0,0,0.3)',
-            transition: 'all 0.3s ease',
-          });
-
-          console.log('已将chat_history_btn移动到body并调整为浮动按钮');
-          return true;
-        } else {
-          console.warn('未找到现有的chat_history_btn元素');
-          return false;
-        }
-      };
-
-      // 立即尝试移动按钮
-      if (!moveButton()) {
-        // 如果没找到，延迟重试
-        console.log('按钮未找到，将在2秒后重试...');
-        setTimeout(() => {
-          if (!moveButton()) {
-            console.log('按钮仍未找到，将在5秒后再次重试...');
-            setTimeout(() => {
-              moveButton();
-            }, 5000);
-          }
-        }, 2000);
-      }
+      // 注释：不再移动手机按钮，让 phone-interface.js 负责创建和管理
+      // 手机按钮现在由统一的 phone-shell 系统管理
+      console.log('✅ QQ应用界面创建完成，手机按钮由 phone-interface.js 管理');
 
       const $historyDialog = $(`
                 <div id="chat_history_dialog" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; height: 90vh;z-index: 1000; flex-direction: column;border-radius: 10px;overflow: hidden;">
                     <div style="background: #ffffff; color: black; width: 90%; max-width: 600px; height: 90%; margin: auto; border-radius: 10px; display: flex; flex-direction: column;">
-                        <!-- 状态栏 -->
-                        <div class="qq-status-bar">
-                            <div class="qq-status-time">7:13</div>
-                            <div class="qq-status-icons">
-                                <span class="qq-signal-icon">📶</span>
-                                <span class="qq-battery-icon">🔋</span>
-                            </div>
-                        </div>
+
 
                         <div class="dialog-head">
                             <div class="user-info-section">
@@ -1222,9 +1172,11 @@
     bindEvents: function () {
       const self = this;
 
-      // QQ消息按钮点击事件
-      $('#chat_history_btn').on('click', function () {
-        self.show();
+      // QQ消息按钮点击事件 - 使用事件委托，等待 phone-interface.js 创建按钮
+      $(document).on('click', '#chat_history_btn', function () {
+        console.log('📱 手机按钮被点击，但QQ应用不再直接处理此事件');
+        // 注释：手机按钮现在由 phone-interface.js 统一管理
+        // self.show();
       });
 
       // 小房子按钮点击事件 - 返回手机首页 (主QQ界面)
@@ -1635,14 +1587,7 @@
 
                             <!-- 隐藏的聊天页面 - v0风格 -->
                             <div class="chat-page">
-                                <!-- 聊天页面状态栏 -->
-                                <div class="chat-status-bar">
-                                    <div class="chat-status-time qq-status-time">7:13</div>
-                                    <div class="chat-status-icons qq-status-icons">
-                                        <span class="chat-signal-icon qq-signal-icon">📶</span>
-                                        <span class="chat-battery-icon qq-battery-icon">🔋</span>
-                                    </div>
-                                </div>
+
 
                                 <div class="chat-header">
                                     <button class="back-to-main-list-btn">←</button>
@@ -1755,14 +1700,7 @@
 
                             <!-- 隐藏的聊天页面 - v0风格 -->
                             <div class="chat-page">
-                                <!-- 聊天页面状态栏 -->
-                                <div class="chat-status-bar">
-                                    <div class="chat-status-time qq-status-time">7:13</div>
-                                    <div class="chat-status-icons qq-status-icons">
-                                        <span class="chat-signal-icon qq-signal-icon">📶</span>
-                                        <span class="chat-battery-icon qq-battery-icon">🔋</span>
-                                    </div>
-                                </div>
+
 
                                 <div class="chat-header">
                                     <button class="back-to-main-list-btn">←</button>
@@ -2882,11 +2820,8 @@
 
       // 使用CSS类来隐藏，避免破坏flexbox布局
       $('.dialog-head').addClass('qq-decoration-hidden');
-      $('.qq-status-bar:not(.chat-status-bar)').addClass('qq-decoration-hidden');
       $('#chat_history_dialog .dialog-head').addClass('qq-decoration-hidden');
-      $('#chat_history_dialog .qq-status-bar').addClass('qq-decoration-hidden');
       $('.qq-app-container .dialog-head').addClass('qq-decoration-hidden');
-      $('.qq-app-container .qq-status-bar').addClass('qq-decoration-hidden');
 
       // 添加隐藏类
       $('body').addClass('chat-detail-active');
@@ -2898,11 +2833,8 @@
 
       // 使用CSS类来显示，保持原有的display属性
       $('.dialog-head').removeClass('qq-decoration-hidden');
-      $('.qq-status-bar:not(.chat-status-bar)').removeClass('qq-decoration-hidden');
       $('#chat_history_dialog .dialog-head').removeClass('qq-decoration-hidden');
-      $('#chat_history_dialog .qq-status-bar').removeClass('qq-decoration-hidden');
       $('.qq-app-container .dialog-head').removeClass('qq-decoration-hidden');
-      $('.qq-app-container .qq-status-bar').removeClass('qq-decoration-hidden');
 
       // 移除隐藏类
       $('body').removeClass('chat-detail-active');

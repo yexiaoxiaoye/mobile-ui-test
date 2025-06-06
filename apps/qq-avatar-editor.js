@@ -68,23 +68,7 @@
     createEditorInterface() {
       const $editorPage = $(`
         <div class="qq-avatar-editor-page" style="display: none;">
-          <!-- 状态栏 -->
-          <div class="qq-status-bar">
-            <div class="qq-status-time">7:13</div>
-            <div class="qq-status-icons">
-              <svg class="qq-signal-icon" width="18" height="12" viewBox="0 0 18 12" fill="none">
-                <rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/>
-                <rect x="5" y="6" width="3" height="6" rx="1" fill="currentColor"/>
-                <rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/>
-                <rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/>
-              </svg>
-              <svg class="qq-battery-icon" width="24" height="12" viewBox="0 0 24 12" fill="none">
-                <rect x="1" y="2" width="18" height="8" rx="2" stroke="currentColor" stroke-width="1"/>
-                <rect x="20" y="4" width="2" height="4" rx="1" fill="currentColor"/>
-                <rect x="3" y="4" width="14" height="4" rx="1" fill="currentColor"/>
-              </svg>
-            </div>
-          </div>
+
 
           <!-- 编辑器头部 -->
           <div class="qq-avatar-editor-header">
@@ -518,13 +502,11 @@
       console.log('🔍 检查按钮区域可见性');
 
       const $header = $editorPage.find('.qq-avatar-editor-header');
-      const $statusBar = $editorPage.find('.qq-status-bar');
       const $bottomActions = $editorPage.find('.editor-bottom-actions');
       const $cancelBtn = $editorPage.find('.editor-cancel-btn');
       const $saveBtn = $editorPage.find('.editor-save-btn');
 
       console.log('界面元素检查:');
-      console.log('- 状态栏存在:', $statusBar.length > 0);
       console.log('- 头部存在:', $header.length > 0);
       console.log('- 底部操作区域存在:', $bottomActions.length > 0);
       console.log('- 取消按钮存在:', $cancelBtn.length > 0);

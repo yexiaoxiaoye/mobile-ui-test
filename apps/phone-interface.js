@@ -3,14 +3,49 @@
   'use strict';
 
   const PhoneInterface = {
-    // 初始化手机界面
+    // 手机外壳ID
+    shellId: 'phone_interface_shell',
+
+    // 初始化手机界面（完整初始化，包括界面创建和显示）
     init: function () {
+      // 确保phone-shell系统已加载
+      if (typeof window.PhoneShell === 'undefined') {
+        console.error('❌ PhoneShell系统未找到，请先加载phone-shell.js');
+        return;
+      }
+
+      // 初始化手机外壳系统
+      window.PhoneShell.init();
+
       this.createInterface();
       this.bindEvents();
       this.addAnimationStyles();
-      this.startTimeUpdate(); // 添加时间更新功能
-      this.initResponsiveScaling(); // 初始化响应式缩放
-      console.log('手机界面已初始化');
+
+      // 恢复保存的主题
+      setTimeout(() => {
+        this.restoreSavedTheme();
+      }, 100);
+
+      console.log('✅ 手机界面已初始化，使用统一的phone-shell系统');
+    },
+
+    // 仅初始化手机按钮（不创建和显示手机界面）
+    initButtonOnly: function () {
+      // 确保phone-shell系统已加载
+      if (typeof window.PhoneShell === 'undefined') {
+        console.error('❌ PhoneShell系统未找到，请先加载phone-shell.js');
+        return;
+      }
+
+      // 初始化手机外壳系统
+      window.PhoneShell.init();
+
+      // 只创建手机按钮，不创建界面
+      this.createPhoneButtonOnly();
+      this.bindEvents();
+      this.addAnimationStyles();
+
+      console.log('✅ 手机按钮已初始化，界面默认隐藏');
     },
 
     // 添加动画样式
@@ -132,36 +167,22 @@
                 </div>
             `);
 
-      // 创建手机界面 - 使用新的UI设计
-      const $phoneInterface = $(`
-                <div id="phone_interface" class="phone-interface">
-
-                    <!-- iPhone 屏幕 -->
-                    <div class="phone-screen">
-                        <!-- 背景 -->
-                        <div class="phone-background">
-                        </div>
-
-                        <!-- QQ应用容器 - 当QQ应用激活时显示 -->
-                        <div class="qq-app-container"></div>
-
-                        <!-- 美化应用容器 - 当美化应用激活时显示 -->
-                        <div class="wallpaper-app-container"></div>
-
-                        <!-- Dynamic Island -->
-                        <div class="dynamic-island"></div>
-
-                        <!-- 状态栏 -->
-                        <div class="phone-status-bar">
-                            <div class="status-time" id="status_time">8:00</div>
-                            <div class="status-icons">
-                                <span class="signal-icon"></span>
-                                <span class="battery-icon"></span>
+      // 创建手机主屏幕内容
+      const homeScreenContent = `
+                        <!-- 手机屏幕容器 -->
+                        <div class="phone-screen">
+                            <!-- 背景 -->
+                            <div class="phone-background">
                             </div>
-                        </div>
 
-                        <!-- 主屏幕 -->
-                        <div class="phone-home-screen">
+                            <!-- QQ应用容器 - 当QQ应用激活时显示 -->
+                            <div class="qq-app-container"></div>
+
+                            <!-- 美化应用容器 - 当美化应用激活时显示 -->
+                            <div class="wallpaper-app-container"></div>
+
+                            <!-- 主屏幕 -->
+                            <div class="phone-home-screen">
 
                             <!-- 时间显示 -->
                             <div class="home-time">
@@ -270,14 +291,19 @@
                                     <div class="app-name">美化</div>
                                 </div>
                             </div>
-                        </div>
+                            </div>
 
-                        <!-- 底部导航栏 -->
-                        <div class="phone-dock">
+                            <!-- 底部导航栏 -->
+                            <div class="phone-dock">
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `);
+            `;
+
+      // 使用phone-shell系统创建手机界面
+      const phoneHTML = window.PhoneShell.createShellHTML(homeScreenContent, this.shellId);
+
+      // 移除可能存在的旧手机按键
+      $('#chat_history_btn').remove();
 
       // 将手机按钮添加到send_form中的rightSendForm前面
       const $sendForm = $('#send_form');
@@ -285,26 +311,282 @@
 
       if ($sendForm.length > 0 && $rightSendForm.length > 0) {
         $rightSendForm.before($phoneButton);
-        console.log('手机按钮已添加到发送表单中');
+        console.log('✅ 手机按钮已添加到发送表单中');
+        console.log('📱 手机按钮元素:', $phoneButton[0]);
+        console.log('📍 手机按钮位置:', $phoneButton.offset());
       } else {
         // 如果找不到目标位置，则添加到body
         $('body').append($phoneButton);
-        console.log('未找到发送表单，手机按钮已添加到body');
+        console.log('⚠️ 未找到发送表单，手机按钮已添加到body');
       }
 
-      $('body').append($phoneInterface);
+      // 验证手机按键是否成功添加
+      setTimeout(() => {
+        const $addedButton = $('#chat_history_btn');
+        if ($addedButton.length > 0) {
+          console.log('✅ 手机按键验证成功，元素已存在');
+          console.log('📊 按键状态:', {
+            visible: $addedButton.is(':visible'),
+            display: $addedButton.css('display'),
+            zIndex: $addedButton.css('z-index'),
+            position: $addedButton.css('position'),
+          });
+        } else {
+          console.error('❌ 手机按键验证失败，元素不存在');
+        }
+      }, 100);
+
+      // 确保没有重复的手机界面元素
+      $('#phone_interface').remove();
+      $(`#${this.shellId}`).remove();
+
+      // 添加phone-shell创建的手机界面到页面
+      $('body').append(phoneHTML);
+
+      // 将phone-shell创建的元素ID改为phone_interface以保持兼容性
+      $(`#${this.shellId}`).attr('id', 'phone_interface');
+
+      // 启动phone-shell的时间更新
+      window.PhoneShell.show('phone_interface');
+      window.PhoneShell.startTimeUpdate('phone_interface');
 
       // 绑定应用图标事件（需要在界面创建后绑定）
       this.bindAppIconEvents();
+
+      console.log('✅ 手机界面已创建，使用统一的phone-shell系统');
+    },
+
+    // 仅创建手机按钮（不创建手机界面）
+    createPhoneButtonOnly: function () {
+      // 创建手机按钮
+      const $phoneButton = $(`
+                <div id="chat_history_btn" class="mobile-btn">
+                    <span style="color: white; font-size: 20px;">📱</span>
+                </div>
+            `);
+
+      // 移除可能存在的旧手机按键
+      $('#chat_history_btn').remove();
+
+      // 将手机按钮添加到send_form中的rightSendForm前面
+      const $sendForm = $('#send_form');
+      const $rightSendForm = $sendForm.find('#rightSendForm');
+
+      if ($sendForm.length > 0 && $rightSendForm.length > 0) {
+        $rightSendForm.before($phoneButton);
+        console.log('✅ 手机按钮已添加到发送表单中');
+        console.log('📱 手机按钮元素:', $phoneButton[0]);
+        console.log('📍 手机按钮位置:', $phoneButton.offset());
+      } else {
+        // 如果找不到目标位置，则添加到body
+        $('body').append($phoneButton);
+        console.log('⚠️ 未找到发送表单，手机按钮已添加到body');
+      }
+
+      // 验证手机按键是否成功添加
+      setTimeout(() => {
+        const $addedButton = $('#chat_history_btn');
+        if ($addedButton.length > 0) {
+          console.log('✅ 手机按键验证成功，元素已存在');
+          console.log('📊 按键状态:', {
+            visible: $addedButton.is(':visible'),
+            display: $addedButton.css('display'),
+            zIndex: $addedButton.css('z-index'),
+            position: $addedButton.css('position'),
+          });
+        } else {
+          console.error('❌ 手机按键验证失败，元素不存在');
+        }
+      }, 100);
+
+      console.log('✅ 手机按钮创建完成（界面未创建）');
+    },
+
+    // 创建手机界面并显示（用于第一次点击）
+    createInterfaceAndShow: function () {
+      console.log('🔄 第一次点击，创建手机界面...');
+
+      // 创建手机主屏幕内容
+      const homeScreenContent = `
+                        <!-- 手机屏幕容器 -->
+                        <div class="phone-screen">
+                            <!-- 背景 -->
+                            <div class="phone-background">
+                            </div>
+
+                            <!-- QQ应用容器 - 当QQ应用激活时显示 -->
+                            <div class="qq-app-container"></div>
+
+                            <!-- 美化应用容器 - 当美化应用激活时显示 -->
+                            <div class="wallpaper-app-container"></div>
+
+                            <!-- 主屏幕 -->
+                            <div class="phone-home-screen">
+
+                            <!-- 时间显示 -->
+                            <div class="home-time">
+                                <div class="home-time-main" id="home_time_main">21:09</div>
+                                <div class="home-time-date" id="home_time_date">星期三，12月18日</div>
+                            </div>
+
+                            <!-- 欢迎消息 -->
+                            <div class="welcome-message animate-float">
+                                <div class="welcome-header">
+                                    <div class="welcome-title">
+                                        <span style="color: white; font-size: 18px;">❥</span>
+                                        <span style="color: white; font-weight: 500; font-size: 14px;">Message</span>
+                                    </div>
+                                    <div class="close-welcome" style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                        <span style="color: white; font-size: 12px;">×</span>
+                                    </div>
+                                </div>
+
+                                <div class="welcome-content">
+                                    <div class="welcome-content-item">💌 纯爱统治世界(つ ω つ)</div>
+                                    <div class="welcome-content-item">☀️ 今天也是元气满满的一天呢◊</div>
+                                    <div class="welcome-content-item">💙 (=^-ω-^=)好运来咯！请接好</div>
+                                </div>
+
+                                <div class="welcome-buttons">
+                                    <button class="welcome-btn">OK</button>
+                                    <button class="welcome-btn">GOOD</button>
+                                    <button class="welcome-btn">PERFECT</button>
+                                </div>
+                            </div>
+
+                            <!-- 简约装饰元素 -->
+                            <div class="sparkle-decoration" style="font-size: 22px;top: 32px; right: 16px;">
+                                <span>♡</span>
+                            </div>
+                            <div class="star-decoration" style="font-size: 26px;top: 48px; left: 20px;">
+                                <span>☀</span>
+                            </div>
+                            <div class="heart-decoration" style="font-size: 22px;top: 95px; right: 32px;">
+                                <span>★</span>
+                            </div>
+
+                            <!-- 应用网格 - 第一行 -->
+                            <div class="app-grid">
+                                <!-- QQ应用 -->
+                                <div class="app-icon" data-app="qq">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">💭</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">消息</div>
+                                </div>
+
+                                <!-- 淘宝应用 -->
+                                <div class="app-icon" data-app="taobao">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">🛒</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">淘宝</div>
+                                </div>
+
+                                <!-- 任务应用 -->
+                                <div class="app-icon" data-app="renwu">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">✓</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">任务</div>
+                                </div>
+                            </div>
+
+                            <!-- 应用网格 - 第二行 -->
+                            <div class="app-grid-row2">
+                                <!-- 背包应用 -->
+                                <div class="app-icon" data-app="backpack">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">🎒</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">背包</div>
+                                </div>
+
+                                <!-- 抽卡应用 -->
+                                <div class="app-icon" data-app="chouka">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">🎴</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">抽卡</div>
+                                </div>
+
+                                <!-- 美化应用 -->
+                                <div class="app-icon" data-app="wallpaper">
+                                    <div class="app-icon-img">
+                                        <div class="app-icon-inner">
+                                            <span class="simple-icon">🎨</span>
+                                        </div>
+                                    </div>
+                                    <div class="app-name">美化</div>
+                                </div>
+                            </div>
+                            </div>
+
+                            <!-- 底部导航栏 -->
+                            <div class="phone-dock">
+                            </div>
+                        </div>
+            `;
+
+      // 使用phone-shell系统创建手机界面
+      const phoneHTML = window.PhoneShell.createShellHTML(homeScreenContent, this.shellId);
+
+      // 确保没有重复的手机界面元素
+      $('#phone_interface').remove();
+      $(`#${this.shellId}`).remove();
+
+      // 添加phone-shell创建的手机界面到页面
+      $('body').append(phoneHTML);
+
+      // 将phone-shell创建的元素ID改为phone_interface以保持兼容性
+      $(`#${this.shellId}`).attr('id', 'phone_interface');
+
+      // 启动phone-shell的时间更新
+      window.PhoneShell.show('phone_interface');
+      window.PhoneShell.startTimeUpdate('phone_interface');
+
+      // 绑定应用图标事件（需要在界面创建后绑定）
+      this.bindAppIconEvents();
+
+      // 恢复保存的主题
+      setTimeout(() => {
+        this.restoreSavedTheme();
+      }, 100);
+
+      // 立即显示手机界面
+      this.show();
+
+      console.log('✅ 手机界面已创建并显示');
     },
 
     // 绑定事件
     bindEvents: function () {
-      // 手机按钮点击事件 - 智能切换逻辑
-      $('#chat_history_btn').on('click', e => {
+      // 手机按钮点击事件 - 智能切换逻辑（支持延迟创建界面）
+      $(document).on('click', '#chat_history_btn', e => {
         e.stopPropagation();
         console.log('Phone button clicked.');
 
+        // 检查手机界面是否已创建
+        const phoneInterfaceExists = $('#phone_interface').length > 0;
+
+        if (!phoneInterfaceExists) {
+          // 第一次点击：创建并显示手机界面
+          console.log('Phone button: First click, creating interface...');
+          this.createInterfaceAndShow();
+          return;
+        }
+
+        // 后续点击：智能切换逻辑
         const hasOpenApps = this.checkOpenApps();
         const phoneInterfaceVisible = $('#phone_interface').hasClass('show');
         console.log('Phone button: hasOpenApps:', hasOpenApps, 'phoneInterfaceVisible:', phoneInterfaceVisible);
@@ -533,132 +815,132 @@
 
     // 获取当前系统时间并更新界面时间
     updateTime: function () {
-      const now = new Date();
+      // 使用phone-shell系统的时间更新，同时更新主屏幕时间
+      if (window.PhoneShell) {
+        // phone-shell会自动更新状态栏时间，我们只需要更新主屏幕时间
+        const now = new Date();
 
-      // 格式化时间为 HH:MM 格式
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const timeStr = `${hours}:${minutes}`;
+        // 格式化时间为 HH:MM 格式
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
 
-      // 获取星期几
-      const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-      const weekday = weekdays[now.getDay()];
+        // 获取星期几
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        const weekday = weekdays[now.getDay()];
 
-      // 获取月份和日期
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const dateStr = `${weekday}，${month}月${day}日`;
+        // 获取月份和日期
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${weekday}，${month}月${day}日`;
 
-      // 更新状态栏时间
-      $('#status_time').text(timeStr);
-
-      // 更新主屏幕时间
-      $('#home_time_main').text(timeStr);
-      $('#home_time_date').text(dateStr);
+        // 更新主屏幕时间
+        $('#home_time_main').text(timeStr);
+        $('#home_time_date').text(dateStr);
+      }
     },
 
     // 启动时间更新功能
     startTimeUpdate: function () {
-      // 立即更新一次时间
-      this.updateTime();
+      // 使用phone-shell系统的时间更新
+      if (window.PhoneShell) {
+        // 使用phone_interface ID，因为我们已经在createInterface中重命名了
+        window.PhoneShell.startTimeUpdate('phone_interface');
 
-      // 计算到下一分钟的毫秒数
-      const now = new Date();
-      const delay = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
-
-      // 先设置一个定时器，在下一个整分钟时触发
-      setTimeout(() => {
-        // 更新时间
+        // 同时启动主屏幕时间的更新
         this.updateTime();
 
-        // 然后设置每分钟更新一次的定时器
-        setInterval(() => {
+        // 设置主屏幕时间的定时更新
+        const now = new Date();
+        const delay = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+
+        setTimeout(() => {
           this.updateTime();
-        }, 60000);
-      }, delay);
+          setInterval(() => {
+            this.updateTime();
+          }, 60000);
+        }, delay);
+      }
     },
 
     // 显示手机界面
     show: function () {
       console.log('🔄 开始显示手机界面...');
 
+      // 检查手机界面是否存在
+      let $phoneInterface = $('#phone_interface');
+      if ($phoneInterface.length === 0) {
+        console.log('⚠️ 手机界面元素不存在，使用createInterfaceAndShow创建...');
+        this.createInterfaceAndShow();
+        return;
+      }
+
       // 清理应用状态，但不影响手机界面本身的显示
       this.closeAllApps();
 
-      // 检查手机界面元素是否存在，如果不存在则重新创建
-      let $phoneInterface = $('#phone_interface');
+      // 使用phone-shell系统显示手机界面
+      if (window.PhoneShell) {
+        // 使用phone_interface ID，因为我们已经在createInterface中重命名了
+        window.PhoneShell.show('phone_interface');
 
-      if ($phoneInterface.length === 0) {
-        console.log('⚠️ 手机界面元素不存在，重新创建...');
-        this.createPhoneInterfaceElement();
-        $phoneInterface = $('#phone_interface');
+        $phoneInterface = $('#phone_interface'); // 重新获取元素引用
+        if ($phoneInterface.length > 0) {
+          $phoneInterface.addClass('show').removeClass('show-qq-app-content');
+          $('body').removeClass('qq-app-mode');
 
-        if ($phoneInterface.length === 0) {
-          console.error('❌ 无法创建手机界面元素');
-          return;
+          // 强制隐藏QQ容器和美化应用容器，确保手机主页内容优先显示
+          $('#phone_interface .qq-app-container').hide();
+          $('#phone_interface .wallpaper-app-container').hide();
+
+          // 强制显示手机主屏幕的核心元素
+          $('#phone_interface .phone-background').show();
+          $('#phone_interface .phone-home-screen').show();
+          $('#phone_interface .phone-dock').show();
         }
-        console.log('✅ 手机界面元素已重新创建');
+
+        this.updateTime();
+        this.updateResponsiveScale(); // 更新响应式缩放
+
+        // 初始化并应用保存的手机壁纸
+        if (window.WallpaperApp) {
+          if (typeof window.WallpaperApp.init === 'function') {
+            window.WallpaperApp.init()
+              .then(() => {
+                console.log('📱 壁纸应用初始化完成，已应用保存的壁纸');
+              })
+              .catch(error => {
+                console.warn('⚠️ 壁纸应用初始化失败:', error);
+                // 即使初始化失败，也尝试应用当前壁纸
+                if (typeof window.WallpaperApp.applyCurrentWallpaper === 'function') {
+                  window.WallpaperApp.applyCurrentWallpaper();
+                }
+              });
+          } else if (typeof window.WallpaperApp.applyCurrentWallpaper === 'function') {
+            window.WallpaperApp.applyCurrentWallpaper();
+            console.log('📱 已立即应用保存的手机壁纸');
+          }
+        }
+      } else {
+        console.error('❌ PhoneShell系统未找到');
+        return;
       }
 
-      console.log(
-        `📱 手机界面元素状态: 存在=${$phoneInterface.length > 0}, 当前display=${$phoneInterface.css('display')}`,
-      );
-
-      // 添加show类
-      $phoneInterface.addClass('show').removeClass('show-qq-app-content');
-
-      // 强制设置CSS显示属性
-      $phoneInterface.css({
-        display: 'block',
-        visibility: 'visible',
-        opacity: '1',
-        'z-index': '500',
-      });
-
-      $('body').removeClass('qq-app-mode');
-
-      // 强制隐藏QQ容器和美化应用容器，确保手机主页内容优先显示
-      $('#phone_interface .qq-app-container').hide();
-      $('#phone_interface .wallpaper-app-container').hide();
-
-      // 强制显示手机主屏幕的核心元素
-      $('#phone_interface .phone-background').show();
-      $('#phone_interface .dynamic-island').show();
-      $('#phone_interface .phone-status-bar').show();
-      $('#phone_interface .phone-home-screen').show();
-      $('#phone_interface .phone-dock').show();
-
-      this.updateTime();
-      this.updateResponsiveScale(); // 更新响应式缩放
-
-      // 立即应用保存的手机壁纸，无延迟
-      if (window.WallpaperApp && typeof window.WallpaperApp.applyCurrentWallpaper === 'function') {
-        window.WallpaperApp.applyCurrentWallpaper();
-        console.log('📱 已立即应用保存的手机壁纸');
-      }
-
-      // 验证显示状态
+      // 验证显示状态（简化日志）
       setTimeout(() => {
         const $currentInterface = $('#phone_interface');
         const isVisible = $currentInterface.is(':visible');
-        const hasShowClass = $currentInterface.hasClass('show');
-        const displayValue = $currentInterface.css('display');
-
-        console.log('📊 手机界面显示状态验证:');
-        console.log(`  - 元素存在: ${$currentInterface.length > 0}`);
-        console.log(`  - 元素可见: ${isVisible}`);
-        console.log(`  - 有show类: ${hasShowClass}`);
-        console.log(`  - CSS display: ${displayValue}`);
 
         if ($currentInterface.length === 0) {
           console.error('❌ 验证时发现手机界面元素已消失');
         } else if (!isVisible) {
-          console.log('⚠️ 手机界面仍然不可见，尝试强制修复...');
+          console.log('⚠️ 手机界面不可见，尝试修复...');
           $currentInterface.show().css('display', 'block !important');
         } else {
           console.log('✅ 手机界面显示成功');
         }
       }, 100);
+
+      // 移除不必要的背景处理逻辑
 
       console.log('✅ PhoneInterface.show() executed, ensured QQ container hidden and home screen elements visible.');
     },
@@ -847,10 +1129,9 @@
         '.mobile-plugin-dialog',
         '.mobile-app-dialog',
 
-        // 通用的临时弹窗（但排除SillyTavern原生的）
+        // 通用的临时弹窗（但排除SillyTavern原生的和核心手机界面）
         '[id^="mobile_"]',
-        '[id^="phone_"]',
-        '[id^="qq_"]',
+        '[id^="qq_"]:not(#qq_app_container)',
         '[id^="taobao_"]',
         '[id^="task_"]',
         '[id^="backpack_"]',
@@ -888,10 +1169,16 @@
         '.select2-container',
       ];
 
-      // 只删除手机插件创建的弹窗
+      // 只删除手机插件创建的弹窗，保护核心界面元素
       let removedCount = 0;
       mobilePluginDialogs.forEach(selector => {
-        const $elements = $(selector);
+        let $elements = $(selector);
+
+        // 特别保护核心手机界面元素
+        if (selector.includes('[id^="phone_"]')) {
+          $elements = $elements.not('#phone_interface, #phone_shell, #phone_container');
+        }
+
         if ($elements.length > 0) {
           console.log(`  - 删除 ${selector}: ${$elements.length} 个元素`);
           $elements.remove();
@@ -1031,8 +1318,77 @@
         }, 100);
       }
 
+      // 重新应用保存的主题
+      this.restoreSavedTheme();
+
       console.log('✅ 手机界面元素创建完成');
     },
+
+    // 恢复保存的主题
+    restoreSavedTheme: function () {
+      try {
+        const savedTheme = localStorage.getItem('phoneTheme');
+        const $phoneInterface = $('#phone_interface');
+
+        if ($phoneInterface.length > 0) {
+          // 移除所有主题类
+          const themeClasses = [
+            'phone-theme-classic',
+            'phone-theme-dark',
+            'phone-theme-pink',
+            'phone-theme-blue',
+            'phone-theme-green',
+          ];
+          themeClasses.forEach(cls => $phoneInterface.removeClass(cls));
+
+          // 暂时不应用任何主题，让壁纸显示
+          console.log('🎨 已清除所有主题类，让壁纸正常显示');
+
+          // 如果有保存的主题但不是蓝色主题，才恢复
+          if (savedTheme && savedTheme !== 'blue') {
+            console.log(`🎨 恢复保存的主题: ${savedTheme}`);
+            $phoneInterface.addClass(`phone-theme-${savedTheme}`);
+
+            // 更新美化应用的当前主题记录
+            if (window.WallpaperApp) {
+              window.WallpaperApp.currentSavedTheme = savedTheme;
+            }
+            console.log(`✅ 主题恢复成功: ${savedTheme}`);
+          } else {
+            console.log('📂 使用默认主题（无主题类）');
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ 恢复主题时出错:', error);
+      }
+    },
+
+    // 清除保存的主题（用于修复蓝色背景问题）
+    clearSavedTheme: function () {
+      try {
+        localStorage.removeItem('phoneTheme');
+        localStorage.removeItem('phoneShellTheme');
+        console.log('🧹 已清除保存的主题设置');
+
+        const $phoneInterface = $('#phone_interface');
+        if ($phoneInterface.length > 0) {
+          // 移除所有主题类
+          const themeClasses = [
+            'phone-theme-classic',
+            'phone-theme-dark',
+            'phone-theme-pink',
+            'phone-theme-blue',
+            'phone-theme-green',
+          ];
+          themeClasses.forEach(cls => $phoneInterface.removeClass(cls));
+          console.log('✅ 已移除所有主题类');
+        }
+      } catch (error) {
+        console.warn('⚠️ 清除主题时出错:', error);
+      }
+    },
+
+    // 移除了不必要的强制背景处理方法
 
     // 初始化响应式缩放
     initResponsiveScaling: function () {

@@ -23,6 +23,12 @@
     currentEditType: 'phone', // 'phone', 'qq-home', 'qq-chat'
     currentChatId: null, // 当前编辑的聊天ID
 
+    // 当前界面模式
+    currentMode: 'wallpaper', // 'wallpaper', 'theme'
+
+    // 当前保存的主题
+    currentSavedTheme: 'classic', // 默认主题
+
     // 初始化应用
     async init() {
       console.log('🎨 美化应用初始化...');
@@ -37,7 +43,34 @@
       this.applyCurrentWallpaper();
       this.applyCurrentQQBackgrounds();
 
+      // 加载保存的主题
+      this.loadSavedTheme();
+
       console.log('✅ 美化应用初始化完成');
+    },
+
+    // 加载保存的主题
+    loadSavedTheme() {
+      try {
+        const savedTheme = localStorage.getItem('phoneTheme');
+        if (savedTheme) {
+          this.currentSavedTheme = savedTheme;
+          console.log(`📂 已加载保存的主题: ${savedTheme}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ 无法加载保存的主题设置:', error);
+      }
+    },
+
+    // 保存主题设置
+    saveTheme(themeName) {
+      try {
+        this.currentSavedTheme = themeName;
+        localStorage.setItem('phoneTheme', themeName);
+        console.log(`💾 主题设置已保存: ${themeName}`);
+      } catch (error) {
+        console.warn('⚠️ 无法保存主题设置:', error);
+      }
     },
 
     // 启用文件存储模式
@@ -151,6 +184,39 @@
         self.previewBlur(blurValue);
       });
 
+      // 界面切换按钮事件
+      $(document).on('click', '.wallpaper-mode-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const mode = $(this).data('mode');
+        self.switchMode(mode);
+        console.log('🔄 模式切换按钮点击:', mode);
+      });
+
+      // 主题选择事件
+      $(document).on('click', '.theme-option-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const themeName = $(this).data('theme');
+
+        // 应用主题
+        self.applyPhoneTheme(themeName);
+
+        console.log('🎨 主题选择按钮点击:', themeName);
+      });
+
+      // 美化应用容器点击事件（防止冒泡）
+      $(document).on('click', '.wallpaper-app-content', function (e) {
+        e.stopPropagation();
+      });
+
+      // 主题相关元素点击事件（防止冒泡）
+      $(document).on('click', '.theme-selection-section, .current-theme-section, .theme-info-section', function (e) {
+        e.stopPropagation();
+      });
+
       console.log('✅ 美化应用事件已绑定');
     },
 
@@ -231,6 +297,24 @@
               </svg>
             </button>
             <h1 class="wallpaper-app-title">${this.getEditTitle()}</h1>
+            <button class="wallpaper-home-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- 模式切换按钮 -->
+          <div class="wallpaper-mode-switcher">
+            <button class="wallpaper-mode-btn ${
+              this.currentMode === 'wallpaper' ? 'active' : ''
+            }" data-mode="wallpaper">
+              手机壁纸
+            </button>
+            <button class="wallpaper-mode-btn ${this.currentMode === 'theme' ? 'active' : ''}" data-mode="theme">
+              美化主题
+            </button>
           </div>
 
           <!-- 应用主体 -->
@@ -257,6 +341,15 @@
 
     // 获取编辑内容
     getEditContent() {
+      if (this.currentMode === 'theme') {
+        return this.getThemeContent();
+      } else {
+        return this.getWallpaperContent();
+      }
+    },
+
+    // 获取壁纸编辑内容
+    getWallpaperContent() {
       const isPhoneMode = this.currentEditType === 'phone';
       const isQQMode = this.currentEditType.startsWith('qq');
       const currentBg = this.getCurrentBackground();
@@ -420,12 +513,32 @@
 
     // 更新手机界面背景
     updatePhoneBackground(url) {
-      // 只更新手机屏幕背景（这是主要的背景容器）
-      $('#phone_interface .phone-screen').css({
-        'background-image': `url(${url})`,
-        'background-size': 'cover',
-        'background-position': 'center',
-        'background-repeat': 'no-repeat',
+      // 更新手机屏幕背景 - 支持phone-shell和phone-interface两种系统
+      const phoneScreenSelectors = [
+        '#phone_interface .phone-screen',
+        '#phone_interface .phone-shell-screen',
+        '.phone-shell .phone-shell-screen',
+      ];
+
+      phoneScreenSelectors.forEach(selector => {
+        const $elements = $(selector);
+
+        if ($elements.length > 0) {
+          $elements.css({
+            'background-image': `url(${url}) !important`,
+            'background-size': 'cover !important',
+            'background-position': 'center !important',
+            'background-repeat': 'no-repeat !important',
+          });
+
+          // 额外设置style属性确保生效
+          $elements.each(function () {
+            this.style.setProperty('background-image', `url(${url})`, 'important');
+            this.style.setProperty('background-size', 'cover', 'important');
+            this.style.setProperty('background-position', 'center', 'important');
+            this.style.setProperty('background-repeat', 'no-repeat', 'important');
+          });
+        }
       });
 
       // 清除主屏幕的背景设置，避免影响状态栏布局
@@ -436,7 +549,11 @@
         'background-repeat': '',
       });
 
-      console.log('🖼️ 手机背景已更新，状态栏布局已保护');
+      // 保存当前壁纸
+      this.currentWallpaper = url;
+      localStorage.setItem('currentWallpaper', url);
+
+      console.log('🖼️ 手机背景已更新');
     },
 
     // 更新当前背景（根据编辑类型）
@@ -1065,6 +1182,126 @@
       this.currentEditType = 'phone';
       this.currentChatId = null;
       this.show();
+    },
+
+    // 获取主题编辑内容
+    getThemeContent() {
+      // 定义基础主题
+      const themes = {
+        classic: { name: '经典白色', class: 'phone-theme-classic', description: '简洁的白色主题' },
+        dark: { name: '深色主题', class: 'phone-theme-dark', description: '护眼的深色主题' },
+        pink: { name: '粉色主题', class: 'phone-theme-pink', description: '温馨的粉色主题' },
+        blue: { name: '蓝色主题', class: 'phone-theme-blue', description: '清新的蓝色主题' },
+        green: { name: '绿色主题', class: 'phone-theme-green', description: '自然的绿色主题' },
+      };
+
+      // 获取当前主题
+      const currentTheme = themes[this.currentSavedTheme] || themes.classic;
+
+      const themeButtons = Object.entries(themes)
+        .map(([key, theme]) => {
+          const isActive = currentTheme.name === theme.name;
+          return `
+          <button class="theme-option-btn ${isActive ? 'active' : ''}" data-theme="${key}">
+            <div class="theme-preview ${theme.class}">
+              <div class="theme-preview-phone">
+                <div class="theme-preview-island"></div>
+                <div class="theme-preview-status"></div>
+              </div>
+            </div>
+            <div class="theme-info">
+              <div class="theme-name">${theme.name}</div>
+              <div class="theme-description">${theme.description}</div>
+            </div>
+            ${isActive ? '<div class="theme-active-indicator">✓</div>' : ''}
+          </button>
+        `;
+        })
+        .join('');
+
+      return `
+        <!-- 当前主题显示 -->
+        <div class="current-theme-section">
+          <h3>当前主题</h3>
+          <div class="current-theme-display">
+            <div class="current-theme-preview ${currentTheme.class || ''}">
+              <div class="current-theme-phone">
+                <div class="current-theme-island"></div>
+                <div class="current-theme-status"></div>
+              </div>
+            </div>
+            <div class="current-theme-info">
+              <div class="current-theme-name">${currentTheme.name}</div>
+              <div class="current-theme-desc">当前使用的手机主题</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主题选择 -->
+        <div class="theme-selection-section">
+          <h3>选择主题</h3>
+          <div class="theme-options-grid">
+            ${themeButtons}
+          </div>
+        </div>
+
+        <!-- 主题说明 -->
+        <div class="theme-info-section">
+          <div class="theme-tip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 16V12" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 8H12.01" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>主题会影响手机外壳的颜色和样式，选择您喜欢的主题来个性化您的手机外观。</span>
+          </div>
+        </div>
+      `;
+    },
+
+    // 切换界面模式
+    switchMode(mode) {
+      if (this.currentMode === mode) return;
+
+      this.currentMode = mode;
+      console.log(`🔄 切换到${mode === 'wallpaper' ? '壁纸' : '主题'}模式`);
+
+      // 重新创建界面内容
+      this.showInPhoneInterface();
+    },
+
+    // 应用手机主题
+    applyPhoneTheme(themeName) {
+      console.log(`🎨 应用主题: ${themeName}`);
+
+      const $phoneInterface = $('#phone_interface');
+      if ($phoneInterface.length === 0) {
+        console.error('❌ 手机界面元素不存在');
+        return;
+      }
+
+      // 移除所有主题类
+      const themeClasses = [
+        'phone-theme-classic',
+        'phone-theme-dark',
+        'phone-theme-pink',
+        'phone-theme-blue',
+        'phone-theme-green',
+      ];
+      themeClasses.forEach(cls => $phoneInterface.removeClass(cls));
+
+      // 添加新主题类
+      $phoneInterface.addClass(`phone-theme-${themeName}`);
+
+      // 保存主题设置
+      this.saveTheme(themeName);
+
+      console.log(`✅ 主题应用成功: ${themeName}`);
+
+      // 重新创建界面以更新当前主题显示
+      setTimeout(() => {
+        this.showInPhoneInterface();
+      }, 100);
     },
   };
 

@@ -856,14 +856,7 @@
           <!-- 动态岛 -->
           <div class="dynamic-island"></div>
 
-          <!-- 状态栏 -->
-          <div class="status-bar">
-            <div class="status-time qq-status-time">7:13</div>
-            <div class="status-icons qq-status-icons">
-              <span class="signal-icon qq-signal-icon">📶</span>
-              <span class="battery-icon qq-battery-icon">🔋</span>
-            </div>
-          </div>
+
 
           <!-- 页面头部 -->
           <div class="page-header">

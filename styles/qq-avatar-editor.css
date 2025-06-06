@@ -33,28 +33,28 @@
   border-radius: 0;
 }
 
-/* 手机界面中的头部样式 - 完全重写 */
+/* 手机界面中的头部样式 - 完全重写，增加顶部间距避免与状态栏重叠 */
 .qq-app-container .qq-avatar-editor-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 8px 12px !important;
+  padding: 48px 12px 8px 12px !important; /* 增加顶部padding避免与状态栏重叠 */
   background: #f8f9fa !important;
   border-bottom: 1px solid #e9ecef !important;
   position: relative !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  min-height: 50px !important;
+  min-height: 70px !important; /* 增加最小高度 */
 }
 
-/* 手机界面中的标题 */
+/* 手机界面中的标题 - 左对齐避免与按钮重叠 */
 .qq-app-container .editor-title {
   flex: 1 !important;
-  text-align: center !important;
+  text-align: left !important; /* 改为左对齐 */
   font-size: 16px !important;
   font-weight: 600 !important;
   color: #000 !important;
-  margin: 0 8px !important;
+  margin: 0 8px 0 12px !important; /* 左边距增加，避免与返回按钮重叠 */
 }
 
 /* 手机界面中的按钮容器 - 固定在右侧 */
@@ -166,8 +166,8 @@ body > .qq-avatar-editor-page {
 
 .editor-title {
   flex: 1;
-  text-align: center;
-  margin: 0 16px;
+  text-align: left; /* 改为左对齐 */
+  margin: 0 16px 0 12px; /* 调整左边距 */
   font-size: 18px;
   font-weight: 600;
   color: #000;

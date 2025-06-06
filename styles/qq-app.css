@@ -138,170 +138,16 @@ body .qq-app-container > div,
   transform: translateX(-50%);
   width: 120px;
   height: 28px;
-  background: black;
+  background: var(--dynamic-island-bg, black) !important;
   border-radius: 20px;
   z-index: var(--z-dynamic-island);
 }
 
-/* 状态栏统一样式 */
-.qq-status-bar,
-.chat-status-bar {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  right: 0;
-  height: 37px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  color: black;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: var(--z-status-bar);
-  pointer-events: none;
-}
+/* 注释：QQ应用的状态栏组件已迁移到统一的phone-shell系统 */
+/* 保留必要的功能按键样式，移除独立的状态栏样式 */
 
-/* 状态栏时间样式 */
-.qq-status-time,
-.chat-status-time {
-  font-size: 18px;
-  font-weight: 700;
-  color: black;
-}
-
-/* 状态栏图标容器 */
-.qq-status-icons,
-.chat-status-icons {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: black;
-  font-weight: 600;
-}
-
-/* SVG图标统一样式 */
-.qq-signal-icon,
-.qq-battery-icon,
-.chat-signal-icon,
-.chat-battery-icon {
-  display: inline-block;
-  width: 20px;
-  height: 14px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  font-size: 0;
-}
-
-.qq-signal-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='20' height='14' viewBox='0 0 20 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M19.8498 2.03301C19.8498 1.39996 19.3723 0.88678 18.7832 0.88678H17.7165C17.1274 0.88678 16.6498 1.39996 16.6498 2.03301V11.967C16.6498 12.6 17.1274 13.1132 17.7165 13.1132H18.7832C19.3723 13.1132 19.8498 12.6 19.8498 11.967V2.03301ZM12.4157 3.33206H13.4824C14.0715 3.33206 14.5491 3.85756 14.5491 4.5058V11.9395C14.5491 12.5877 14.0715 13.1132 13.4824 13.1132H12.4157C11.8266 13.1132 11.3491 12.5877 11.3491 11.9395V4.5058C11.3491 3.85756 11.8266 3.33206 12.4157 3.33206ZM8.08396 5.98111H7.01729C6.42819 5.98111 5.95062 6.5133 5.95062 7.16979V11.9245C5.95062 12.581 6.42819 13.1132 7.01729 13.1132H8.08396C8.67306 13.1132 9.15062 12.581 9.15062 11.9245V7.16979C9.15062 6.5133 8.67306 5.98111 8.08396 5.98111ZM2.78317 8.4264H1.71651C1.1274 8.4264 0.649841 8.95099 0.649841 9.5981V11.9415C0.649841 12.5886 1.1274 13.1132 1.71651 13.1132H2.78317C3.37228 13.1132 3.84984 12.5886 3.84984 11.9415V9.5981C3.84984 8.95099 3.37228 8.4264 2.78317 8.4264Z' fill='black'/%3E%3C/svg%3E") !important;
-}
-
-.qq-battery-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='27' height='14' viewBox='50 0 28 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_0_1)'%3E%3Cg opacity='0.3'%3E%3Cpath d='M51.6574 1.77772C50.9915 2.78661 50.9915 4.19108 50.9915 7C50.9915 9.80892 50.9915 11.2134 51.6574 12.2223C51.9457 12.659 52.3162 13.034 52.7477 13.3259C53.7444 14 55.1319 14 57.9069 14H68.7741C71.5491 14 72.9366 14 73.9333 13.3259C74.3648 13.034 74.7353 12.659 75.0236 12.2223C75.6896 11.2134 75.6896 9.80892 75.6896 7C75.6896 4.19108 75.6896 2.78661 75.0236 1.77772C74.7353 1.34096 74.3648 0.965956 73.9333 0.674122C72.9366 0 71.5491 0 68.7741 0H57.9069C55.1319 0 53.7444 0 52.7477 0.674122C52.3162 0.965956 51.9457 1.34096 51.6574 1.77772Z' fill='%235A5A5A'/%3E%3Cpath d='M77.9915 6.75C77.9915 7.62313 77.4737 8.41122 76.6775 8.75V4.75C77.4737 5.08878 77.9915 5.87687 77.9915 6.75Z' fill='%235A5A5A'/%3E%3C/g%3E%3Crect width='21' height='14' transform='translate(50.9915)' fill='%23121212'/%3E%3Cpath d='M60.0032 11.1719C59.3801 11.1719 58.8323 11.077 58.3596 10.8872C57.887 10.6938 57.5181 10.4271 57.2532 10.0869C56.9882 9.74316 56.8557 9.34749 56.8557 8.8999V8.88916C56.8557 8.55257 56.9327 8.24821 57.0867 7.97607C57.2442 7.70394 57.4591 7.47835 57.7312 7.29932C58.0033 7.1167 58.3149 6.99137 58.6658 6.92334V6.89111C58.211 6.78011 57.8422 6.57243 57.5593 6.26807C57.28 5.96012 57.1404 5.59489 57.1404 5.17236V5.16162C57.1404 4.76058 57.2621 4.4043 57.5056 4.09277C57.7491 3.77767 58.0857 3.5306 58.5154 3.35156C58.9451 3.16895 59.441 3.07764 60.0032 3.07764C60.5653 3.07764 61.0613 3.16895 61.491 3.35156C61.9207 3.5306 62.2572 3.77767 62.5007 4.09277C62.7442 4.4043 62.866 4.76058 62.866 5.16162V5.17236C62.866 5.59489 62.7245 5.96012 62.4417 6.26807C62.1588 6.57243 61.7917 6.78011 61.3406 6.89111V6.92334C61.6915 6.99137 62.003 7.1167 62.2751 7.29932C62.5473 7.47835 62.7603 7.70394 62.9143 7.97607C63.0719 8.24821 63.1506 8.55257 63.1506 8.88916V8.8999C63.1506 9.34749 63.0181 9.74316 62.7532 10.0869C62.4882 10.4271 62.1176 10.6938 61.6414 10.8872C61.1687 11.077 60.6226 11.1719 60.0032 11.1719ZM60.0032 9.99023C60.2861 9.99023 60.5367 9.9401 60.7551 9.83984C60.9736 9.736 61.1436 9.59456 61.2654 9.41553C61.3907 9.23291 61.4534 9.02523 61.4534 8.79248V8.78174C61.4534 8.54899 61.3925 8.3431 61.2708 8.16406C61.149 7.98145 60.9789 7.83822 60.7605 7.73438C60.5421 7.63053 60.2896 7.57861 60.0032 7.57861C59.7167 7.57861 59.4643 7.63053 59.2458 7.73438C59.0274 7.83822 58.8556 7.98145 58.7302 8.16406C58.6085 8.3431 58.5476 8.54899 58.5476 8.78174V8.79248C58.5476 9.02523 58.6103 9.23291 58.7356 9.41553C58.8609 9.59456 59.0328 9.736 59.2512 9.83984C59.4696 9.9401 59.7203 9.99023 60.0032 9.99023ZM60.0032 6.40234C60.2502 6.40234 60.4687 6.35758 60.6584 6.26807C60.8482 6.17497 60.995 6.04785 61.0989 5.88672C61.2063 5.72559 61.26 5.53939 61.26 5.32812V5.31738C61.26 5.10612 61.2063 4.91992 61.0989 4.75879C60.9915 4.59766 60.8429 4.47233 60.6531 4.38281C60.4669 4.29329 60.2502 4.24854 60.0032 4.24854C59.7561 4.24854 59.5377 4.29329 59.3479 4.38281C59.1581 4.47233 59.0095 4.59766 58.9021 4.75879C58.7947 4.91992 58.741 5.10612 58.741 5.31738V5.32812C58.741 5.53939 58.7947 5.72559 58.9021 5.88672C59.0095 6.04785 59.1581 6.17497 59.3479 6.26807C59.5377 6.35758 59.7561 6.40234 60.0032 6.40234ZM67.0334 11.1987C66.3961 11.1987 65.8464 11.034 65.3845 10.7046C64.9262 10.3716 64.5735 9.90072 64.3264 9.29199C64.0793 8.68327 63.9558 7.96175 63.9558 7.12744V7.1167C63.9558 6.27881 64.0793 5.55729 64.3264 4.95215C64.5735 4.34342 64.9262 3.87435 65.3845 3.54492C65.8464 3.21549 66.3961 3.05078 67.0334 3.05078C67.6744 3.05078 68.224 3.21549 68.6824 3.54492C69.1407 3.87435 69.4934 4.34342 69.7405 4.95215C69.9875 5.55729 70.1111 6.27881 70.1111 7.1167V7.12744C70.1111 7.96175 69.9875 8.68327 69.7405 9.29199C69.4934 9.90072 69.1407 10.3716 68.6824 10.7046C68.224 11.034 67.6744 11.1987 67.0334 11.1987ZM67.0334 9.91504C67.3414 9.91504 67.601 9.80404 67.8123 9.58203C68.0271 9.36003 68.19 9.04134 68.301 8.62598C68.4156 8.21061 68.4729 7.7111 68.4729 7.12744V7.1167C68.4729 6.52946 68.4156 6.02995 68.301 5.61816C68.19 5.2028 68.0271 4.8859 67.8123 4.66748C67.601 4.44548 67.3414 4.33447 67.0334 4.33447C66.7291 4.33447 66.4695 4.44548 66.2546 4.66748C66.0434 4.8859 65.8805 5.2028 65.7659 5.61816C65.6549 6.02995 65.5994 6.52946 65.5994 7.1167V7.12744C65.5994 7.7111 65.6549 8.21061 65.7659 8.62598C65.8805 9.04134 66.0434 9.36003 66.2546 9.58203C66.4695 9.80404 66.7291 9.91504 67.0334 9.91504Z' fill='white'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_0_1'%3E%3Crect x='50.9915' width='27.3587' height='14' rx='4' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E") !important;
-}
-
-/* 统一状态栏样式类 */
-.unified-status-bar {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  right: 0;
-  height: var(--status-bar-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--status-bar-padding);
-  color: black;
-  font-size: var(--status-bar-font-size);
-  font-weight: var(--status-bar-font-weight);
-  z-index: var(--z-status-bar);
-  pointer-events: none;
-}
-
-.unified-status-time {
-  font-size: var(--status-bar-font-size);
-  font-weight: var(--status-bar-font-weight);
-  color: black;
-}
-
-.unified-status-icons {
-  display: flex;
-  align-items: center;
-  gap: var(--status-bar-icon-gap);
-  color: black;
-  font-size: 12px;
-}
-
-/* 聊天页面状态栏样式 - 使用统一样式 */
-.chat-page.show .chat-status-bar {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  right: 0;
-  height: var(--status-bar-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--status-bar-padding);
-  color: black;
-  font-size: var(--status-bar-font-size);
-  font-weight: var(--status-bar-font-weight);
-  z-index: var(--z-status-bar);
-  pointer-events: none;
-}
-
-.chat-page.show .chat-status-time {
-  font-size: var(--status-bar-font-size);
-  font-weight: var(--status-bar-font-weight);
-  color: black;
-}
-
-.chat-page.show .chat-status-icons {
-  display: flex;
-  align-items: center;
-  gap: var(--status-bar-icon-gap);
-  color: black;
-  font-size: 12px;
-}
-
-/* 使用SVG图标替换emoji - QQ聊天详情页状态栏 - 统一标准 */
-.chat-page.show .chat-signal-icon,
-.chat-page.show .chat-battery-icon {
-  display: inline-block;
-  width: 20px; /* 统一图标宽度 */
-  height: 14px; /* 统一图标高度 */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  font-size: 0; /* 隐藏emoji文字 */
-}
-
-.chat-page.show .chat-signal-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='20' height='14' viewBox='0 0 20 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M19.8498 2.03301C19.8498 1.39996 19.3723 0.88678 18.7832 0.88678H17.7165C17.1274 0.88678 16.6498 1.39996 16.6498 2.03301V11.967C16.6498 12.6 17.1274 13.1132 17.7165 13.1132H18.7832C19.3723 13.1132 19.8498 12.6 19.8498 11.967V2.03301ZM12.4157 3.33206H13.4824C14.0715 3.33206 14.5491 3.85756 14.5491 4.5058V11.9395C14.5491 12.5877 14.0715 13.1132 13.4824 13.1132H12.4157C11.8266 13.1132 11.3491 12.5877 11.3491 11.9395V4.5058C11.3491 3.85756 11.8266 3.33206 12.4157 3.33206ZM8.08396 5.98111H7.01729C6.42819 5.98111 5.95062 6.5133 5.95062 7.16979V11.9245C5.95062 12.581 6.42819 13.1132 7.01729 13.1132H8.08396C8.67306 13.1132 9.15062 12.581 9.15062 11.9245V7.16979C9.15062 6.5133 8.67306 5.98111 8.08396 5.98111ZM2.78317 8.4264H1.71651C1.1274 8.4264 0.649841 8.95099 0.649841 9.5981V11.9415C0.649841 12.5886 1.1274 13.1132 1.71651 13.1132H2.78317C3.37228 13.1132 3.84984 12.5886 3.84984 11.9415V9.5981C3.84984 8.95099 3.37228 8.4264 2.78317 8.4264Z' fill='black'/%3E%3C/svg%3E");
-}
-
-.chat-page.show .chat-battery-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='27' height='14' viewBox='50 0 28 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_0_1)'%3E%3Cg opacity='0.3'%3E%3Cpath d='M51.6574 1.77772C50.9915 2.78661 50.9915 4.19108 50.9915 7C50.9915 9.80892 50.9915 11.2134 51.6574 12.2223C51.9457 12.659 52.3162 13.034 52.7477 13.3259C53.7444 14 55.1319 14 57.9069 14H68.7741C71.5491 14 72.9366 14 73.9333 13.3259C74.3648 13.034 74.7353 12.659 75.0236 12.2223C75.6896 11.2134 75.6896 9.80892 75.6896 7C75.6896 4.19108 75.6896 2.78661 75.0236 1.77772C74.7353 1.34096 74.3648 0.965956 73.9333 0.674122C72.9366 0 71.5491 0 68.7741 0H57.9069C55.1319 0 53.7444 0 52.7477 0.674122C52.3162 0.965956 51.9457 1.34096 51.6574 1.77772Z' fill='%235A5A5A'/%3E%3Cpath d='M77.9915 6.75C77.9915 7.62313 77.4737 8.41122 76.6775 8.75V4.75C77.4737 5.08878 77.9915 5.87687 77.9915 6.75Z' fill='%235A5A5A'/%3E%3C/g%3E%3Crect width='21' height='14' transform='translate(50.9915)' fill='%23121212'/%3E%3Cpath d='M60.0032 11.1719C59.3801 11.1719 58.8323 11.077 58.3596 10.8872C57.887 10.6938 57.5181 10.4271 57.2532 10.0869C56.9882 9.74316 56.8557 9.34749 56.8557 8.8999V8.88916C56.8557 8.55257 56.9327 8.24821 57.0867 7.97607C57.2442 7.70394 57.4591 7.47835 57.7312 7.29932C58.0033 7.1167 58.3149 6.99137 58.6658 6.92334V6.89111C58.211 6.78011 57.8422 6.57243 57.5593 6.26807C57.28 5.96012 57.1404 5.59489 57.1404 5.17236V5.16162C57.1404 4.76058 57.2621 4.4043 57.5056 4.09277C57.7491 3.77767 58.0857 3.5306 58.5154 3.35156C58.9451 3.16895 59.441 3.07764 60.0032 3.07764C60.5653 3.07764 61.0613 3.16895 61.491 3.35156C61.9207 3.5306 62.2572 3.77767 62.5007 4.09277C62.7442 4.4043 62.866 4.76058 62.866 5.16162V5.17236C62.866 5.59489 62.7245 5.96012 62.4417 6.26807C62.1588 6.57243 61.7917 6.78011 61.3406 6.89111V6.92334C61.6915 6.99137 62.003 7.1167 62.2751 7.29932C62.5473 7.47835 62.7603 7.70394 62.9143 7.97607C63.0719 8.24821 63.1506 8.55257 63.1506 8.88916V8.8999C63.1506 9.34749 63.0181 9.74316 62.7532 10.0869C62.4882 10.4271 62.1176 10.6938 61.6414 10.8872C61.1687 11.077 60.6226 11.1719 60.0032 11.1719ZM60.0032 9.99023C60.2861 9.99023 60.5367 9.9401 60.7551 9.83984C60.9736 9.736 61.1436 9.59456 61.2654 9.41553C61.3907 9.23291 61.4534 9.02523 61.4534 8.79248V8.78174C61.4534 8.54899 61.3925 8.3431 61.2708 8.16406C61.149 7.98145 60.9789 7.83822 60.7605 7.73438C60.5421 7.63053 60.2896 7.57861 60.0032 7.57861C59.7167 7.57861 59.4643 7.63053 59.2458 7.73438C59.0274 7.83822 58.8556 7.98145 58.7302 8.16406C58.6085 8.3431 58.5476 8.54899 58.5476 8.78174V8.79248C58.5476 9.02523 58.6103 9.23291 58.7356 9.41553C58.8609 9.59456 59.0328 9.736 59.2512 9.83984C59.4696 9.9401 59.7203 9.99023 60.0032 9.99023ZM60.0032 6.40234C60.2502 6.40234 60.4687 6.35758 60.6584 6.26807C60.8482 6.17497 60.995 6.04785 61.0989 5.88672C61.2063 5.72559 61.26 5.53939 61.26 5.32812V5.31738C61.26 5.10612 61.2063 4.91992 61.0989 4.75879C60.9915 4.59766 60.8429 4.47233 60.6531 4.38281C60.4669 4.29329 60.2502 4.24854 60.0032 4.24854C59.7561 4.24854 59.5377 4.29329 59.3479 4.38281C59.1581 4.47233 59.0095 4.59766 58.9021 4.75879C58.7947 4.91992 58.741 5.10612 58.741 5.31738V5.32812C58.741 5.53939 58.7947 5.72559 58.9021 5.88672C59.0095 6.04785 59.1581 6.17497 59.3479 6.26807C59.5377 6.35758 59.7561 6.40234 60.0032 6.40234ZM67.0334 11.1987C66.3961 11.1987 65.8464 11.034 65.3845 10.7046C64.9262 10.3716 64.5735 9.90072 64.3264 9.29199C64.0793 8.68327 63.9558 7.96175 63.9558 7.12744V7.1167C63.9558 6.27881 64.0793 5.55729 64.3264 4.95215C64.5735 4.34342 64.9262 3.87435 65.3845 3.54492C65.8464 3.21549 66.3961 3.05078 67.0334 3.05078C67.6744 3.05078 68.224 3.21549 68.6824 3.54492C69.1407 3.87435 69.4934 4.34342 69.7405 4.95215C69.9875 5.55729 70.1111 6.27881 70.1111 7.1167V7.12744C70.1111 7.96175 69.9875 8.68327 69.7405 9.29199C69.4934 9.90072 69.1407 10.3716 68.6824 10.7046C68.224 11.034 67.6744 11.1987 67.0334 11.1987ZM67.0334 9.91504C67.3414 9.91504 67.601 9.80404 67.8123 9.58203C68.0271 9.36003 68.19 9.04134 68.301 8.62598C68.4156 8.21061 68.4729 7.7111 68.4729 7.12744V7.1167C68.4729 6.52946 68.4156 6.02995 68.301 5.61816C68.19 5.2028 68.0271 4.8859 67.8123 4.66748C67.601 4.44548 67.3414 4.33447 67.0334 4.33447C66.7291 4.33447 66.4695 4.44548 66.2546 4.66748C66.0434 4.8859 65.8805 5.2028 65.7659 5.61816C65.6549 6.02995 65.5994 6.52946 65.5994 7.1167V7.12744C65.5994 7.7111 65.6549 8.21061 65.7659 8.62598C65.8805 9.04134 66.0434 9.36003 66.2546 9.58203C66.4695 9.80404 66.7291 9.91504 67.0334 9.91504Z' fill='white'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_0_1'%3E%3Crect x='50.9915' width='27.3587' height='14' rx='4' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E");
-}
-
-/* 隐藏未激活聊天页面的状态栏 */
-.chat-page:not(.show) .chat-status-bar {
-  display: none;
-}
-
-/* 修复状态栏重叠问题 - 当聊天页面显示时隐藏主QQ页面状态栏 */
-.chat-page.show ~ * .qq-status-bar,
-body:has(.chat-page.show) .qq-status-bar:not(.chat-status-bar) {
-  display: none !important;
-}
-
-/* 确保只有聊天页面的状态栏在聊天页面激活时显示 */
-.chat-page.show .chat-status-bar {
-  display: flex !important;
-}
+/* 注释：聊天页面状态栏样式已迁移到统一的phone-shell系统 */
+/* 保留必要的功能按键样式，移除独立的状态栏样式 */
 
 /* 修复QQ主页顶部装饰栏重叠问题 - 当聊天页面显示时隐藏主页装饰栏 */
 .chat-page.show ~ * .dialog-head,
@@ -311,25 +157,19 @@ body:has(.chat-page.show) .dialog-head {
 
 /* 当聊天页面显示时，隐藏QQ主页的所有装饰元素 */
 .chat-page.show ~ #chat_history_dialog .dialog-head,
-.chat-page.show ~ #chat_history_dialog .qq-status-bar,
-body:has(.chat-page.show) #chat_history_dialog .dialog-head,
-body:has(.chat-page.show) #chat_history_dialog .qq-status-bar {
+body:has(.chat-page.show) #chat_history_dialog .dialog-head {
   display: none !important;
 }
 
 /* 在手机界面容器中，当聊天页面显示时隐藏QQ主页装饰栏 */
 .chat-page.show ~ .qq-app-container .dialog-head,
-.chat-page.show ~ .qq-app-container .qq-status-bar,
-body:has(.chat-page.show) .qq-app-container .dialog-head,
-body:has(.chat-page.show) .qq-app-container .qq-status-bar {
+body:has(.chat-page.show) .qq-app-container .dialog-head {
   display: none !important;
 }
 
 /* 强制隐藏QQ主页装饰栏 - 更强力的选择器 */
 body .chat-page.show ~ * .dialog-head,
-body .chat-page.show ~ * .qq-status-bar:not(.chat-status-bar),
-.chat-page.show + * .dialog-head,
-.chat-page.show + * .qq-status-bar:not(.chat-status-bar) {
+.chat-page.show + * .dialog-head {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -345,8 +185,7 @@ body .chat-page.show ~ * .qq-status-bar:not(.chat-status-bar),
 }
 
 /* JavaScript控制的聊天详情页激活状态 */
-body.chat-detail-active .dialog-head,
-body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
+body.chat-detail-active .dialog-head {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -1312,18 +1151,23 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
 
 .chat-title {
   flex: 1;
-  text-align: center;
+  text-align: left !important; /* 改为左对齐 */
   color: black !important;
   text-shadow: none !important;
-  margin: 0 40px;
+  margin: 0 40px 0 16px !important; /* 增加左边距，避免与返回按钮重叠 */
 }
 
-.chat-title > div:first-child {
+/* 联系人名称样式 - 左对齐并避免与返回按钮重叠 */
+.chat-title > div:first-child,
+.chat-header .chat-title > div:first-child {
   font-weight: 600 !important;
   font-size: 19px !important;
   margin-bottom: 2px !important;
   color: black !important;
   text-shadow: none !important;
+  text-align: left !important;
+  margin-left: 20px !important; /* 保持左边距，避免与返回按钮重叠 */
+  padding-left: 0 !important;
 }
 
 .chat-title > div:last-child {
@@ -1554,11 +1398,7 @@ body.chat-detail-active .qq-status-bar:not(.chat-status-bar) {
   text-shadow: none !important;
 }
 
-/* 确保图标无阴影 - 特别是状态栏图标 */
-.qq-status-icons div,
-.qq-signal-icon::before,
-.qq-battery-icon::before,
-.qq-battery-icon::after,
+/* 确保图标无阴影 */
 .home-btn,
 .back-to-main-list-btn,
 #create_group_btn {
@@ -1623,6 +1463,11 @@ textarea.message-input:focus {
   z-index: 1000;
 }
 
+/* 在QQ应用容器中的好友管理页面头部样式修正 */
+.qq-app-container .friend-manager .page-header {
+  padding: 48px 16px 12px 16px !important; /* 确保在QQ应用中也有正确的顶部间距 */
+}
+
 /* 确保好友管理页面在QQ应用内显示正确 */
 .qq-app-container .friend-manager {
   width: 100%;
@@ -1630,17 +1475,6 @@ textarea.message-input:focus {
   background: #ffffff;
   border-radius: 50px;
   overflow: hidden;
-  position: relative;
-}
-
-/* QQ应用内的好友管理页面状态栏 */
-.qq-app-container .friend-manager .status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 48px 24px 8px;
-  background: #f8f9fa;
-  flex-shrink: 0;
   position: relative;
 }
 

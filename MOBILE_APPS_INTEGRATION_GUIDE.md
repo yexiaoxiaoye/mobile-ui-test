@@ -216,6 +216,42 @@ open src/mobile-ui-test/responsive-test.html
 
 详细信息请参考：[响应式缩放指南](RESPONSIVE_SCALING_GUIDE.md)
 
+## 手机外壳系统
+
+### 统一的外观组件
+
+手机外壳系统提供可复用的手机外观组件，包括：
+
+#### 核心组件
+- **手机边框**：统一的圆角边框和阴影效果
+- **动态岛**：iPhone风格的顶部动态岛
+- **状态栏**：时间显示、信号和电量图标
+- **主题系统**：5种预设主题，支持自定义
+
+#### 主要特性
+- 🎨 **主题自定义**：支持经典、深色、粉色、蓝色、绿色主题
+- 📱 **响应式缩放**：自动适配不同屏幕尺寸
+- ⏰ **实时时间**：自动更新的时间显示
+- 🔧 **易于集成**：简单的API，快速集成到现有应用
+
+#### 使用方法
+```javascript
+// 1. 初始化系统
+window.PhoneShell.init();
+
+// 2. 创建外壳
+const phoneHTML = window.PhoneShell.createShellHTML(yourAppContent, 'your_phone_id');
+$('body').append(phoneHTML);
+
+// 3. 显示外壳
+window.PhoneShell.show('your_phone_id');
+
+// 4. 切换主题
+window.PhoneShell.setTheme('dark', 'your_phone_id');
+```
+
+详细信息请参考：[手机外壳集成指南](PHONE_SHELL_INTEGRATION_GUIDE.md)
+
 ## 新应用集成指南
 
 ### 集成式应用开发

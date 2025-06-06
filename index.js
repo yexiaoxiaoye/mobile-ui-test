@@ -57,6 +57,7 @@ async function init() {
     // CSS文件列表
     const cssFiles = [
       'main.css',
+      'phone-shell.css', // 🔥 添加 phone-shell CSS（优先级最高）
       'qq-app.css',
       'qq-avatar-editor.css',
       'taobao-app.css',
@@ -73,8 +74,9 @@ async function init() {
     await Promise.all(cssPromises);
     console.log('所有CSS文件加载完成');
 
-    // JS文件列表 - 确保qq-data-manager.js在qq-app.js之前加载
+    // JS文件列表 - 确保加载顺序正确
     const jsFiles = [
+      'phone-shell.js', // 🔥 phone-shell 系统（最高优先级）
       'data-extractor.js',
       'qq-data-manager.js', // 添加QQDataManager，必须在qq-app.js之前
       'qq-avatar-editor.js', // 添加头像编辑器，必须在qq-app.js之前
@@ -84,7 +86,7 @@ async function init() {
       'backpack-app.js',
       'chouka-app.js',
       'wallpaper-app.js',
-      'phone-interface.js',
+      'phone-interface.js', // phone-interface 依赖 phone-shell
     ];
 
     // 按顺序加载所有JS模块
@@ -131,6 +133,13 @@ async function init() {
           console.log('QQ头像编辑器初始化完成');
         }
 
+        // 🔥 重要：只初始化手机按钮，不显示手机界面
+        if (window['PhoneInterface']) {
+          window['PhoneInterface'].initButtonOnly();
+          console.log('✅ 手机按钮初始化完成（界面默认隐藏）');
+        }
+
+        // 然后初始化其他应用
         if (window['QQApp']) {
           window['QQApp'].init();
           console.log('QQ应用初始化完成');
@@ -159,11 +168,6 @@ async function init() {
         if (window['WallpaperApp']) {
           window['WallpaperApp'].init();
           console.log('美化应用初始化完成');
-        }
-
-        if (window['PhoneInterface']) {
-          window['PhoneInterface'].init();
-          console.log('手机界面初始化完成');
         }
 
         console.log('🎉 mobile-ui-test插件初始化完成！');

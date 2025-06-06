@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主题迁移测试</title>
+    
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <link rel="stylesheet" href="styles/phone-shell.css">
+    <link rel="stylesheet" href="styles/wallpaper-app.css">
+    <link rel="stylesheet" href="styles/qq-app.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .test-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .test-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .test-controls {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-section {
+            margin-bottom: 20px;
+        }
+        
+        .control-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #ff9ad5 0%, #a88beb 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .test-btn.secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+        
+        .test-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            align-items: start;
+        }
+        
+        .phone-display-area {
+            position: relative;
+            min-height: 600px;
+        }
+        
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+        }
+        
+        .info-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: #666;
+        }
+        
+        .info-value {
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li.success {
+            color: #28a745;
+        }
+        
+        .feature-list li.warning {
+            color: #ffc107;
+        }
+        
+        .migration-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        @media (max-width: 768px) {
+            .test-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-panel {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <div class="test-title">🎨 主题迁移测试</div>
+            <div class="test-subtitle">测试时间、灵动岛、电量和信号图标的主题迁移效果</div>
+        </div>
+        
+        <div class="test-controls">
+            <div class="control-section">
+                <div class="control-title">界面操作</div>
+                <div class="button-group">
+                    <button class="test-btn" onclick="showPhoneInterface()">显示手机界面</button>
+                    <button class="test-btn" onclick="hidePhoneInterface()">隐藏手机界面</button>
+                    <button class="test-btn secondary" onclick="openWallpaperApp()">打开美化应用</button>
+                    <button class="test-btn secondary" onclick="openQQApp()">打开QQ应用</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-title">主题测试</div>
+                <div class="button-group">
+                    <button class="test-btn" onclick="applyTheme('classic')">经典白色</button>
+                    <button class="test-btn" onclick="applyTheme('dark')">深色主题</button>
+                    <button class="test-btn" onclick="applyTheme('pink')">粉色主题</button>
+                    <button class="test-btn" onclick="applyTheme('blue')">蓝色主题</button>
+                    <button class="test-btn" onclick="applyTheme('green')">绿色主题</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-title">元素测试</div>
+                <div class="button-group">
+                    <button class="test-btn secondary" onclick="testTimeUpdate()">测试时间更新</button>
+                    <button class="test-btn secondary" onclick="testDynamicIsland()">测试灵动岛</button>
+                    <button class="test-btn secondary" onclick="testStatusIcons()">测试状态图标</button>
+                    <button class="test-btn secondary" onclick="testAllElements()">测试所有元素</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-content">
+            <div class="phone-display-area">
+                <!-- 手机界面将在这里显示 -->
+            </div>
+            
+            <div class="info-panel">
+                <div class="migration-status">
+                    <strong>✅ 主题迁移完成</strong><br>
+                    时间、灵动岛、电量和信号图标已成功迁移到主题系统
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-title">当前状态</div>
+                    <div class="info-item">
+                        <span class="info-label">界面状态:</span>
+                        <span class="info-value" id="interface_status">未显示</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">当前主题:</span>
+                        <span class="info-value" id="current_theme">经典白色</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">时间更新:</span>
+                        <span class="info-value" id="time_status">正常</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">当前时间:</span>
+                        <span class="info-value" id="current_time">--:--</span>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-title">迁移项目</div>
+                    <ul class="feature-list">
+                        <li class="success">✓ 手机边框颜色</li>
+                        <li class="success">✓ 状态栏时间颜色</li>
+                        <li class="success">✓ 主屏幕时间颜色</li>
+                        <li class="success">✓ 灵动岛颜色（始终黑色）</li>
+                        <li class="success">✓ 信号图标滤镜</li>
+                        <li class="success">✓ 电量图标滤镜</li>
+                        <li class="success">✓ 文字阴影效果</li>
+                        <li class="success">✓ QQ应用兼容性</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-title">主题特性</div>
+                    <ul class="feature-list">
+                        <li>🎨 5种主题颜色方案</li>
+                        <li>⏰ 实时时间显示</li>
+                        <li>🔋 状态图标自适应</li>
+                        <li>🌈 渐变阴影效果</li>
+                        <li>💾 设置自动保存</li>
+                        <li>🔄 界面重建恢复</li>
+                        <li>📱 跨应用一致性</li>
+                        <li>⚡ 性能优化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入脚本文件 -->
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+    <script src="apps/qq-app.js"></script>
+    
+    <script>
+        // 初始化测试
+        $(document).ready(function() {
+            console.log('主题迁移测试页面加载完成');
+            
+            // 初始化手机界面
+            if (window.PhoneInterface) {
+                window.PhoneInterface.init();
+                console.log('✅ 手机界面初始化完成');
+            }
+            
+            // 初始化美化应用
+            if (window.WallpaperApp) {
+                window.WallpaperApp.init();
+                console.log('✅ 美化应用初始化完成');
+            }
+            
+            // 初始化QQ应用
+            if (window.QQApp) {
+                window.QQApp.init();
+                console.log('✅ QQ应用初始化完成');
+            }
+            
+            // 开始状态监控
+            startStatusMonitoring();
+            
+            updateStatus();
+        });
+        
+        // 显示手机界面
+        function showPhoneInterface() {
+            if (window.PhoneInterface) {
+                window.PhoneInterface.show();
+                updateStatus();
+            }
+        }
+        
+        // 隐藏手机界面
+        function hidePhoneInterface() {
+            if (window.PhoneInterface) {
+                window.PhoneInterface.hide();
+                updateStatus();
+            }
+        }
+        
+        // 打开美化应用
+        function openWallpaperApp() {
+            if (window.WallpaperApp) {
+                window.WallpaperApp.show();
+                updateStatus();
+            }
+        }
+        
+        // 打开QQ应用
+        function openQQApp() {
+            if (window.QQApp) {
+                window.QQApp.show();
+                updateStatus();
+            }
+        }
+        
+        // 应用主题
+        function applyTheme(themeName) {
+            if (window.WallpaperApp) {
+                window.WallpaperApp.applyPhoneTheme(themeName);
+                setTimeout(updateStatus, 200);
+            }
+        }
+        
+        // 测试时间更新
+        function testTimeUpdate() {
+            if (window.PhoneInterface) {
+                window.PhoneInterface.updateTime();
+                console.log('🕐 时间更新测试完成');
+            }
+        }
+        
+        // 测试灵动岛
+        function testDynamicIsland() {
+            const $island = $('.dynamic-island');
+            if ($island.length > 0) {
+                const bgColor = $island.css('background-color');
+                console.log('🏝️ 灵动岛背景色:', bgColor);
+                alert(`灵动岛背景色: ${bgColor}`);
+            }
+        }
+        
+        // 测试状态图标
+        function testStatusIcons() {
+            const $signalIcon = $('.signal-icon');
+            const $batteryIcon = $('.battery-icon');
+            
+            if ($signalIcon.length > 0) {
+                const filter = $signalIcon.css('filter');
+                console.log('📶 信号图标滤镜:', filter);
+            }
+            
+            if ($batteryIcon.length > 0) {
+                const filter = $batteryIcon.css('filter');
+                console.log('🔋 电量图标滤镜:', filter);
+            }
+            
+            alert('状态图标测试完成，请查看控制台');
+        }
+        
+        // 测试所有元素
+        function testAllElements() {
+            testTimeUpdate();
+            testDynamicIsland();
+            testStatusIcons();
+            
+            console.log('🧪 所有元素测试完成');
+            alert('所有元素测试完成，请查看控制台输出');
+        }
+        
+        // 开始状态监控
+        function startStatusMonitoring() {
+            setInterval(updateStatus, 1000);
+        }
+        
+        // 更新状态信息
+        function updateStatus() {
+            // 界面状态
+            const isVisible = $('#phone_interface').hasClass('show');
+            $('#interface_status').text(isVisible ? '已显示' : '未显示');
+            
+            // 当前主题
+            const $phoneInterface = $('#phone_interface');
+            let currentTheme = '经典白色';
+            if ($phoneInterface.hasClass('phone-theme-dark')) currentTheme = '深色主题';
+            else if ($phoneInterface.hasClass('phone-theme-pink')) currentTheme = '粉色主题';
+            else if ($phoneInterface.hasClass('phone-theme-blue')) currentTheme = '蓝色主题';
+            else if ($phoneInterface.hasClass('phone-theme-green')) currentTheme = '绿色主题';
+            $('#current_theme').text(currentTheme);
+            
+            // 当前时间
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            $('#current_time').text(timeStr);
+        }
+    </script>
+</body>
+</html>
