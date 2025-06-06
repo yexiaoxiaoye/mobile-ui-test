@@ -232,6 +232,93 @@ body.chat-detail-active .dialog-head {
   overflow: hidden !important;
 }
 
+/* 实时更新消息样式 */
+.message {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-end;
+}
+
+.message.sent {
+  flex-direction: row-reverse;
+}
+
+.message.received {
+  flex-direction: row;
+}
+
+.message-avatar-container {
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #4a90e2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.message-content {
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message.sent .message-content {
+  align-items: flex-end;
+}
+
+.message.received .message-content {
+  align-items: flex-start;
+}
+
+.message-bubble {
+  padding: 8px 12px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.message.sent .message-bubble {
+  background: #007aff;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.received .message-bubble {
+  background: #e5e5ea;
+  color: #000;
+  border-bottom-left-radius: 4px;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #8e8e93;
+  margin-top: 2px;
+  padding: 0 4px;
+}
+
+.no-messages {
+  text-align: center;
+  color: #8e8e93;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
 /* QQ装饰栏隐藏类 - 保持原有display属性 */
 .qq-decoration-hidden {
   visibility: hidden !important;

@@ -91,9 +91,314 @@
         // 设置页面可见性监听，用于跨设备同步
         this.setupVisibilityListener();
 
+        // 🔥 新增：启用实时更新系统
+        this.setupRealtimeUpdates();
+
         setTimeout(() => this.updateUserDisplay(), CONFIG.DELAYS.UPDATE_USER_DISPLAY);
       } catch (error) {
         console.error('QQ应用初始化失败:', error);
+      }
+    },
+
+    // 设置实时更新系统
+    setupRealtimeUpdates() {
+      try {
+        console.log('🔄 设置QQ应用实时更新系统...');
+
+        // 检查数据提取器是否可用
+        if (!window.HQDataExtractor) {
+          console.warn('⚠️ HQDataExtractor不可用，跳过实时更新设置');
+          return;
+        }
+
+        // 定义更新回调函数
+        const updateCallback = () => {
+          console.log('🔄 [实时更新] 检测到新消息，刷新QQ应用数据...');
+
+          // 防抖处理，避免频繁更新
+          if (this.realtimeUpdateTimer) {
+            clearTimeout(this.realtimeUpdateTimer);
+          }
+
+          this.realtimeUpdateTimer = setTimeout(() => {
+            this.handleRealtimeUpdate();
+          }, 1000); // 1秒防抖
+        };
+
+        // 启用实时更新
+        const success = window.HQDataExtractor.enableRealtimeUpdates(updateCallback);
+
+        if (success) {
+          console.log('✅ QQ应用实时更新系统启用成功');
+          this.realtimeUpdateEnabled = true;
+        } else {
+          console.warn('⚠️ QQ应用实时更新系统启用失败');
+        }
+      } catch (error) {
+        console.error('⚠️ 设置实时更新系统失败:', error);
+      }
+    },
+
+    // 处理实时更新
+    handleRealtimeUpdate() {
+      try {
+        console.log('🔄 [实时更新] 开始处理QQ应用数据更新...');
+
+        // 检查当前是否在QQ应用界面
+        const isQQAppVisible = this.isQQAppCurrentlyVisible();
+
+        if (!isQQAppVisible) {
+          console.log('📱 QQ应用当前不可见，跳过更新');
+          return;
+        }
+
+        // 检查当前是否在聊天详情页
+        const isInChatDetail = this.isCurrentlyInChatDetail();
+
+        if (isInChatDetail) {
+          console.log('💬 [实时更新] 当前在聊天详情页，执行智能更新...');
+          this.updateChatDetailOnly();
+        } else {
+          console.log('🏠 [实时更新] 当前在主页，执行完整更新...');
+          // 重新加载消息数据
+          this.loadMessages()
+            .then(() => {
+              console.log('✅ [实时更新] QQ消息数据更新完成');
+
+              // 确保滚动到底部显示最新消息
+              setTimeout(() => {
+                const $historyContent = this.getCurrentHistoryContent();
+                if ($historyContent.length > 0 && $historyContent[0]) {
+                  $historyContent.scrollTop($historyContent[0].scrollHeight);
+                  console.log('📜 [实时更新] 已滚动到最新消息');
+                }
+              }, 300);
+            })
+            .catch(error => {
+              console.error('⚠️ [实时更新] 更新QQ消息数据失败:', error);
+            });
+        }
+      } catch (error) {
+        console.error('⚠️ [实时更新] 处理更新失败:', error);
+      }
+    },
+
+    // 检查当前是否在聊天详情页
+    isCurrentlyInChatDetail() {
+      try {
+        // 检查是否有显示的聊天页面
+        const $activeChatPage = $('.chat-page.show');
+        return $activeChatPage.length > 0;
+      } catch (error) {
+        console.warn('⚠️ 检查聊天详情页状态失败:', error);
+        return false;
+      }
+    },
+
+    // 只更新聊天详情页内容（不重建整个界面）
+    updateChatDetailOnly() {
+      try {
+        console.log('💬 [智能更新] 开始更新聊天详情页内容...');
+
+        // 获取当前显示的聊天页面
+        const $activeChatPage = $('.chat-page.show');
+        if ($activeChatPage.length === 0) {
+          console.log('⚠️ [智能更新] 未找到活动的聊天页面');
+          return;
+        }
+
+        // 获取聊天消息容器
+        const $chatMessages = $activeChatPage.find('.chat-messages');
+        if ($chatMessages.length === 0) {
+          console.log('⚠️ [智能更新] 未找到聊天消息容器');
+          return;
+        }
+
+        // 获取当前聊天的ID（从包装容器或其他标识中获取）
+        const chatId = this.getCurrentChatId($activeChatPage);
+        if (!chatId) {
+          console.log('⚠️ [智能更新] 无法确定当前聊天ID');
+          return;
+        }
+
+        console.log(`💬 [智能更新] 当前聊天ID: ${chatId}`);
+
+        // 重新提取该聊天的消息数据
+        this.updateSpecificChatMessages(chatId, $chatMessages);
+      } catch (error) {
+        console.error('⚠️ [智能更新] 更新聊天详情页失败:', error);
+      }
+    },
+
+    // 获取当前聊天ID
+    getCurrentChatId($activeChatPage) {
+      try {
+        // 尝试从包装容器获取聊天ID
+        const $wrapper = $activeChatPage.closest('.qq-contact-wrapper, .qq-group-wrapper');
+
+        if ($wrapper.hasClass('qq-contact-wrapper')) {
+          // 联系人聊天
+          const $qqHao = $wrapper.find('.custom-qqhao');
+          const qqNumber = $qqHao.attr('class').match(/custom-qqhao-(\d+)/)?.[1];
+          return qqNumber ? `contact_${qqNumber}` : null;
+        } else if ($wrapper.hasClass('qq-group-wrapper')) {
+          // 群组聊天
+          const $groupElement = $wrapper.find('.custom-qq-group');
+          const groupId = $groupElement.attr('class').match(/custom-qq-group-(\d+)/)?.[1];
+          return groupId ? `group_${groupId}` : null;
+        }
+
+        return null;
+      } catch (error) {
+        console.error('⚠️ 获取聊天ID失败:', error);
+        return null;
+      }
+    },
+
+    // 更新特定聊天的消息
+    async updateSpecificChatMessages(chatId, $chatMessages) {
+      try {
+        console.log(`💬 [智能更新] 更新聊天 ${chatId} 的消息...`);
+
+        // 重新提取所有QQ消息
+        const allMessages = await window.HQDataExtractor.extractQQMessages();
+
+        // 根据聊天ID筛选消息
+        let filteredMessages = [];
+
+        if (chatId.startsWith('contact_')) {
+          const qqNumber = chatId.replace('contact_', '');
+          filteredMessages = allMessages.filter(msg => msg.qqNumber === qqNumber);
+        } else if (chatId.startsWith('group_')) {
+          const groupId = chatId.replace('group_', '');
+          // 需要从群组消息中筛选
+          const allGroups = await window.HQDataExtractor.extractQQGroups();
+          const targetGroup = allGroups.find(group => group.id === groupId);
+          if (targetGroup) {
+            filteredMessages = targetGroup.messages || [];
+          }
+        }
+
+        console.log(`💬 [智能更新] 找到 ${filteredMessages.length} 条消息`);
+
+        // 重新构建消息HTML
+        this.rebuildChatMessages($chatMessages, filteredMessages, chatId);
+
+        // 滚动到底部
+        setTimeout(() => {
+          $chatMessages.scrollTop($chatMessages[0].scrollHeight);
+          console.log('📜 [智能更新] 已滚动到最新消息');
+        }, 100);
+
+        console.log('✅ [智能更新] 聊天消息更新完成');
+      } catch (error) {
+        console.error('⚠️ [智能更新] 更新特定聊天消息失败:', error);
+      }
+    },
+
+    // 重新构建聊天消息HTML
+    rebuildChatMessages($chatMessages, messages, chatId) {
+      try {
+        // 清空现有消息
+        $chatMessages.empty();
+
+        if (messages.length === 0) {
+          $chatMessages.html('<div class="no-messages">暂无聊天记录</div>');
+          return;
+        }
+
+        // 构建消息HTML
+        messages.forEach(message => {
+          const messageHtml = this.createMessageHTML(message, chatId);
+          $chatMessages.append(messageHtml);
+        });
+
+        console.log(`💬 [智能更新] 重新构建了 ${messages.length} 条消息`);
+      } catch (error) {
+        console.error('⚠️ 重新构建聊天消息失败:', error);
+      }
+    },
+
+    // 创建单条消息的HTML
+    createMessageHTML(message, chatId) {
+      const isMyMessage = message.type === 'sent' || message.isMyMessage;
+      const senderName = isMyMessage ? '我' : message.name || message.sender || '对方';
+      const messageClass = isMyMessage ? 'sent' : 'received';
+
+      // 获取头像
+      let avatarHtml = '';
+      if (!isMyMessage) {
+        const avatarUrl = this.getAvatarUrl(message.qqNumber || message.sender);
+        if (avatarUrl) {
+          avatarHtml = `<img src="${avatarUrl}" alt="avatar" class="message-avatar">`;
+        } else {
+          avatarHtml = `<div class="message-avatar-placeholder">${senderName.charAt(0)}</div>`;
+        }
+      }
+
+      return `
+        <div class="message ${messageClass}">
+          ${!isMyMessage ? `<div class="message-avatar-container">${avatarHtml}</div>` : ''}
+          <div class="message-content">
+            <div class="message-bubble">
+              ${message.content}
+            </div>
+            <div class="message-time">${message.time || new Date().toLocaleTimeString()}</div>
+          </div>
+        </div>
+      `;
+    },
+
+    // 检查QQ应用是否当前可见
+    isQQAppCurrentlyVisible() {
+      try {
+        // 检查是否在手机界面模式
+        const isInPhoneMode = $('#phone_interface').hasClass('show-qq-app-content');
+
+        if (isInPhoneMode) {
+          // 手机界面模式：检查手机界面是否显示且QQ应用容器有内容
+          const phoneVisible = $('#phone_interface').is(':visible');
+          const qqContainerHasContent = $('#phone_interface .qq-app-container').children().length > 0;
+          return phoneVisible && qqContainerHasContent;
+        } else {
+          // 独立模式：检查QQ对话框是否可见
+          return $('#chat_history_dialog').is(':visible');
+        }
+      } catch (error) {
+        console.warn('⚠️ 检查QQ应用可见性失败:', error);
+        return false;
+      }
+    },
+
+    // 获取当前历史内容容器
+    getCurrentHistoryContent() {
+      const isInPhoneMode = $('#phone_interface').hasClass('show-qq-app-content');
+
+      if (isInPhoneMode) {
+        return $('#phone_interface .qq-app-container #history_content');
+      } else {
+        return $('#chat_history_dialog #history_content');
+      }
+    },
+
+    // 清理实时更新系统
+    cleanupRealtimeUpdates() {
+      try {
+        console.log('🧹 清理QQ应用实时更新系统...');
+
+        if (this.realtimeUpdateTimer) {
+          clearTimeout(this.realtimeUpdateTimer);
+          this.realtimeUpdateTimer = null;
+        }
+
+        if (window.HQDataExtractor && this.realtimeUpdateEnabled) {
+          window.HQDataExtractor.disableRealtimeUpdates();
+          this.realtimeUpdateEnabled = false;
+        }
+
+        console.log('✅ QQ应用实时更新系统清理完成');
+      } catch (error) {
+        console.error('⚠️ 清理实时更新系统失败:', error);
       }
     },
 
@@ -1829,6 +2134,9 @@
     // 隐藏QQ应用
     hide: function () {
       console.log('正在隐藏QQ应用...');
+
+      // 清理实时更新系统
+      this.cleanupRealtimeUpdates();
 
       // 清空手机界面容器（因为我们使用克隆，不需要移回）
       const $qqContainer = $('#phone_interface .qq-app-container');
