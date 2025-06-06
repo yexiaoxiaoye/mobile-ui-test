@@ -203,58 +203,90 @@
           return;
         }
 
+        // 验证群号格式是否合理（应该是数字）
+        if (!/^\d+$/.test(groupId)) {
+          console.warn(`群号格式不正确，跳过: ${groupId}`);
+          return;
+        }
+
         // 如果群组不存在，则自动创建一个推断的群组
         if (!groupMap.has(groupId)) {
-          // 尝试从聊天记录中推断群名
+          // 改进的群名推断逻辑，防止错误拉取历史数据
           let inferredGroupName = `群聊${groupId}`;
+          let shouldCreateGroup = true;
 
-          // 查找是否有相关的群名信息（比如从聊天标题或其他地方）
+          // 只在当前消息所在的聊天记录中查找群名信息，避免跨消息污染
           if (allChatMessages && allChatMessages.length > 0) {
-            // 查找可能包含群名的消息
-            for (let msg of allChatMessages) {
-              const msgContent = msg.mes || '';
-              // 查找可能的群名模式，比如 "和XXX的聊天"
-              const groupNameMatch = msgContent.match(/和(.+?)的聊天/);
-              if (groupNameMatch) {
-                inferredGroupName = groupNameMatch[1];
-                // console.log(`从聊天记录推断群名: ${groupId} -> ${inferredGroupName}`); // Reduced verbosity
-                break;
-              }
-              // 也可以查找其他可能的群名模式
-              const groupNameMatch2 = msgContent.match(/群聊.*?(\S+)/);
-              if (groupNameMatch2) {
-                inferredGroupName = groupNameMatch2[1];
-                // console.log(`从聊天记录推断群名: ${groupId} -> ${inferredGroupName}`); // Reduced verbosity
-                break;
-              }
-              // 查找包含群ID的消息，可能有群名信息
-              if (msgContent.includes(groupId)) {
-                const contextMatch = msgContent.match(/(.{0,20})群聊(.{0,20})/);
-                if (contextMatch) {
-                  const context = contextMatch[0];
-                  const nameMatch = context.match(/(\S+)群聊/);
-                  if (nameMatch) {
-                    inferredGroupName = nameMatch[1];
-                    // console.log(`从上下文推断群名: ${groupId} -> ${inferredGroupName}`); // Reduced verbosity
-                    break;
+            // 查找包含当前群聊消息的具体消息
+            const currentMessage = allChatMessages[item.messageIndex];
+            if (currentMessage) {
+              const msgContent = currentMessage.mes || '';
+
+              // 检查消息内容是否包含可疑的长串数据（可能是错误拼接的内容）
+              if (msgContent.length > 5000) {
+                console.warn(`消息内容过长，可能包含错误数据，跳过群聊推断: ${groupId}`);
+                shouldCreateGroup = false;
+              } else {
+                // 更精确的群名提取：只查找明确的群聊创建格式
+                const explicitGroupMatch = msgContent.match(
+                  new RegExp(`\\[创建群聊\\|${groupId}\\|([^\\|]+)\\|[^\\]]+\\]`),
+                );
+                if (explicitGroupMatch) {
+                  const extractedName = explicitGroupMatch[1];
+                  // 验证提取的群名是否合理
+                  if (extractedName.length <= 50 && !extractedName.includes('[') && !extractedName.includes('|')) {
+                    inferredGroupName = extractedName;
+                    console.log(`从明确创建记录推断群名: ${groupId} -> ${inferredGroupName}`);
+                  } else {
+                    console.warn(`提取的群名不合理，使用默认: ${extractedName} -> ${inferredGroupName}`);
+                  }
+                } else {
+                  // 如果没有明确的创建记录，查找是否有群聊标题信息
+                  const titleMatch = msgContent.match(/和(.{1,30}?)群聊/);
+                  if (titleMatch && titleMatch[1].length < 30 && !titleMatch[1].includes('[')) {
+                    // 限制群名长度，防止提取过长内容
+                    inferredGroupName = titleMatch[1];
+                    console.log(`从标题推断群名: ${groupId} -> ${inferredGroupName}`);
+                  } else {
+                    // 最后尝试：查找简单的群名模式，但要严格限制长度
+                    const simpleMatch = msgContent.match(/群聊[：:]?\s*([^\s\[\]]{1,20})/);
+                    if (simpleMatch && simpleMatch[1].length <= 20 && !simpleMatch[1].includes('|')) {
+                      inferredGroupName = simpleMatch[1];
+                      console.log(`从简单模式推断群名: ${groupId} -> ${inferredGroupName}`);
+                    } else {
+                      // 如果都没找到，使用默认名称
+                      console.log(`无法推断群名，使用默认: ${groupId} -> ${inferredGroupName}`);
+                    }
                   }
                 }
               }
             }
           }
 
-          // 如果没有找到群名，使用默认的推断名称
-          const groupName = inferredGroupName || `群聊 ${groupId}`;
-          groupMap.set(groupId, {
-            id: groupId,
-            name: groupName,
-            members: '未知', // 推断的群组成员未知
-            messageIndex: item.messageIndex, // 使用消息的索引作为参考
-            timestamp: item.timestamp,
-            messages: [],
-            isInferred: true, // 标记为推断的群组
-          });
-          // console.log(`自动推断群组: ${groupId} -> ${groupName}`); // Reduced verbosity
+          // 验证推断的群名是否合理（长度检查，防止提取到错误的长内容）
+          if (inferredGroupName.length > 50 || inferredGroupName.includes('|') || inferredGroupName.includes('[')) {
+            console.warn(`推断的群名不合理，使用默认名称: ${groupId}`);
+            inferredGroupName = `群聊${groupId}`;
+          }
+
+          // 只有在应该创建群组时才创建
+          if (shouldCreateGroup) {
+            // 如果没有找到群名，使用默认的推断名称
+            const groupName = inferredGroupName || `群聊 ${groupId}`;
+            groupMap.set(groupId, {
+              id: groupId,
+              name: groupName,
+              members: '未知', // 推断的群组成员未知
+              messageIndex: item.messageIndex, // 使用消息的索引作为参考
+              timestamp: item.timestamp,
+              messages: [],
+              isInferred: true, // 标记为推断的群组
+            });
+            console.log(`自动推断群组: ${groupId} -> ${groupName}`);
+          } else {
+            console.warn(`跳过创建可疑群组: ${groupId}`);
+            return; // 跳过这条消息的处理
+          }
         }
 
         // 添加消息到群组

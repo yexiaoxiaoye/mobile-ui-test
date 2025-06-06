@@ -156,14 +156,13 @@
   flex-direction: column;
 }
 
-/* 卡片样式 */
+/* 卡片样式 - 移除模糊效果 */
 .friend-manager .card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.98);
   border-radius: 8px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   margin-bottom: 16px;
 }
 
@@ -182,9 +181,8 @@
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   color: #111827;
-  backdrop-filter: blur(4px);
 }
 
 .friend-manager .form-input:focus {
@@ -195,6 +193,43 @@
 
 .friend-manager .form-input::placeholder {
   color: #9ca3af;
+}
+
+/* 好感度输入框特殊样式 */
+.friend-manager #new_friend_favorability {
+  text-align: left;
+  font-weight: normal;
+}
+
+.friend-manager #new_friend_favorability::-webkit-outer-spin-button,
+.friend-manager #new_friend_favorability::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.friend-manager #new_friend_favorability[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* 输入验证样式 */
+.friend-manager .form-input.input-error {
+  border-color: #ef4444;
+  background-color: rgba(254, 242, 242, 0.95);
+}
+
+.friend-manager .form-input.input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.friend-manager .form-input.input-warning {
+  border-color: #f59e0b;
+  background-color: rgba(255, 251, 235, 0.95);
+}
+
+.friend-manager .form-input.input-warning:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
 /* 按钮样式 */
@@ -283,11 +318,10 @@
   gap: 12px;
   padding: 12px;
   margin: 8px 0;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .friend-manager .member-checkbox {

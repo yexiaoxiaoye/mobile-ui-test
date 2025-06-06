@@ -933,6 +933,9 @@
                   <div style="margin-bottom: 12px;">
                     <input type="text" class="form-input" id="new_friend_qq" placeholder="好友QQ号">
                   </div>
+                  <div style="margin-bottom: 12px;">
+                    <input type="number" class="form-input" id="new_friend_favorability" placeholder="好友好感度 (0-100)" min="0" max="100">
+                  </div>
                   <button class="btn btn-primary" id="add_friend_btn">添加好友</button>
                 </div>
 
@@ -1026,6 +1029,54 @@
         .off('click', '#add_friend_btn')
         .on('click', '#add_friend_btn', function () {
           self.addFriend();
+        });
+
+      // 好感度输入框验证
+      $(document)
+        .off('input', '#new_friend_favorability')
+        .on('input', '#new_friend_favorability', function () {
+          const value = parseInt($(this).val());
+          const $input = $(this);
+
+          // 移除之前的样式
+          $input.removeClass('input-error input-warning');
+
+          if (isNaN(value)) {
+            // 空值或非数字，使用默认样式
+            return;
+          }
+
+          if (value < 0 || value > 100) {
+            // 超出范围，显示错误样式
+            $input.addClass('input-error');
+            $input.attr('title', '好感度必须在0-100之间');
+          } else if (value < 20) {
+            // 低好感度警告
+            $input.addClass('input-warning');
+            $input.attr('title', '好感度较低');
+          } else {
+            // 正常范围
+            $input.attr('title', '好感度: ' + value);
+          }
+        });
+
+      // 好感度输入框失去焦点时自动修正
+      $(document)
+        .off('blur', '#new_friend_favorability')
+        .on('blur', '#new_friend_favorability', function () {
+          let value = parseInt($(this).val());
+
+          if (isNaN(value)) {
+            // 如果为空或无效，保持空值，不设置默认值
+            $(this).val('');
+          } else if (value < 0) {
+            $(this).val(0);
+          } else if (value > 100) {
+            $(this).val(100);
+          }
+
+          // 移除错误样式
+          $(this).removeClass('input-error input-warning');
         });
 
       // 创建群聊
@@ -1175,11 +1226,27 @@
       }
 
       contacts.forEach(contact => {
-        const avatarUrl = window.QQApp ? window.QQApp.getAvatarUrl(contact.number) : '';
+        let avatarUrl = '';
+        if (window.QQApp) {
+          avatarUrl = window.QQApp.getAvatarUrl(contact.number);
+          // 如果头像仍然为空，可能需要等待自动恢复完成
+          if (!avatarUrl && window.QQApp.isRecovering) {
+            // 恢复过程中，稍后再次尝试
+            setTimeout(() => {
+              avatarUrl = window.QQApp.getAvatarUrl(contact.number);
+              if (avatarUrl) {
+                // 找到对应的头像元素并更新
+                $(`.member-item[data-qq-number="${contact.number}"] .member-avatar`).html(
+                  `<img src="${avatarUrl}" alt="avatar">`,
+                );
+              }
+            }, 500);
+          }
+        }
         const avatarDisplay = avatarUrl ? `<img src="${avatarUrl}" alt="avatar">` : contact.name.charAt(0);
 
         const memberHtml = `
-          <div class="member-item">
+          <div class="member-item" data-qq-number="${contact.number}">
             <input type="checkbox" class="checkbox member-checkbox" data-qq-number="${contact.number}" data-qq-name="${contact.name}">
             <div class="member-avatar">${avatarDisplay}</div>
             <div class="member-info">
@@ -1203,8 +1270,20 @@
       }
 
       contacts.forEach(contact => {
-        const avatarUrl = window.QQApp ? window.QQApp.getAvatarUrl(contact.number) : '';
-        const avatarDisplay = avatarUrl ? `<img src="${avatarUrl}" alt="avatar">` : contact.name.charAt(0);
+        // 尝试获取头像URL，如果失败则使用默认显示
+        let avatarUrl = '';
+        let avatarDisplay = contact.name.charAt(0);
+
+        if (window.QQApp) {
+          try {
+            avatarUrl = window.QQApp.getAvatarUrl(contact.number);
+            if (avatarUrl && avatarUrl.trim()) {
+              avatarDisplay = `<img src="${avatarUrl}" alt="avatar">`;
+            }
+          } catch (error) {
+            console.warn(`获取好友 ${contact.name} (${contact.number}) 头像失败:`, error);
+          }
+        }
 
         const memberHtml = `
           <div class="member-item">
@@ -1261,16 +1340,19 @@
     addFriend: async function () {
       const friendName = $('#new_friend_name').val().trim();
       const friendQQ = $('#new_friend_qq').val().trim();
+      const friendFavorability = $('#new_friend_favorability').val().trim();
 
       if (!friendName || !friendQQ) {
         alert('请输入完整的好友信息');
         return;
       }
 
-      try {
-        // 生成好感度（随机值）
-        const favorability = Math.floor(Math.random() * 100);
+      // 验证好感度值
+      let favorability = parseInt(friendFavorability) || 50;
+      if (favorability < 0) favorability = 0;
+      if (favorability > 100) favorability = 100;
 
+      try {
         // 构建联系人信息格式
         const contactInfo = `[qq号|${friendName}|${friendQQ}|${favorability}]`;
 
@@ -1290,11 +1372,12 @@
         // 清空输入框
         $('#new_friend_name').val('');
         $('#new_friend_qq').val('');
+        $('#new_friend_favorability').val(''); // 清空好感度输入框
 
         // 重新加载数据
         this.loadFriendManagerData();
 
-        alert(`好友 ${friendName} 添加成功！`);
+        alert(`好友 ${friendName} 添加成功！好感度: ${favorability}`);
       } catch (error) {
         console.error('添加好友失败:', error);
         alert('添加好友失败: ' + error.message);
@@ -1731,6 +1814,31 @@
       });
 
       console.log(`✅ 好友管理界面头像更新完成，总共更新了 ${totalUpdated} 个头像`);
+    },
+
+    // 清空所有数据
+    clearAllData: async function () {
+      if (!confirm('确定要清空所有QQ数据吗？此操作不可恢复！')) {
+        return;
+      }
+
+      try {
+        const result = await this.clearAllQQData();
+
+        if (result.success) {
+          alert(
+            `所有QQ数据清空成功！\n删除统计:\n- 联系人: ${result.summary.contacts}\n- 消息: ${result.summary.messages}\n- 群聊: ${result.summary.groups}\n- 群聊消息: ${result.summary.groupMessages}\n- 头像: ${result.summary.avatars}\n- 用户信息: ${result.summary.userInfo}`,
+          );
+
+          // 重新加载数据
+          this.loadFriendManagerData();
+        } else {
+          alert('清空数据失败: ' + result.error);
+        }
+      } catch (error) {
+        console.error('清空所有数据失败:', error);
+        alert('清空数据失败: ' + error.message);
+      }
     },
   };
 

@@ -57,6 +57,9 @@
     // 调试模式开关，减少不必要的日志输出
     debugMode: false,
 
+    // 自动恢复状态标志
+    isRecovering: false,
+
     // 新增：头像数据缓存和版本控制
     avatarDataCache: {
       data: {},
@@ -85,9 +88,43 @@
         this.bindEvents();
         this.loadData();
 
+        // 设置页面可见性监听，用于跨设备同步
+        this.setupVisibilityListener();
+
         setTimeout(() => this.updateUserDisplay(), CONFIG.DELAYS.UPDATE_USER_DISPLAY);
       } catch (error) {
         console.error('QQ应用初始化失败:', error);
+      }
+    },
+
+    // 设置页面可见性监听
+    setupVisibilityListener() {
+      // 当页面重新获得焦点时，检查头像数据
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          // 页面变为可见，延迟检查头像数据
+          setTimeout(() => {
+            this.checkAndRecoverAvatars();
+          }, 1000);
+        }
+      });
+
+      // 窗口获得焦点时也检查
+      window.addEventListener('focus', () => {
+        setTimeout(() => {
+          this.checkAndRecoverAvatars();
+        }, 1000);
+      });
+    },
+
+    // 检查并恢复头像数据
+    checkAndRecoverAvatars() {
+      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
+
+      // 如果头像数据为空或很少，尝试恢复
+      if (contactCount === 0) {
+        console.log('🔄 [自动检查] 检测到头像数据为空，尝试自动恢复');
+        this.autoRecoverAvatarData();
       }
     },
 
@@ -137,8 +174,35 @@
 
     // 加载所有数据
     loadData() {
-      this.loadAvatarDataEnhanced();
+      // 优先从聊天记录加载，确保跨设备一致性
+      this.loadAvatarDataFromChat();
       this.loadUserData();
+    },
+
+    // 从聊天记录加载头像数据（跨设备兼容）
+    loadAvatarDataFromChat() {
+      console.log('🔄 [数据加载] 从聊天记录加载头像数据（跨设备模式）');
+      this.avatarData = {};
+      this.extractAvatarDataFromChatEnhanced();
+
+      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
+      console.log(`🔄 [数据加载] 从聊天记录加载完成，联系人数量: ${contactCount}`);
+
+      // 如果成功加载了数据，更新缓存
+      if (contactCount > 0) {
+        this.avatarDataCache = {
+          data: { ...this.avatarData },
+          version: this.avatarDataCache.version + 1,
+          lastLoadTime: Date.now(),
+          isValid: true,
+        };
+        this.saveAvatarCacheToStorage();
+      }
+
+      // 延迟更新显示，确保DOM已准备好
+      setTimeout(() => {
+        this.updateAllAvatarDisplaysFromData();
+      }, 300);
     },
 
     // 加载头像数据（增强版）- 添加智能缓存
@@ -313,6 +377,16 @@
 
       console.log(`🔄 [数据提取] 找到 ${chatData.chat.length} 条聊天记录，开始处理`);
       this.processMessagesForAvatarsEnhanced(chatData.chat);
+
+      // 输出提取结果摘要
+      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
+      console.log(`🔍 [数据提取] 提取完成，共找到 ${contactCount} 个联系人的头像数据`);
+      if (contactCount > 0) {
+        console.log(
+          '🔍 [数据提取] 联系人QQ号列表:',
+          Object.keys(this.avatarData).filter(k => !k.endsWith('_config')),
+        );
+      }
     },
 
     // 处理消息提取头像（增强版）
@@ -340,9 +414,10 @@
 
     // 从文本提取头像信息（增强版）
     extractAvatarsFromTextEnhanced(text) {
-      // 提取增强格式的头像
+      // 提取增强格式的头像 - 创建新的正则表达式实例
       const enhancedRegex = /\[头像增强\|(\d+)\|([^\]]+)\]/g;
       let match;
+      let foundEnhanced = false;
 
       while ((match = enhancedRegex.exec(text)) !== null) {
         const [, qqNumber, configJson] = match;
@@ -350,19 +425,22 @@
           const avatarConfig = JSON.parse(configJson);
           this.avatarData[qqNumber] = avatarConfig.url;
           this.avatarData[`${qqNumber}_config`] = avatarConfig;
+          foundEnhanced = true;
 
           console.log('🔍 [数据读取] 提取到头像增强配置:', {
             qqNumber,
-            avatarConfig,
-            transform: avatarConfig.transform,
+            url: avatarConfig.url.substring(0, 50) + '...',
+            hasTransform: !!avatarConfig.transform,
           });
         } catch (error) {
-          console.error('解析头像配置失败:', error);
+          console.error(`解析QQ号 ${qqNumber} 的头像配置失败:`, error);
         }
       }
 
-      // 兼容旧格式
-      this.extractAvatarsFromText(text);
+      // 兼容旧格式 - 只有在没有找到增强格式时才处理旧格式
+      if (!foundEnhanced) {
+        this.extractAvatarsFromText(text);
+      }
     },
 
     // 从文本提取用户头像（增强版）
@@ -460,11 +538,13 @@
 
     // 从文本提取头像信息
     extractAvatarsFromText(text) {
-      CONFIG.REGEX.AVATAR.lastIndex = 0;
+      // 创建新的正则表达式实例，避免全局状态问题
+      const avatarRegex = /\[头像\|(\d+)\|([^\]]+)\]/g;
       let match;
-      while ((match = CONFIG.REGEX.AVATAR.exec(text)) !== null) {
+      while ((match = avatarRegex.exec(text)) !== null) {
         const [, qqNumber, avatarUrl] = match;
         this.avatarData[qqNumber] = avatarUrl;
+        console.log(`🔍 [头像提取] 找到头像数据: QQ号=${qqNumber}, URL=${avatarUrl.substring(0, 50)}...`);
       }
     },
 
@@ -486,12 +566,38 @@
       }
     },
 
-    // 获取头像URL
+    // 获取头像URL - 增加自动恢复机制
     getAvatarUrl(qqNumber) {
+      // 如果头像数据不存在，自动尝试恢复
       if (!this.avatarData[qqNumber]) {
-        this.extractAvatarDataFromChat();
+        this.autoRecoverAvatarData();
       }
       return this.avatarData[qqNumber] || '';
+    },
+
+    // 自动恢复头像数据
+    autoRecoverAvatarData() {
+      // 检查是否已经在恢复过程中，避免重复执行
+      if (this.isRecovering) {
+        return;
+      }
+
+      this.isRecovering = true;
+      console.log('🔄 [自动恢复] 检测到头像数据缺失，开始自动恢复');
+
+      // 强制重新提取数据，不依赖缓存
+      this.avatarData = {};
+      this.extractAvatarDataFromChatEnhanced();
+
+      // 恢复完成
+      this.isRecovering = false;
+
+      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
+      if (contactCount > 0) {
+        console.log(`✅ [自动恢复] 成功恢复 ${contactCount} 个联系人的头像数据`);
+      } else {
+        console.log('⚠️ [自动恢复] 未找到头像数据，可能聊天记录中没有头像信息');
+      }
     },
 
     // 加载用户数据
@@ -3693,5 +3799,28 @@
 
     console.log(`✅ [全局] 图像质量优化完成，优化了 ${optimizedCount} 个头像元素`);
     return optimizedCount;
+  };
+
+  // 暴露到全局
+  window.QQApp = QQApp;
+
+  // 全局调试函数
+  window.debugQQAvatars = function () {
+    console.log('=== QQ头像数据调试 ===');
+    if (window.QQApp) {
+      return window.QQApp.debugAvatarData();
+    } else {
+      console.log('QQApp 未初始化');
+      return null;
+    }
+  };
+
+  window.refreshQQAvatars = function () {
+    console.log('🔄 手动刷新QQ头像数据');
+    if (window.QQApp) {
+      window.QQApp.refreshAvatarData();
+    } else {
+      console.log('QQApp 未初始化');
+    }
   };
 })(window);
