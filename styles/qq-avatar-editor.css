@@ -287,6 +287,17 @@ body > .qq-avatar-editor-page {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  /* 图像渲染优化 - 提升清晰度 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: high-quality;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .avatar-preview-image {
@@ -298,6 +309,22 @@ body > .qq-avatar-editor-page {
   transition: transform 0.1s ease-out, background-size 0.1s ease-out, background-position 0.1s ease-out;
   transform-origin: center center;
   cursor: move;
+
+  /* 图像渲染优化 - 提升清晰度 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: high-quality;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* 背景图像优化 */
+  background-attachment: scroll;
+  background-origin: padding-box;
+  background-clip: padding-box;
 }
 
 .preview-overlay {

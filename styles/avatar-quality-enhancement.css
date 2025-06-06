@@ -1,0 +1,222 @@
+/* 头像图像质量增强样式 - 专门优化头像清晰度 */
+
+/* 全局图像渲染优化 - 适用于所有头像元素 */
+.custom-avatar,
+.sent-avatar,
+.received-avatar,
+.user-avatar,
+.contact-avatar,
+.friend-avatar,
+.group-avatar,
+.member-avatar,
+.unified-avatar,
+.message-avatar,
+.avatar-preview-image,
+.avatar-preview-frame,
+[class*="avatar"],
+[class*="Avatar"] {
+  /* 高质量图像渲染 */
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: high-quality !important;
+  
+  /* 硬件加速优化 */
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  
+  /* 3D变换优化 */
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
+  -webkit-perspective: 1000px !important;
+  perspective: 1000px !important;
+  
+  /* 字体渲染优化 */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  
+  /* 背景图像优化 */
+  background-attachment: scroll !important;
+  background-origin: padding-box !important;
+  background-clip: padding-box !important;
+  
+  /* 防止模糊的额外优化 */
+  will-change: transform !important;
+  contain: layout style paint !important;
+}
+
+/* 特殊优化：针对背景图片的头像 */
+[style*="background-image"] {
+  /* 确保背景图片使用最佳渲染质量 */
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  
+  /* 优化背景图片的渲染 */
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: high-quality !important;
+}
+
+/* 针对img标签的头像优化 */
+img[src*="avatar"],
+img[class*="avatar"],
+img[class*="Avatar"] {
+  /* 图像标签专用优化 */
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: high-quality !important;
+  
+  /* 对象适配优化 */
+  object-fit: cover !important;
+  object-position: center !important;
+  
+  /* 硬件加速 */
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* QQ应用特定的头像优化 */
+.qq-app-container .custom-avatar,
+.qq-app-container .sent-avatar,
+.qq-app-container .received-avatar,
+.qq-app-container .user-avatar,
+.qq-app-container .contact-avatar,
+.qq-app-container .friend-avatar,
+.qq-app-container .group-avatar,
+.qq-app-container .member-avatar {
+  /* 强制应用高质量渲染 */
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: high-quality !important;
+  
+  /* 确保变换不影响清晰度 */
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
+}
+
+/* 头像编辑器特殊优化 */
+.avatar-preview-image,
+.avatar-preview-frame {
+  /* 编辑器预览专用优化 */
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: high-quality !important;
+  
+  /* 防止编辑时的模糊 */
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
+  
+  /* 优化拖拽和缩放时的渲染 */
+  will-change: transform, background-size, background-position !important;
+  contain: layout style paint !important;
+}
+
+/* 防止CSS变换导致的模糊 */
+[style*="transform"],
+[style*="scale"],
+[style*="rotate"] {
+  /* 确保变换不影响图像质量 */
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
+  
+  /* 强制硬件加速 */
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+}
+
+/* 高DPI屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .custom-avatar,
+  .sent-avatar,
+  .received-avatar,
+  .user-avatar,
+  .contact-avatar,
+  .friend-avatar,
+  .group-avatar,
+  .member-avatar,
+  .unified-avatar,
+  .message-avatar,
+  .avatar-preview-image,
+  [class*="avatar"],
+  [class*="Avatar"] {
+    /* 高DPI屏幕专用优化 */
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: pixelated !important;
+    image-rendering: crisp-edges !important;
+    
+    /* 确保高分辨率下的清晰度 */
+    -webkit-transform: translateZ(0) scale(1.0001) !important;
+    transform: translateZ(0) scale(1.0001) !important;
+  }
+}
+
+/* 动画和过渡优化 */
+.custom-avatar,
+.sent-avatar,
+.received-avatar,
+.user-avatar,
+.contact-avatar,
+.friend-avatar,
+.group-avatar,
+.member-avatar,
+.unified-avatar,
+.message-avatar,
+.avatar-preview-image,
+[class*="avatar"],
+[class*="Avatar"] {
+  /* 优化动画性能 */
+  transition-property: transform, opacity, background-size, background-position !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
+  /* 确保动画期间保持清晰度 */
+  will-change: transform !important;
+}
+
+/* 特殊情况：强制覆盖可能导致模糊的样式 */
+.custom-avatar[style],
+.sent-avatar[style],
+.received-avatar[style],
+.user-avatar[style],
+.contact-avatar[style],
+.friend-avatar[style],
+.group-avatar[style],
+.member-avatar[style],
+.unified-avatar[style],
+.message-avatar[style],
+.avatar-preview-image[style],
+[class*="avatar"][style],
+[class*="Avatar"][style] {
+  /* 强制应用质量优化，覆盖内联样式 */
+  image-rendering: -webkit-optimize-contrast !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
+}
+
+/* 调试模式：显示应用了优化的元素 */
+.debug-avatar-quality .custom-avatar,
+.debug-avatar-quality .sent-avatar,
+.debug-avatar-quality .received-avatar,
+.debug-avatar-quality .user-avatar,
+.debug-avatar-quality .contact-avatar,
+.debug-avatar-quality .friend-avatar,
+.debug-avatar-quality .group-avatar,
+.debug-avatar-quality .member-avatar,
+.debug-avatar-quality .unified-avatar,
+.debug-avatar-quality .message-avatar,
+.debug-avatar-quality .avatar-preview-image,
+.debug-avatar-quality [class*="avatar"],
+.debug-avatar-quality [class*="Avatar"] {
+  /* 调试时添加绿色边框，表示已应用优化 */
+  box-shadow: 0 0 0 1px #28a745 !important;
+}

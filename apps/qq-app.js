@@ -657,6 +657,13 @@
           'background-color': 'transparent',
           color: 'transparent',
           'font-size': '0',
+
+          // 图像质量优化 - 提升清晰度
+          'image-rendering': '-webkit-optimize-contrast',
+          '-webkit-backface-visibility': 'hidden',
+          'backface-visibility': 'hidden',
+          '-webkit-transform-style': 'preserve-3d',
+          'transform-style': 'preserve-3d',
         };
 
         // 应用变换效果
@@ -680,8 +687,10 @@
 
           // 应用旋转
           if (safeRotation !== 0) {
-            css['transform'] = `rotate(${safeRotation}deg)`;
+            css['transform'] = `rotate(${safeRotation}deg) translateZ(0)`;
             css['transform-origin'] = 'center center';
+          } else {
+            css['transform'] = 'translateZ(0)';
           }
 
           // 只在第一个元素时输出调试信息
@@ -3373,6 +3382,13 @@
         if (avatarUrl) {
           let css = {
             'background-image': `url(${avatarUrl})`,
+
+            // 图像质量优化 - 提升清晰度
+            'image-rendering': '-webkit-optimize-contrast',
+            '-webkit-backface-visibility': 'hidden',
+            'backface-visibility': 'hidden',
+            '-webkit-transform-style': 'preserve-3d',
+            'transform-style': 'preserve-3d',
           };
 
           // 应用变换 - 使用background属性而不是transform
@@ -3394,8 +3410,10 @@
 
             // 如果有旋转，应用transform
             if (safeRotation !== 0) {
-              css['transform'] = `rotate(${safeRotation}deg)`;
+              css['transform'] = `rotate(${safeRotation}deg) translateZ(0)`;
               css['transform-origin'] = 'center center';
+            } else {
+              css['transform'] = 'translateZ(0)';
             }
 
             // 只在第一个元素时输出调试信息，避免重复
@@ -3490,6 +3508,13 @@
         color: 'transparent',
         'font-size': '0',
         display: 'block',
+
+        // 图像质量优化 - 提升清晰度
+        'image-rendering': '-webkit-optimize-contrast',
+        '-webkit-backface-visibility': 'hidden',
+        'backface-visibility': 'hidden',
+        '-webkit-transform-style': 'preserve-3d',
+        'transform-style': 'preserve-3d',
       };
 
       // 应用变换效果
@@ -3511,8 +3536,10 @@
 
         // 应用旋转
         if (safeRotation !== 0) {
-          css['transform'] = `rotate(${safeRotation}deg)`;
+          css['transform'] = `rotate(${safeRotation}deg) translateZ(0)`;
           css['transform-origin'] = 'center center';
+        } else {
+          css['transform'] = 'translateZ(0)';
         }
 
         console.log(`🎨 应用角色 ${qqNumber} 消息头像变换:`, {
@@ -3548,6 +3575,13 @@
       if (typeof QQApp.init === 'function') {
         QQApp.init();
       }
+
+      // 应用图像质量优化
+      setTimeout(() => {
+        if (typeof window.applyAvatarQualityOptimization === 'function') {
+          window.applyAvatarQualityOptimization();
+        }
+      }, 500);
     }, 1000); // 延迟1秒，确保聊天记录加载完成
   });
 
@@ -3571,5 +3605,66 @@
     } else {
       console.error('QQ应用未加载');
     }
+  };
+
+  // 全局图像质量优化函数
+  window.applyAvatarQualityOptimization = function () {
+    console.log('🎨 [全局] 应用头像图像质量优化');
+
+    // 选择所有可能的头像元素
+    const avatarSelectors = [
+      '.custom-avatar',
+      '.sent-avatar',
+      '.received-avatar',
+      '.user-avatar',
+      '.contact-avatar',
+      '.friend-avatar',
+      '.group-avatar',
+      '.member-avatar',
+      '.unified-avatar',
+      '.message-avatar',
+      '.avatar-preview-image',
+      '.avatar-preview-frame',
+      '[class*="avatar"]',
+      '[class*="Avatar"]',
+    ];
+
+    let optimizedCount = 0;
+    avatarSelectors.forEach(selector => {
+      $(selector).each(function () {
+        const $element = $(this);
+
+        // 应用图像质量优化CSS
+        $element.css({
+          'image-rendering': '-webkit-optimize-contrast',
+          '-webkit-backface-visibility': 'hidden',
+          'backface-visibility': 'hidden',
+          '-webkit-transform-style': 'preserve-3d',
+          'transform-style': 'preserve-3d',
+          '-webkit-font-smoothing': 'antialiased',
+          '-moz-osx-font-smoothing': 'grayscale',
+          'background-attachment': 'scroll',
+          'background-origin': 'padding-box',
+          'background-clip': 'padding-box',
+          'will-change': 'transform',
+          contain: 'layout style paint',
+        });
+
+        // 确保变换包含translateZ(0)以启用硬件加速
+        const currentTransform = $element.css('transform');
+        if (currentTransform && currentTransform !== 'none') {
+          if (!currentTransform.includes('translateZ')) {
+            $element.css('transform', currentTransform + ' translateZ(0)');
+          }
+        } else {
+          $element.css('transform', 'translateZ(0)');
+        }
+
+        optimizedCount++;
+      });
+    });
+
+    console.log(`✅ [全局] 图像质量优化完成，优化了 ${optimizedCount} 个头像元素`);
+    return optimizedCount;
   };
 })(window);

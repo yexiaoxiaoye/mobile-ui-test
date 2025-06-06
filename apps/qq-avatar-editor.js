@@ -61,6 +61,12 @@
 
       // 只绑定事件，界面按需创建
       this.bindEvents();
+
+      // 应用图像质量优化
+      setTimeout(() => {
+        this.applyImageQualityOptimization();
+      }, 100);
+
       console.log('✅ QQ头像编辑器初始化完成');
     },
 
@@ -715,6 +721,14 @@
           // 如果是相同图片，直接应用当前的变换
           this.updateImageTransform();
         }
+
+        // 显示调整控制
+        $('.adjustment-controls').show();
+
+        // 应用图像质量优化
+        setTimeout(() => {
+          this.applyImageQualityOptimization();
+        }, 50);
       };
 
       tempImg.onerror = () => {
@@ -802,14 +816,24 @@
         'background-position': `${backgroundPositionX} ${backgroundPositionY}`,
         'background-repeat': 'no-repeat',
         'background-color': 'transparent',
+
+        // 图像质量优化 - 提升清晰度
+        'image-rendering': '-webkit-optimize-contrast',
+        '-webkit-backface-visibility': 'hidden',
+        'backface-visibility': 'hidden',
+        '-webkit-transform-style': 'preserve-3d',
+        'transform-style': 'preserve-3d',
+        'background-attachment': 'scroll',
+        'background-origin': 'padding-box',
+        'background-clip': 'padding-box',
       };
 
       // 应用旋转（如果有）
       if (safeRotation !== 0) {
-        css['transform'] = `rotate(${safeRotation}deg)`;
+        css['transform'] = `rotate(${safeRotation}deg) translateZ(0)`;
         css['transform-origin'] = 'center center';
       } else {
-        css['transform'] = 'none';
+        css['transform'] = 'translateZ(0)';
       }
 
       $('.avatar-preview-image').css(css);
@@ -1113,6 +1137,63 @@
       const timeString =
         now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       $('.qq-status-time').text(timeString);
+    },
+
+    // 应用图像质量优化到所有头像元素
+    applyImageQualityOptimization() {
+      console.log('🎨 应用图像质量优化到所有头像元素');
+
+      // 选择所有可能的头像元素
+      const avatarSelectors = [
+        '.custom-avatar',
+        '.sent-avatar',
+        '.received-avatar',
+        '.user-avatar',
+        '.contact-avatar',
+        '.friend-avatar',
+        '.group-avatar',
+        '.member-avatar',
+        '.unified-avatar',
+        '.message-avatar',
+        '.avatar-preview-image',
+        '.avatar-preview-frame',
+        '[class*="avatar"]',
+        '[class*="Avatar"]',
+      ];
+
+      avatarSelectors.forEach(selector => {
+        $(selector).each(function () {
+          const $element = $(this);
+
+          // 应用图像质量优化CSS
+          $element.css({
+            'image-rendering': '-webkit-optimize-contrast',
+            '-webkit-backface-visibility': 'hidden',
+            'backface-visibility': 'hidden',
+            '-webkit-transform-style': 'preserve-3d',
+            'transform-style': 'preserve-3d',
+            '-webkit-font-smoothing': 'antialiased',
+            '-moz-osx-font-smoothing': 'grayscale',
+            'background-attachment': 'scroll',
+            'background-origin': 'padding-box',
+            'background-clip': 'padding-box',
+            'will-change': 'transform',
+            contain: 'layout style paint',
+          });
+
+          // 确保变换包含translateZ(0)以启用硬件加速
+          const currentTransform = $element.css('transform');
+          if (currentTransform && currentTransform !== 'none') {
+            if (!currentTransform.includes('translateZ')) {
+              $element.css('transform', currentTransform + ' translateZ(0)');
+            }
+          } else {
+            $element.css('transform', 'translateZ(0)');
+          }
+        });
+      });
+
+      console.log('✅ 图像质量优化应用完成');
     },
   };
 
