@@ -810,6 +810,11 @@
       }
 
       this.currentPage = this.PageStates.FRIEND_MANAGER;
+
+      // 触发好友管理页面显示事件，用于统一按钮样式刷新
+      setTimeout(() => {
+        $(document).trigger('friend-manager-shown');
+      }, 100);
     },
 
     // 在手机界面内显示好友群组管理
@@ -863,13 +868,20 @@
             <div class="header-row">
               <div class="header-left">
                 <button class="back-button" id="friend_manager_back_btn">
-                  ←
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                  </svg>
                 </button>
                 <div class="page-title">好友与群组管理</div>
               </div>
               <div class="header-actions">
                 <button class="more-button">⋯</button>
-                <button class="home-button friend-manager-home-btn">🏠</button>
+                <button class="home-button friend-manager-home-btn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
               </div>
             </div>
 

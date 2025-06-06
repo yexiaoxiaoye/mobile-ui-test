@@ -68,6 +68,10 @@ async function init() {
       'phone-interface.css',
     ];
 
+    // 加载统一按钮CSS
+    const unifiedButtonsCSS = `${basePath}/image/unified-buttons.css`;
+    await loadCSS(unifiedButtonsCSS);
+
     // 加载所有CSS文件（并行加载，失败不中断）
     console.log('开始加载CSS文件...');
     const cssPromises = cssFiles.map(file => loadCSS(`${basePath}/styles/${file}`));
@@ -99,6 +103,14 @@ async function init() {
       }
     }
     console.log('所有JS模块加载完成');
+
+    // 加载统一按钮JS
+    try {
+      await loadScript(`${basePath}/image/unified-buttons.js`);
+      console.log('统一按钮管理器加载完成');
+    } catch (error) {
+      console.warn('统一按钮管理器加载失败:', error);
+    }
 
     // 等待jQuery加载
     if (typeof $ === 'undefined') {

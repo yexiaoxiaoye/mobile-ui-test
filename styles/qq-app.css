@@ -409,34 +409,6 @@ body.chat-detail-active .dialog-head {
   cursor: pointer;
 }
 
-.home-btn {
-  background: none;
-  color: black;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-  user-select: none;
-  padding: 0;
-}
-
-.home-btn:hover {
-  transform: scale(1.1);
-  background: none;
-}
-
-.home-btn:active {
-  transform: scale(0.9);
-  background: none;
-}
-
 /* 调色盘按钮样式 */
 .wallpaper-btn,
 .chat-wallpaper-btn {
@@ -519,7 +491,7 @@ body.chat-detail-active .dialog-head {
   padding: 0 !important;
 }
 
-/* 可爱背景 */
+/* 可爱背景 - 固定背景不随滚动移动 */
 #history_content::before {
   content: '';
   position: absolute;
@@ -528,6 +500,7 @@ body.chat-detail-active .dialog-head {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   opacity: 0.95;
   z-index: 0;
 }
@@ -1181,36 +1154,6 @@ body.chat-detail-active .dialog-head {
   position: relative;
 }
 
-/* 返回QQ主列表的箭头按钮 */
-.back-to-main-list-btn {
-  background: none !important;
-  border: none !important;
-  color: black !important;
-  font-size: 28px !important;
-  font-weight: bold;
-  cursor: pointer !important;
-  padding: 0 !important;
-  transition: transform 0.2s ease !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  user-select: none !important;
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.back-to-main-list-btn:hover {
-  transform: translateY(-50%) scale(1.1) !important;
-}
-
-.back-to-main-list-btn:active {
-  transform: translateY(-50%) scale(0.9) !important;
-}
-
 /* 聊天详情页的小房子按钮特定样式调整 */
 .chat-home-btn {
   position: absolute;
@@ -1466,14 +1409,6 @@ body.chat-detail-active .dialog-head {
 /* 通用文字阴影去除 */
 * {
   text-shadow: none !important;
-}
-
-/* 确保图标无阴影 */
-.home-btn,
-.back-to-main-list-btn,
-#create_group_btn {
-  text-shadow: none !important;
-  box-shadow: none !important;
 }
 
 /* 聊天标题状态文字（QQ号/群号） */

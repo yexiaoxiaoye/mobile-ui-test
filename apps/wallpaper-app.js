@@ -329,6 +329,11 @@
       this.showInPhoneInterface();
 
       console.log('✅ 美化应用已显示');
+
+      // 触发美化应用显示事件，用于统一按钮样式刷新
+      setTimeout(() => {
+        $(document).trigger('wallpaper-app-shown');
+      }, 100);
     },
 
     // 隐藏应用

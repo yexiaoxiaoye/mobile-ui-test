@@ -1320,7 +1320,12 @@
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <button id="create_group_btn">+</button>
                                 <button class="qq-home-palette-btn" id="new_qq_home_palette_btn" title="设置QQ主页背景">🎨</button>
-                                <button class="home-btn" id="home_btn_main" title="返回手机首页">🏠︎</button>
+                                <button class="home-btn" id="home_btn_main" title="返回手机首页">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+                                  </svg>
+                                </button>
                             </div>
                         </div>
 
@@ -1853,7 +1858,11 @@
 
 
                                 <div class="chat-header">
-                                    <button class="back-to-main-list-btn">←</button>
+                                    <button class="back-to-main-list-btn">
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                                      </svg>
+                                    </button>
                                     <div class="chat-title">
                                         <div>${contact.name}</div>
                                         <div class="contact-status-qq">QQ: ${contact.number}</div>
@@ -1861,7 +1870,12 @@
                                     <button class="chat-wallpaper-btn" data-chat-id="${
                                       contact.number
                                     }" title="设置聊天背景">🎨</button>
-                                    <button class="home-btn chat-home-btn" title="返回手机首页">🏠︎</button>
+                                    <button class="home-btn chat-home-btn" title="返回手机首页">
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+                                      </svg>
+                                    </button>
                                 </div>
 
                                 <div class="chat-messages">
@@ -1994,7 +2008,11 @@
 
 
                                 <div class="chat-header">
-                                    <button class="back-to-main-list-btn">←</button>
+                                    <button class="back-to-main-list-btn">
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                                      </svg>
+                                    </button>
                                     <div class="chat-title">
                                         <div>${group.name}</div>
                                         <div class="contact-status-qq">群号: ${group.id}</div>
@@ -2005,7 +2023,12 @@
                                     <button class="chat-wallpaper-btn" data-chat-id="${
                                       group.id
                                     }" title="设置聊天背景">🎨</button>
-                                    <button class="home-btn chat-home-btn" title="返回手机首页">🏠︎</button>
+                                    <button class="home-btn chat-home-btn" title="返回手机首页">
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+                                      </svg>
+                                    </button>
                                 </div>
 
                                 <div class="chat-messages">
@@ -3581,6 +3604,10 @@
         if (typeof window.applyAvatarQualityOptimization === 'function') {
           window.applyAvatarQualityOptimization();
         }
+
+        // 触发QQ应用加载完成事件，用于统一按钮样式刷新
+        console.log('🎉 QQ应用初始化完成，触发事件');
+        $(document).trigger('qq-app-loaded');
       }, 500);
     }, 1000); // 延迟1秒，确保聊天记录加载完成
   });

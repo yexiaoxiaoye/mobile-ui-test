@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>统一按钮样式测试</title>
+
+    <!-- 引入统一按钮样式 -->
+    <link rel="stylesheet" href="image/unified-buttons.css" />
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .test-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+      }
+
+      .test-section h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007aff;
+        padding-bottom: 10px;
+      }
+
+      .button-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 15px 0;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+      }
+
+      .button-label {
+        min-width: 150px;
+        font-weight: 500;
+        color: #666;
+      }
+
+      .status-indicator {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .status-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .log-area {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 20px;
+      }
+
+      .test-controls {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .test-btn {
+        background: #007aff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: background 0.2s;
+      }
+
+      .test-btn:hover {
+        background: #0056b3;
+      }
+
+      .mock-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔧 统一按钮样式测试</h1>
+      <p>测试QQ应用中所有小房子按钮和返回按钮的统一样式效果</p>
+
+      <div class="test-controls">
+        <button class="test-btn" onclick="testAllButtons()">🧪 测试所有按钮</button>
+        <button class="test-btn" onclick="refreshButtons()">🔄 刷新按钮样式</button>
+        <button class="test-btn" onclick="clearLog()">🗑️ 清空日志</button>
+      </div>
+
+      <!-- 小房子按钮测试 -->
+      <div class="test-section">
+        <h3>🏠 小房子按钮测试</h3>
+
+        <div class="button-row">
+          <span class="button-label">QQ主页小房子:</span>
+          <button class="home-btn" id="home_btn_main" title="返回手机首页">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-home-main">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">聊天页面小房子:</span>
+          <button class="home-btn chat-home-btn" title="返回手机首页">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-home-chat">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">好友管理小房子:</span>
+          <button class="home-button friend-manager-home-btn" title="返回手机首页">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-home-friend">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">美化应用小房子:</span>
+          <button class="wallpaper-home-btn" title="返回手机首页">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-home-wallpaper">待测试</span>
+        </div>
+      </div>
+
+      <!-- 返回按钮测试 -->
+      <div class="test-section">
+        <h3>🔙 返回按钮测试</h3>
+
+        <div class="button-row">
+          <span class="button-label">聊天页面返回:</span>
+          <button class="back-to-main-list-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-back-chat">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">好友管理返回:</span>
+          <button class="back-button" id="friend_manager_back_btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-back-friend">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">美化应用返回:</span>
+          <button class="wallpaper-back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-back-wallpaper">待测试</span>
+        </div>
+
+        <div class="button-row">
+          <span class="button-label">QQ联系人返回:</span>
+          <button class="back">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" />
+            </svg>
+          </button>
+          <span class="status-indicator" id="status-back-contact">待测试</span>
+        </div>
+      </div>
+
+      <!-- 模拟界面测试 -->
+      <div class="test-section">
+        <h3>📱 模拟界面测试</h3>
+
+        <div class="mock-header">
+          <button class="back-button">←</button>
+          <span>好友与群组管理</span>
+          <div>
+            <button class="more-button">⋯</button>
+            <button class="home-button friend-manager-home-btn">🏠</button>
+          </div>
+        </div>
+
+        <div class="mock-header">
+          <button class="back-to-main-list-btn">←</button>
+          <span>聊天详情</span>
+          <div>
+            <button class="chat-wallpaper-btn">🎨</button>
+            <button class="home-btn chat-home-btn">🏠︎</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="log-area" id="testLog">
+        <div>📋 测试日志将在这里显示...</div>
+      </div>
+    </div>
+
+    <!-- 引入jQuery -->
+    <script src="jquery-3.js"></script>
+    <!-- 引入统一按钮管理器 -->
+    <script src="image/unified-buttons.js"></script>
+
+    <script>
+      // 测试日志函数
+      function addLog(message, type = 'info') {
+        const logArea = document.getElementById('testLog');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#333';
+        logEntry.textContent = `[${timestamp}] ${message}`;
+        logArea.appendChild(logEntry);
+        logArea.scrollTop = logArea.scrollHeight;
+      }
+
+      function clearLog() {
+        document.getElementById('testLog').innerHTML = '<div>📋 测试日志已清空...</div>';
+      }
+
+      function updateStatus(elementId, status, message) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = message;
+          element.className = `status-indicator status-${status}`;
+        }
+      }
+
+      // 测试按钮是否有SVG图标
+      function testButtonSVG(button, buttonName) {
+        const svg = button.querySelector('svg');
+        if (svg) {
+          addLog(`✅ ${buttonName} 已正确显示SVG图标`, 'success');
+          return true;
+        } else {
+          addLog(`❌ ${buttonName} 缺少SVG图标`, 'error');
+          return false;
+        }
+      }
+
+      // 测试按钮样式
+      function testButtonStyles(button, buttonName) {
+        const computedStyle = window.getComputedStyle(button);
+        const hasTransition = computedStyle.transition.includes('transform');
+        const hasCorrectCursor = computedStyle.cursor === 'pointer';
+
+        if (hasTransition && hasCorrectCursor) {
+          addLog(`✅ ${buttonName} 样式正确`, 'success');
+          return true;
+        } else {
+          addLog(`⚠️ ${buttonName} 样式可能不完整`, 'error');
+          return false;
+        }
+      }
+
+      // 测试所有按钮
+      function testAllButtons() {
+        addLog('🧪 开始测试所有按钮...', 'info');
+
+        // 测试小房子按钮
+        const homeButtons = [
+          { selector: '#home_btn_main', name: 'QQ主页小房子', statusId: 'status-home-main' },
+          { selector: '.chat-home-btn', name: '聊天页面小房子', statusId: 'status-home-chat' },
+          { selector: '.friend-manager-home-btn', name: '好友管理小房子', statusId: 'status-home-friend' },
+          { selector: '.wallpaper-home-btn', name: '美化应用小房子', statusId: 'status-home-wallpaper' },
+        ];
+
+        homeButtons.forEach(({ selector, name, statusId }) => {
+          const button = document.querySelector(selector);
+          if (button) {
+            const hasSVG = testButtonSVG(button, name);
+            const hasStyles = testButtonStyles(button, name);
+            updateStatus(
+              statusId,
+              hasSVG && hasStyles ? 'success' : 'error',
+              hasSVG && hasStyles ? '✅ 通过' : '❌ 失败',
+            );
+          } else {
+            addLog(`❌ 未找到 ${name} 按钮`, 'error');
+            updateStatus(statusId, 'error', '❌ 未找到');
+          }
+        });
+
+        // 测试返回按钮
+        const backButtons = [
+          { selector: '.back-to-main-list-btn', name: '聊天页面返回', statusId: 'status-back-chat' },
+          { selector: '#friend_manager_back_btn', name: '好友管理返回', statusId: 'status-back-friend' },
+          { selector: '.wallpaper-back-btn', name: '美化应用返回', statusId: 'status-back-wallpaper' },
+          { selector: '.back', name: 'QQ联系人返回', statusId: 'status-back-contact' },
+        ];
+
+        backButtons.forEach(({ selector, name, statusId }) => {
+          const button = document.querySelector(selector);
+          if (button) {
+            const hasSVG = testButtonSVG(button, name);
+            const hasStyles = testButtonStyles(button, name);
+            updateStatus(
+              statusId,
+              hasSVG && hasStyles ? 'success' : 'error',
+              hasSVG && hasStyles ? '✅ 通过' : '❌ 失败',
+            );
+          } else {
+            addLog(`❌ 未找到 ${name} 按钮`, 'error');
+            updateStatus(statusId, 'error', '❌ 未找到');
+          }
+        });
+
+        addLog('🎉 按钮测试完成！', 'success');
+      }
+
+      // 刷新按钮样式
+      function refreshButtons() {
+        if (window.UnifiedButtons) {
+          window.UnifiedButtons.refresh();
+          addLog('🔄 按钮样式已刷新', 'success');
+        } else {
+          addLog('❌ 统一按钮管理器未加载', 'error');
+        }
+      }
+
+      // 页面加载完成后初始化
+      $(document).ready(function () {
+        addLog('📱 统一按钮测试页面已加载', 'info');
+
+        // 等待统一按钮管理器加载
+        setTimeout(() => {
+          if (window.UnifiedButtons) {
+            addLog('✅ 统一按钮管理器已加载', 'success');
+            // 自动测试一次
+            setTimeout(testAllButtons, 1000);
+          } else {
+            addLog('❌ 统一按钮管理器加载失败', 'error');
+          }
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
