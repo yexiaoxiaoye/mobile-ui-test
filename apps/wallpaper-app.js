@@ -785,25 +785,29 @@
       const selectorString = selectors.join(', ');
 
       if (type === 'qq-chat') {
-        // 聊天背景直接设置在元素上，不使用伪元素
+        // 聊天背景使用相对定位，确保在聊天容器内正确显示
         return `
           ${selectorString} {
             background-image: url('${url}') !important;
             background-size: cover !important;
             background-position: center !important;
             background-repeat: no-repeat !important;
-            background-attachment: fixed !important;
+            background-attachment: scroll !important;
             opacity: 0.95 !important;
             filter: blur(${blur}px) !important;
+            position: relative !important;
           }
         `;
       } else {
-        // QQ主页背景使用伪元素
+        // QQ主页背景使用固定定位的伪元素，确保背景不随滚动移动
         return `
           ${selectorString} {
             content: '' !important;
-            position: absolute !important;
-            inset: 0 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
             background-image: url('${url}') !important;
             background-size: cover !important;
             background-position: center !important;
@@ -811,6 +815,7 @@
             opacity: 0.95 !important;
             filter: blur(${blur}px) !important;
             z-index: 0 !important;
+            pointer-events: none !important;
           }
         `;
       }
@@ -1305,6 +1310,12 @@
       if (this.qqBackgrounds.home) {
         console.log('🏠 应用QQ主页背景:', this.qqBackgrounds.home, 'blur:', this.qqBackgrounds.homeBlur);
         this.updateQQHomeBackground(this.qqBackgrounds.home, this.qqBackgrounds.homeBlur);
+      } else {
+        // 如果没有保存的背景，但CSS中有默认背景，重新应用以确保使用新的固定方法
+        console.log('🔄 重新应用默认QQ主页背景以使用新的固定方法');
+        const defaultBg =
+          'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg';
+        this.updateQQHomeBackground(defaultBg, 0);
       }
 
       // 应用所有聊天背景

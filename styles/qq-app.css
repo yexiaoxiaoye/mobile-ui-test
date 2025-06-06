@@ -494,15 +494,18 @@ body.chat-detail-active .dialog-head {
 /* 可爱背景 - 固定背景不随滚动移动 */
 #history_content::before {
   content: '';
-  position: absolute;
-  inset: 0;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  opacity: 0.95;
-  z-index: 0;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  opacity: 0.95 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
 }
 
 /* QQ联系人包装容器样式 */
@@ -1212,14 +1215,15 @@ body.chat-detail-active .dialog-head {
   z-index: 1;
 }
 
-/* 聊天背景 - 固定不动，只在消息区域显示 */
+/* 聊天背景 - 在消息区域显示，使用scroll避免移动设备兼容性问题 */
 .chat-messages {
   background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Weixin%20Image_20250521091444.jpg-DuTc4plttvx6uYtNdextRDJciTiTgh.jpeg') !important;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
+  background-attachment: scroll !important;
   opacity: 0.95 !important;
+  position: relative !important;
 }
 
 .chat-messages::before {
