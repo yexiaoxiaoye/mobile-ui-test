@@ -1511,9 +1511,16 @@
         }
       }
 
-      // 确保用户头像正确显示
+      // 重新加载头像数据以确保角色头像配置正确
+      console.log('🔄 重新加载头像数据以确保配置同步');
+      this.loadAvatarDataEnhanced();
+
+      // 确保用户头像和角色头像都正确显示
       setTimeout(() => {
+        console.log('🔄 更新手机界面中的所有头像显示');
         this.updateUserDisplay();
+        // 更新所有角色头像显示
+        this.updateAllAvatarDisplaysFromData();
       }, 300);
     },
 
@@ -1594,11 +1601,39 @@
           const lastMessageText = lastMessage ? lastMessage.content : '暂无消息';
           const lastMessageTime = lastMessage ? lastMessage.time : '';
 
-          // 获取头像URL
+          // 获取头像URL和配置
           const avatarUrl = this.getAvatarUrl(contact.number);
-          const avatarStyle = avatarUrl
-            ? `background-image: url(${avatarUrl}); background-size: cover; background-position: center;`
-            : 'background: #666; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;';
+          const avatarConfig = this.avatarData[`${contact.number}_config`];
+
+          // 构建头像样式，包含变换效果
+          let avatarStyle = '';
+          if (avatarUrl) {
+            avatarStyle = `background-image: url(${avatarUrl});`;
+
+            // 应用变换配置
+            if (avatarConfig && avatarConfig.transform) {
+              const transform = avatarConfig.transform;
+              const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
+              const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
+              const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
+              const safeRotation = (transform.rotate || 0) % 360;
+
+              const backgroundSize = `${safeScale * 100}%`;
+              const backgroundPositionX = `${50 - safeX * 0.5}%`;
+              const backgroundPositionY = `${50 - safeY * 0.5}%`;
+
+              avatarStyle += ` background-size: ${backgroundSize}; background-position: ${backgroundPositionX} ${backgroundPositionY}; background-repeat: no-repeat;`;
+
+              if (safeRotation !== 0) {
+                avatarStyle += ` transform: rotate(${safeRotation}deg); transform-origin: center center;`;
+              }
+            } else {
+              avatarStyle += ' background-size: cover; background-position: center;';
+            }
+          } else {
+            avatarStyle =
+              'background: #666; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;';
+          }
 
           // 创建外层包装容器 - v0风格联系人项
           const $contactWrapper = $(`
@@ -1685,18 +1720,46 @@
             } else {
               // 接收的消息 - v0风格左侧气泡
               const contactAvatarUrl = this.getAvatarUrl(contact.number);
+              const contactAvatarConfig = this.avatarData[`${contact.number}_config`];
+
               let avatarDisplay = '';
+              let messageAvatarStyle = '';
+
               if (contactAvatarUrl) {
                 avatarDisplay = `<img src="${contactAvatarUrl}" alt="avatar">`;
+                messageAvatarStyle = `background-image: url(${contactAvatarUrl});`;
+
+                // 应用变换配置到消息头像
+                if (contactAvatarConfig && contactAvatarConfig.transform) {
+                  const transform = contactAvatarConfig.transform;
+                  const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
+                  const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
+                  const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
+                  const safeRotation = (transform.rotate || 0) % 360;
+
+                  const backgroundSize = `${safeScale * 100}%`;
+                  const backgroundPositionX = `${50 - safeX * 0.5}%`;
+                  const backgroundPositionY = `${50 - safeY * 0.5}%`;
+
+                  messageAvatarStyle += ` background-size: ${backgroundSize}; background-position: ${backgroundPositionX} ${backgroundPositionY}; background-repeat: no-repeat; background-color: transparent; color: transparent; font-size: 0;`;
+
+                  if (safeRotation !== 0) {
+                    messageAvatarStyle += ` transform: rotate(${safeRotation}deg); transform-origin: center center;`;
+                  }
+                } else {
+                  messageAvatarStyle +=
+                    ' background-size: cover; background-position: center; background-color: transparent; color: transparent; font-size: 0;';
+                }
               } else {
                 avatarDisplay = contact.name.charAt(0);
+                messageAvatarStyle = 'background-color: #ccc;';
               }
 
               messageHtml = `
                                 <div class="custom-message custom-received">
-                                    <div class="message-avatar received-avatar" style="${
-                                      contactAvatarUrl ? '' : 'background-color: #ccc;'
-                                    }">${avatarDisplay}</div>
+                                    <div class="message-avatar received-avatar" style="${messageAvatarStyle}">${
+                contactAvatarUrl ? '' : avatarDisplay
+              }</div>
                                     <div class="message-bubble">
                                         <div>${msg.content}</div>
                                         <div class="message-time">${messageTime}</div>
@@ -1818,13 +1881,36 @@
                 }
 
                 const senderAvatarUrl = senderQQ ? this.getAvatarUrl(senderQQ) : '';
+                const senderAvatarConfig = senderQQ ? this.avatarData[`${senderQQ}_config`] : null;
                 // console.log(`[AvatarDebug] For group sender "${msg.sender}" (resolved QQ: ${senderQQ}), got avatar URL: ${senderAvatarUrl}`); // Kept for critical debug
                 let groupAvatarDisplay = '';
                 let avatarStyle = '';
 
                 if (senderAvatarUrl) {
                   groupAvatarDisplay = `<img src="${senderAvatarUrl}" alt="avatar">`;
-                  avatarStyle = `background-image: url(${senderAvatarUrl}); background-size: cover; background-position: center;`;
+                  avatarStyle = `background-image: url(${senderAvatarUrl});`;
+
+                  // 应用变换配置到群聊消息头像
+                  if (senderAvatarConfig && senderAvatarConfig.transform) {
+                    const transform = senderAvatarConfig.transform;
+                    const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
+                    const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
+                    const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
+                    const safeRotation = (transform.rotate || 0) % 360;
+
+                    const backgroundSize = `${safeScale * 100}%`;
+                    const backgroundPositionX = `${50 - safeX * 0.5}%`;
+                    const backgroundPositionY = `${50 - safeY * 0.5}%`;
+
+                    avatarStyle += ` background-size: ${backgroundSize}; background-position: ${backgroundPositionX} ${backgroundPositionY}; background-repeat: no-repeat; background-color: transparent; color: transparent; font-size: 0;`;
+
+                    if (safeRotation !== 0) {
+                      avatarStyle += ` transform: rotate(${safeRotation}deg); transform-origin: center center;`;
+                    }
+                  } else {
+                    avatarStyle +=
+                      ' background-size: cover; background-position: center; background-color: transparent; color: transparent; font-size: 0;';
+                  }
                 } else {
                   groupAvatarDisplay = senderName.charAt(0);
                   avatarStyle = 'background-color: #ddd; color: #666;';
@@ -1832,7 +1918,9 @@
 
                 let messageHtml = `
                   <div class="custom-message custom-received group-message">
-                      <div class="message-avatar group-avatar" style="${avatarStyle}">${groupAvatarDisplay}</div>
+                      <div class="message-avatar group-avatar" style="${avatarStyle}">${
+                  senderAvatarUrl ? '' : groupAvatarDisplay
+                }</div>
                       <div class="message-bubble">
                           <div class="sender-name">${senderName}</div>
                           <div>${msg.content}</div>
