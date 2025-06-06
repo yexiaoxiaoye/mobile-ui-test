@@ -12,6 +12,9 @@
     apiBaseUrl: 'http://localhost:3001/api', // 后端API地址
     configFileName: 'wallpaper-config.json', // 配置文件名
 
+    // 导出状态控制
+    isExporting: false, // 防止重复导出
+
     // QQ背景管理
     qqBackgrounds: {
       home: '', // QQ主页背景（包括好友管理、群聊管理、头像修改）
@@ -175,21 +178,41 @@
         }
       });
 
-      // 导出配置按钮
-      $(document).on('click', '.wallpaper-export-btn', function (e) {
-        e.stopPropagation();
-        const data = {
-          currentWallpaper: self.currentWallpaper,
-          history: self.wallpaperHistory,
-          qqBackgrounds: self.qqBackgrounds, // 包含QQ背景数据
-          themeConfig: self.getCurrentThemeConfig(), // 包含主题配置
-          customColors: {
-            border: self.getCustomColors('border'), // 自定义边框颜色预设
-            icon: self.getCustomColors('icon'), // 自定义图标颜色预设
-          },
-        };
-        self.exportConfig(data);
-      });
+      // 导出配置按钮 - 使用防抖处理避免重复导出
+      $(document)
+        .off('click', '.wallpaper-export-btn')
+        .on('click', '.wallpaper-export-btn', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+
+          // 防抖处理：如果正在导出，则忽略后续点击
+          if (self.isExporting) {
+            console.log('⚠️ 正在导出中，忽略重复点击');
+            return;
+          }
+
+          self.isExporting = true;
+          console.log('📁 开始导出配置文件...');
+
+          const data = {
+            currentWallpaper: self.currentWallpaper,
+            history: self.wallpaperHistory,
+            qqBackgrounds: self.qqBackgrounds, // 包含QQ背景数据
+            themeConfig: self.getCurrentThemeConfig(), // 包含主题配置
+            customColors: {
+              border: self.getCustomColors('border'), // 自定义边框颜色预设
+              icon: self.getCustomColors('icon'), // 自定义图标颜色预设
+            },
+          };
+
+          self.exportConfig(data);
+
+          // 2秒后重置导出状态
+          setTimeout(() => {
+            self.isExporting = false;
+          }, 2000);
+        });
 
       // 导入配置按钮
       $(document).on('click', '.wallpaper-import-btn', function (e) {
@@ -1134,6 +1157,8 @@
     // 导出配置文件
     exportConfig(data) {
       try {
+        console.log('📁 开始创建配置文件...');
+
         // 创建配置文件内容
         const configContent = JSON.stringify(data, null, 2);
 
@@ -1150,32 +1175,34 @@
         link.style.display = 'none';
         link.style.position = 'absolute';
         link.style.left = '-9999px';
+        link.style.visibility = 'hidden';
         link.setAttribute('data-mobile-ui-element', 'true'); // 标记为移动UI元素
 
         // 添加到手机界面内部，而不是body
         const phoneInterface = document.getElementById('phone_interface');
-        if (phoneInterface) {
-          phoneInterface.appendChild(link);
-        } else {
-          document.body.appendChild(link);
-        }
+        const container = phoneInterface || document.body;
+        container.appendChild(link);
 
-        // 延迟触发下载，避免与点击事件冲突
+        // 立即触发下载
+        console.log('📁 触发下载:', this.configFileName);
+        link.click();
+
+        // 立即清理资源
         setTimeout(() => {
-          link.click();
-
-          // 延迟清理
-          setTimeout(() => {
+          try {
             if (link.parentNode) {
               link.parentNode.removeChild(link);
             }
             URL.revokeObjectURL(url);
-          }, 100);
-        }, 50);
-
-        console.log('📁 配置文件已导出:', this.configFileName);
+            console.log('✅ 配置文件导出完成，资源已清理');
+          } catch (cleanupError) {
+            console.warn('⚠️ 清理资源时出错:', cleanupError);
+          }
+        }, 200);
       } catch (error) {
         console.error('❌ 导出失败:', error);
+        // 重置导出状态
+        this.isExporting = false;
       }
     },
 
