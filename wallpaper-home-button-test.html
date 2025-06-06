@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美化应用小房子按钮测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1976d2;
+        }
+        .btn.success {
+            background: #4caf50;
+        }
+        .btn.success:hover {
+            background: #388e3c;
+        }
+        .btn.warning {
+            background: #ff9800;
+        }
+        .btn.warning:hover {
+            background: #f57c00;
+        }
+        .status {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .test-results {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .feature-list {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .feature-list h3 {
+            margin-top: 0;
+            color: #e65100;
+        }
+        .feature-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 5px 0;
+            color: #bf360c;
+        }
+        .check-mark {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .cross-mark {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 美化应用小房子按钮测试</h1>
+        <p>宝贝，这个测试页面可以帮你验证美化应用小房子按钮的修改效果！</p>
+        
+        <div class="feature-list">
+            <h3>🎯 修改内容</h3>
+            <ul>
+                <li><span class="check-mark">✅</span> 删除主美化界面的小房子按钮</li>
+                <li><span class="check-mark">✅</span> QQ主题背景页面保留小房子按钮并正确绑定</li>
+                <li><span class="check-mark">✅</span> 聊天背景页面保留小房子按钮并正确绑定</li>
+                <li><span class="check-mark">✅</span> 小房子按钮点击返回手机主页</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 测试功能</h3>
+            <button class="btn" onclick="testMainWallpaperInterface()">测试主美化界面</button>
+            <button class="btn success" onclick="testQQHomeInterface()">测试QQ主题背景界面</button>
+            <button class="btn warning" onclick="testQQChatInterface()">测试聊天背景界面</button>
+            <button class="btn" onclick="checkHomeButtonBinding()">检查小房子按钮绑定</button>
+        </div>
+
+        <div class="status" id="statusDisplay">
+            准备就绪 - 点击按钮开始测试
+        </div>
+
+        <h3>📊 测试结果</h3>
+        <div class="test-results" id="testResults">
+            <div>等待测试开始...</div>
+        </div>
+    </div>
+
+    <script>
+        let testLogs = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testLogs.push(logEntry);
+            
+            const testResults = document.getElementById('testResults');
+            const logDiv = document.createElement('div');
+            logDiv.textContent = logEntry;
+            
+            if (type === 'success') {
+                logDiv.style.color = '#4caf50';
+            } else if (type === 'error') {
+                logDiv.style.color = '#f44336';
+            } else if (type === 'warning') {
+                logDiv.style.color = '#ff9800';
+            }
+            
+            testResults.appendChild(logDiv);
+            testResults.scrollTop = testResults.scrollHeight;
+            
+            // 限制日志数量
+            if (testLogs.length > 50) {
+                testLogs.shift();
+                testResults.removeChild(testResults.firstChild);
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('statusDisplay').textContent = message;
+            addLog(message);
+        }
+
+        function testMainWallpaperInterface() {
+            updateStatus('🧪 测试主美化界面...');
+            
+            if (window.WallpaperApp && typeof window.WallpaperApp.show === 'function') {
+                // 设置为手机壁纸模式
+                window.WallpaperApp.currentEditType = 'phone';
+                window.WallpaperApp.show();
+                
+                setTimeout(() => {
+                    const homeButton = document.querySelector('.wallpaper-home-btn');
+                    if (homeButton) {
+                        addLog('❌ 主美化界面仍然显示小房子按钮', 'error');
+                        updateStatus('❌ 测试失败：主美化界面不应该显示小房子按钮');
+                    } else {
+                        addLog('✅ 主美化界面正确隐藏了小房子按钮', 'success');
+                        updateStatus('✅ 测试通过：主美化界面已正确隐藏小房子按钮');
+                    }
+                }, 500);
+            } else {
+                addLog('❌ WallpaperApp未加载', 'error');
+                updateStatus('❌ WallpaperApp未加载，无法测试');
+            }
+        }
+
+        function testQQHomeInterface() {
+            updateStatus('🧪 测试QQ主题背景界面...');
+            
+            if (window.WallpaperApp && typeof window.WallpaperApp.openQQHomeEditor === 'function') {
+                window.WallpaperApp.openQQHomeEditor();
+                
+                setTimeout(() => {
+                    const homeButton = document.querySelector('.wallpaper-home-btn');
+                    if (homeButton) {
+                        addLog('✅ QQ主题背景界面正确显示小房子按钮', 'success');
+                        
+                        // 测试按钮功能
+                        const hasClickHandler = homeButton.onclick || 
+                                              $(homeButton).data('events') || 
+                                              $._data(homeButton, 'events');
+                        
+                        if (hasClickHandler || $._data(document, 'events')?.click) {
+                            addLog('✅ 小房子按钮已绑定点击事件', 'success');
+                            updateStatus('✅ 测试通过：QQ主题背景界面小房子按钮正常');
+                        } else {
+                            addLog('⚠️ 小房子按钮可能未绑定事件', 'warning');
+                            updateStatus('⚠️ 警告：小房子按钮可能未正确绑定事件');
+                        }
+                    } else {
+                        addLog('❌ QQ主题背景界面未显示小房子按钮', 'error');
+                        updateStatus('❌ 测试失败：QQ主题背景界面应该显示小房子按钮');
+                    }
+                }, 500);
+            } else {
+                addLog('❌ WallpaperApp.openQQHomeEditor方法不存在', 'error');
+                updateStatus('❌ 无法测试QQ主题背景界面');
+            }
+        }
+
+        function testQQChatInterface() {
+            updateStatus('🧪 测试聊天背景界面...');
+            
+            if (window.WallpaperApp && typeof window.WallpaperApp.openQQChatEditor === 'function') {
+                // 使用测试聊天ID
+                window.WallpaperApp.openQQChatEditor('test_chat_123');
+                
+                setTimeout(() => {
+                    const homeButton = document.querySelector('.wallpaper-home-btn');
+                    if (homeButton) {
+                        addLog('✅ 聊天背景界面正确显示小房子按钮', 'success');
+                        updateStatus('✅ 测试通过：聊天背景界面小房子按钮正常');
+                    } else {
+                        addLog('❌ 聊天背景界面未显示小房子按钮', 'error');
+                        updateStatus('❌ 测试失败：聊天背景界面应该显示小房子按钮');
+                    }
+                }, 500);
+            } else {
+                addLog('❌ WallpaperApp.openQQChatEditor方法不存在', 'error');
+                updateStatus('❌ 无法测试聊天背景界面');
+            }
+        }
+
+        function checkHomeButtonBinding() {
+            updateStatus('🔍 检查小房子按钮事件绑定...');
+            
+            // 检查是否有全局事件委托
+            const documentEvents = $._data(document, 'events');
+            if (documentEvents && documentEvents.click) {
+                const wallpaperHomeEvents = documentEvents.click.filter(event => 
+                    event.selector && event.selector.includes('.wallpaper-home-btn')
+                );
+                
+                if (wallpaperHomeEvents.length > 0) {
+                    addLog('✅ 找到小房子按钮的事件绑定', 'success');
+                    addLog(`📊 绑定的事件数量: ${wallpaperHomeEvents.length}`, 'info');
+                    updateStatus('✅ 小房子按钮事件绑定正常');
+                } else {
+                    addLog('❌ 未找到小房子按钮的事件绑定', 'error');
+                    updateStatus('❌ 小房子按钮事件绑定缺失');
+                }
+            } else {
+                addLog('⚠️ 无法检测到文档级别的事件绑定', 'warning');
+                updateStatus('⚠️ 事件绑定检测不完整');
+            }
+        }
+
+        // 页面加载完成后的初始化
+        window.addEventListener('load', () => {
+            updateStatus('🚀 测试工具已加载');
+            
+            // 检查WallpaperApp是否可用
+            setTimeout(() => {
+                if (window.WallpaperApp) {
+                    addLog('✅ WallpaperApp已检测到', 'success');
+                    updateStatus('✅ WallpaperApp已检测到，可以开始测试');
+                } else {
+                    addLog('⚠️ WallpaperApp未检测到', 'warning');
+                    updateStatus('⚠️ WallpaperApp未检测到，请确保已加载美化应用');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

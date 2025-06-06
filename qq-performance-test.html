@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QQ头像更新性能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .control-panel {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1976d2;
+        }
+        .btn.danger {
+            background: #f44336;
+        }
+        .btn.danger:hover {
+            background: #d32f2f;
+        }
+        .btn.success {
+            background: #4caf50;
+        }
+        .btn.success:hover {
+            background: #388e3c;
+        }
+        .status {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #ffcc02;
+        }
+        .metric h3 {
+            margin: 0 0 10px 0;
+            color: #e65100;
+        }
+        .metric .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #bf360c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 QQ头像更新性能测试工具</h1>
+        <p>宝贝，这个工具可以帮你测试和优化QQ应用的头像更新性能！</p>
+        
+        <div class="control-panel">
+            <h3>🔧 控制面板</h3>
+            <button class="btn" onclick="toggleDebugMode()">切换调试模式</button>
+            <button class="btn success" onclick="testBatchUpdate()">测试批量更新</button>
+            <button class="btn" onclick="simulateHeavyLoad()">模拟重负载</button>
+            <button class="btn danger" onclick="clearLogs()">清空日志</button>
+            <button class="btn" onclick="exportLogs()">导出日志</button>
+        </div>
+
+        <div class="performance-metrics">
+            <div class="metric">
+                <h3>更新次数</h3>
+                <div class="value" id="updateCount">0</div>
+            </div>
+            <div class="metric">
+                <h3>平均耗时</h3>
+                <div class="value" id="avgTime">0ms</div>
+            </div>
+            <div class="metric">
+                <h3>调试模式</h3>
+                <div class="value" id="debugStatus">关闭</div>
+            </div>
+            <div class="metric">
+                <h3>性能评分</h3>
+                <div class="value" id="performanceScore">100</div>
+            </div>
+        </div>
+
+        <div class="status" id="statusDisplay">
+            准备就绪 - 点击按钮开始测试
+        </div>
+
+        <h3>📊 实时日志</h3>
+        <div class="log-container" id="logContainer">
+            <div>等待测试开始...</div>
+        </div>
+    </div>
+
+    <script>
+        let updateCount = 0;
+        let totalTime = 0;
+        let logs = [];
+
+        // 监听控制台输出
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            
+            const message = args.join(' ');
+            if (message.includes('头像') || message.includes('更新') || message.includes('批量')) {
+                addLog(message);
+                
+                // 统计更新次数
+                if (message.includes('更新了') && message.includes('个角色')) {
+                    const match = message.match(/更新了 (\d+) 个角色/);
+                    if (match) {
+                        updateCount += parseInt(match[1]);
+                        updateMetrics();
+                    }
+                }
+            }
+        };
+
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs.push(logEntry);
+            
+            const logContainer = document.getElementById('logContainer');
+            const logDiv = document.createElement('div');
+            logDiv.textContent = logEntry;
+            logContainer.appendChild(logDiv);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // 限制日志数量
+            if (logs.length > 100) {
+                logs.shift();
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        function updateMetrics() {
+            document.getElementById('updateCount').textContent = updateCount;
+            
+            if (updateCount > 0) {
+                const avgTime = Math.round(totalTime / updateCount);
+                document.getElementById('avgTime').textContent = avgTime + 'ms';
+                
+                // 计算性能评分
+                let score = 100;
+                if (avgTime > 100) score -= 20;
+                if (avgTime > 200) score -= 30;
+                if (updateCount > 500) score -= 20;
+                
+                document.getElementById('performanceScore').textContent = Math.max(0, score);
+            }
+        }
+
+        function toggleDebugMode() {
+            if (window.QQApp && typeof window.QQApp.toggleDebugMode === 'function') {
+                const isDebug = window.QQApp.toggleDebugMode();
+                document.getElementById('debugStatus').textContent = isDebug ? '开启' : '关闭';
+                updateStatus(`调试模式已${isDebug ? '开启' : '关闭'}`);
+            } else {
+                updateStatus('❌ QQApp未加载，无法切换调试模式');
+            }
+        }
+
+        function testBatchUpdate() {
+            updateStatus('🔄 开始批量更新测试...');
+            const startTime = performance.now();
+            
+            if (window.QQApp && typeof window.QQApp.forceRefreshAllAvatars === 'function') {
+                window.QQApp.forceRefreshAllAvatars();
+                
+                setTimeout(() => {
+                    const endTime = performance.now();
+                    const duration = Math.round(endTime - startTime);
+                    totalTime += duration;
+                    updateStatus(`✅ 批量更新完成，耗时: ${duration}ms`);
+                    updateMetrics();
+                }, 1000);
+            } else {
+                updateStatus('❌ QQApp未加载，无法执行批量更新测试');
+            }
+        }
+
+        function simulateHeavyLoad() {
+            updateStatus('⚡ 模拟重负载测试...');
+            
+            // 模拟多次快速更新
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    testBatchUpdate();
+                }, i * 200);
+            }
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('logContainer').innerHTML = '<div>日志已清空</div>';
+            updateCount = 0;
+            totalTime = 0;
+            updateMetrics();
+            updateStatus('🗑️ 日志和统计数据已清空');
+        }
+
+        function exportLogs() {
+            const logText = logs.join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qq-performance-log-${new Date().toISOString().slice(0, 19)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus('📁 日志已导出');
+        }
+
+        function updateStatus(message) {
+            document.getElementById('statusDisplay').textContent = message;
+            addLog(message);
+        }
+
+        // 页面加载完成后的初始化
+        window.addEventListener('load', () => {
+            updateStatus('🚀 性能测试工具已加载');
+            
+            // 检查QQApp是否可用
+            setTimeout(() => {
+                if (window.QQApp) {
+                    updateStatus('✅ QQApp已检测到，可以开始测试');
+                } else {
+                    updateStatus('⚠️ QQApp未检测到，请确保已加载QQ应用');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

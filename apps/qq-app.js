@@ -51,6 +51,12 @@
       contactAvatars: {},
     },
 
+    // 添加消息头像更新缓存，避免重复更新
+    lastMessageAvatarUpdate: null,
+
+    // 调试模式开关，减少不必要的日志输出
+    debugMode: false,
+
     // 初始化应用
     init() {
       try {
@@ -708,13 +714,18 @@
       this.updateAvatarInChat(qqNumber, avatarUrl);
     },
 
-    // 从已加载的数据更新所有头像显示
+    // 从已加载的数据更新所有头像显示（优化版）
     updateAllAvatarDisplaysFromData() {
       console.log('🔄 [数据应用] 从已加载数据更新所有头像显示');
-      console.log('🔍 [数据应用] 当前avatarData:', this.avatarData);
-      console.log('🔍 [数据应用] 当前userData:', this.userData);
 
-      // 更新所有联系人头像
+      // 减少调试信息输出，避免控制台刷屏
+      if (this.debugMode) {
+        console.log('🔍 [数据应用] 当前avatarData:', this.avatarData);
+        console.log('🔍 [数据应用] 当前userData:', this.userData);
+      }
+
+      // 收集需要更新的联系人，进行批量处理
+      const contactsToUpdate = [];
       Object.keys(this.avatarData).forEach(key => {
         if (key.endsWith('_config')) {
           const qqNumber = key.replace('_config', '');
@@ -722,24 +733,21 @@
           const avatarUrl = this.avatarData[qqNumber];
 
           if (avatarUrl && avatarConfig) {
-            console.log(`🔄 [数据应用] 更新联系人 ${qqNumber} 的头像:`, {
-              avatarConfig,
-              transform: avatarConfig.transform,
-            });
-            this.updateAllAvatarDisplaysEnhanced(qqNumber, avatarConfig);
+            contactsToUpdate.push({ qqNumber, avatarConfig });
           }
         }
       });
 
+      // 批量更新联系人头像，减少日志输出
+      if (contactsToUpdate.length > 0) {
+        console.log(`🔄 [数据应用] 批量更新 ${contactsToUpdate.length} 个联系人头像`);
+        this.batchUpdateContactAvatars(contactsToUpdate);
+      }
+
       // 更新用户头像
       if (this.userData.avatarConfig) {
-        console.log('🔄 [数据应用] 更新用户头像:', {
-          avatarConfig: this.userData.avatarConfig,
-          transform: this.userData.avatarConfig.transform,
-        });
+        console.log('🔄 [数据应用] 更新用户头像');
         this.updateUserAvatarEnhanced();
-      } else {
-        console.log('⚠️ [数据应用] 用户头像配置不存在');
       }
 
       // 更新好友管理界面中的头像显示
@@ -747,6 +755,35 @@
         console.log('🔄 [数据应用] 更新好友管理界面头像');
         window.QQDataManager.updateFriendManagerAvatars();
       }
+    },
+
+    // 批量更新联系人头像
+    batchUpdateContactAvatars(contactsToUpdate) {
+      // 使用 setTimeout 分批处理，避免一次性处理太多导致页面卡顿
+      const batchSize = 3; // 每批处理3个联系人
+      let currentIndex = 0;
+
+      const processBatch = () => {
+        const batch = contactsToUpdate.slice(currentIndex, currentIndex + batchSize);
+
+        batch.forEach(({ qqNumber, avatarConfig }) => {
+          if (this.debugMode) {
+            console.log(`🔄 [批量处理] 更新联系人 ${qqNumber} 的头像`);
+          }
+          this.updateAllAvatarDisplaysEnhanced(qqNumber, avatarConfig);
+        });
+
+        currentIndex += batchSize;
+
+        // 如果还有更多联系人需要处理，继续下一批
+        if (currentIndex < contactsToUpdate.length) {
+          setTimeout(processBatch, 50); // 50ms间隔，避免阻塞UI
+        } else {
+          console.log('✅ [批量处理] 所有联系人头像更新完成');
+        }
+      };
+
+      processBatch();
     },
 
     // 强制刷新所有头像显示（清除缓存）
@@ -2999,11 +3036,15 @@
 
       // 检查是否需要更新（状态是否改变）
       if (this.lastUpdateStates.contactAvatars[qqNumber] === currentState) {
-        console.log(`🔄 角色 ${qqNumber} 头像状态未改变，跳过更新`);
+        if (this.debugMode) {
+          console.log(`🔄 角色 ${qqNumber} 头像状态未改变，跳过更新`);
+        }
         return;
       }
 
-      console.log(`🔄 执行角色 ${qqNumber} 头像更新`);
+      if (this.debugMode) {
+        console.log(`🔄 执行角色 ${qqNumber} 头像更新`);
+      }
       this.lastUpdateStates.contactAvatars[qqNumber] = currentState;
 
       this.updateContactAvatarsEnhanced(qqNumber, avatarUrl, transform);
@@ -3011,6 +3052,13 @@
       setTimeout(() => {
         this.updateMessageAvatarsEnhanced(qqNumber, avatarUrl, transform);
       }, 50);
+    },
+
+    // 切换调试模式
+    toggleDebugMode() {
+      this.debugMode = !this.debugMode;
+      console.log(`🔧 调试模式已${this.debugMode ? '开启' : '关闭'}`);
+      return this.debugMode;
     },
 
     // 更新联系人头像（增强版）
@@ -3070,8 +3118,16 @@
       });
     },
 
-    // 更新消息头像（增强版）- 优化性能
+    // 更新消息头像（增强版）- 优化性能，添加批量处理
     updateMessageAvatarsEnhanced(qqNumber, avatarUrl, transform) {
+      // 检查是否需要更新（避免重复更新）
+      const updateKey = `${qqNumber}_${avatarUrl}_${JSON.stringify(transform)}`;
+      if (this.lastMessageAvatarUpdate === updateKey) {
+        console.log(`⏭️ 跳过重复的消息头像更新: ${qqNumber}`);
+        return;
+      }
+      this.lastMessageAvatarUpdate = updateKey;
+
       console.log(`🔄 更新角色 ${qqNumber} 消息头像`);
 
       // 查找所有可能的角色消息头像选择器
@@ -3082,6 +3138,7 @@
       ];
 
       let foundAvatars = 0;
+      const elementsToUpdate = []; // 批量收集需要更新的元素
 
       contactAvatarSelectors.forEach(selector => {
         const $elements = $(selector);
@@ -3109,59 +3166,69 @@
 
           if (isTargetContact && avatarUrl) {
             foundAvatars++;
-            let css = {
-              'background-image': `url(${avatarUrl})`,
-              'background-color': 'transparent',
-              color: 'transparent',
-              'font-size': '0',
-              display: 'block',
-            };
-
-            // 应用变换效果
-            if (transform) {
-              // 应用安全限制
-              const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
-              const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
-              const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
-              const safeRotation = (transform.rotate || 0) % 360;
-
-              // 计算背景尺寸和位置
-              const backgroundSize = `${safeScale * 100}%`;
-              const backgroundPositionX = `${50 - safeX * 0.5}%`;
-              const backgroundPositionY = `${50 - safeY * 0.5}%`;
-
-              css['background-size'] = backgroundSize;
-              css['background-position'] = `${backgroundPositionX} ${backgroundPositionY}`;
-              css['background-repeat'] = 'no-repeat';
-
-              // 应用旋转
-              if (safeRotation !== 0) {
-                css['transform'] = `rotate(${safeRotation}deg)`;
-                css['transform-origin'] = 'center center';
-              }
-
-              // 只在第一个元素时输出调试信息
-              if (foundAvatars === 1) {
-                console.log(`🎨 应用角色 ${qqNumber} 消息头像变换:`, {
-                  scale: safeScale,
-                  translate: { x: safeX, y: safeY },
-                  rotate: safeRotation,
-                });
-              }
-            } else {
-              // 默认样式
-              css['background-size'] = 'cover';
-              css['background-position'] = 'center';
-            }
-
-            $this.css(css).text('');
+            elementsToUpdate.push($this);
           }
         });
       });
 
-      if (foundAvatars > 0) {
-        console.log(`✅ 更新了 ${foundAvatars} 个角色 ${qqNumber} 消息头像`);
+      // 批量更新元素，减少DOM操作次数
+      if (elementsToUpdate.length > 0) {
+        this.batchUpdateMessageAvatars(elementsToUpdate, qqNumber, avatarUrl, transform);
+        console.log(`✅ 批量更新了 ${foundAvatars} 个角色 ${qqNumber} 消息头像`);
       }
+    },
+
+    // 批量更新消息头像元素
+    batchUpdateMessageAvatars(elements, qqNumber, avatarUrl, transform) {
+      // 准备CSS样式
+      let css = {
+        'background-image': `url(${avatarUrl})`,
+        'background-color': 'transparent',
+        color: 'transparent',
+        'font-size': '0',
+        display: 'block',
+      };
+
+      // 应用变换效果
+      if (transform) {
+        // 应用安全限制
+        const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
+        const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
+        const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
+        const safeRotation = (transform.rotate || 0) % 360;
+
+        // 计算背景尺寸和位置
+        const backgroundSize = `${safeScale * 100}%`;
+        const backgroundPositionX = `${50 - safeX * 0.5}%`;
+        const backgroundPositionY = `${50 - safeY * 0.5}%`;
+
+        css['background-size'] = backgroundSize;
+        css['background-position'] = `${backgroundPositionX} ${backgroundPositionY}`;
+        css['background-repeat'] = 'no-repeat';
+
+        // 应用旋转
+        if (safeRotation !== 0) {
+          css['transform'] = `rotate(${safeRotation}deg)`;
+          css['transform-origin'] = 'center center';
+        }
+
+        console.log(`🎨 应用角色 ${qqNumber} 消息头像变换:`, {
+          scale: safeScale,
+          translate: { x: safeX, y: safeY },
+          rotate: safeRotation,
+        });
+      } else {
+        // 默认样式
+        css['background-size'] = 'cover';
+        css['background-position'] = 'center';
+      }
+
+      // 使用 requestAnimationFrame 进行批量DOM更新，提高性能
+      requestAnimationFrame(() => {
+        elements.forEach($element => {
+          $element.css(css).text('');
+        });
+      });
     },
   };
 

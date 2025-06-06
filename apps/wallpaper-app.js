@@ -121,6 +121,25 @@
         self.hide();
       });
 
+      // 小房子按钮 - 返回手机首页
+      $(document).on('click', '.wallpaper-home-btn', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        console.log('🏠 点击美化应用的小房子按钮，返回手机首页');
+
+        // 隐藏美化应用
+        self.hide();
+
+        // 显示手机界面
+        if (window.PhoneInterface && typeof window.PhoneInterface.show === 'function') {
+          window.PhoneInterface.show();
+        } else {
+          // 备用方案：直接显示手机界面
+          $('#phone_interface').removeClass('show-wallpaper-app-content').addClass('show');
+          console.log('使用备用方案显示手机界面');
+        }
+      });
+
       // URL输入和预览
       $(document).on('input', '.wallpaper-url-input', function () {
         const url = $(this).val().trim();
@@ -379,12 +398,7 @@
               </svg>
             </button>
             <h1 class="wallpaper-app-title">${this.getEditTitle()}</h1>
-            <button class="wallpaper-home-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
-                <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </button>
+            ${this.getHomeButton()}
           </div>
 
           <!-- 模式切换按钮 - 只在手机壁纸模式下显示 -->
@@ -425,6 +439,22 @@
         default:
           return '美化';
       }
+    },
+
+    // 获取小房子按钮 - 只在QQ背景页面显示
+    getHomeButton() {
+      // 只在QQ主题背景和聊天背景页面显示小房子按钮
+      if (this.currentEditType === 'qq-home' || this.currentEditType === 'qq-chat') {
+        return `
+          <button class="wallpaper-home-btn" title="返回手机首页">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        `;
+      }
+      return ''; // 主美化界面不显示小房子按钮
     },
 
     // 获取编辑内容
