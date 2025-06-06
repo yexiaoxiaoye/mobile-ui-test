@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终修复验证</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .demo-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .test-result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .color-test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 最终修复验证</h1>
+        
+        <div class="test-section">
+            <h3>🎯 修复验证项目</h3>
+            <ul>
+                <li>✅ 颜色设置持久化保存</li>
+                <li>✅ 当前配置显示布局修复</li>
+                <li>✅ SVG图标颜色正确应用</li>
+                <li>✅ 自定义颜色完全生效</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎮 快速颜色测试</h3>
+            <p>点击下面的颜色按钮快速测试图标颜色效果：</p>
+            <div class="color-test-buttons">
+                <div class="color-btn" style="background-color: #ff6b6b;" onclick="testColor('#ff6b6b')">红色</div>
+                <div class="color-btn" style="background-color: #4ecdc4;" onclick="testColor('#4ecdc4')">青色</div>
+                <div class="color-btn" style="background-color: #45b7d1;" onclick="testColor('#45b7d1')">蓝色</div>
+                <div class="color-btn" style="background-color: #f9ca24;" onclick="testColor('#f9ca24')">黄色</div>
+                <div class="color-btn" style="background-color: #6c5ce7;" onclick="testColor('#6c5ce7')">紫色</div>
+                <div class="color-btn" style="background-color: #a8e6cf;" onclick="testColor('#a8e6cf')">绿色</div>
+                <div class="color-btn" style="background-color: #ffa726;" onclick="testColor('#ffa726')">橙色</div>
+                <div class="color-btn" style="background-color: #000000;" onclick="testColor('#000000')">黑色</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎮 测试控制</h3>
+            <div class="test-controls">
+                <button onclick="openThemeEditor()">打开主题编辑器</button>
+                <button onclick="testPersistence()">测试持久化保存</button>
+                <button onclick="testLayoutFix()">测试布局修复</button>
+                <button onclick="resetToDefault()">重置为默认</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 测试结果</h3>
+            <div id="testResults" class="test-result">等待测试开始...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📱 手机界面演示</h3>
+            <div class="demo-area" id="demoArea">
+                <!-- 手机界面将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载必要的文件 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="styles/phone-shell.css">
+    <link rel="stylesheet" href="styles/phone-interface.css">
+    <link rel="stylesheet" href="styles/wallpaper-app.css">
+    <script src="apps/phone-shell.js"></script>
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/wallpaper-app.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testResults.push({ message: logEntry, type });
+            updateTestResults();
+            console.log(message);
+        }
+        
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div style="color: ${result.type === 'error' ? 'red' : result.type === 'success' ? 'green' : 'black'}">${result.message}</div>`
+            ).join('');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        // 快速颜色测试
+        function testColor(color) {
+            log(`🎨 测试颜色: ${color}`, 'info');
+            
+            if (window.WallpaperApp) {
+                window.WallpaperApp.applyColorConfig('icon', color);
+                
+                setTimeout(() => {
+                    const $phone = $('#phone_interface');
+                    if ($phone.length > 0) {
+                        const computedStyle = window.getComputedStyle($phone[0]);
+                        const iconColor = computedStyle.getPropertyValue('--status-bar-icon-color').trim();
+                        
+                        if (iconColor === color) {
+                            log(`✅ 颜色 ${color} 应用成功`, 'success');
+                        } else {
+                            log(`❌ 颜色 ${color} 应用失败，实际颜色: ${iconColor}`, 'error');
+                        }
+                    }
+                }, 200);
+            } else {
+                log('❌ WallpaperApp未加载', 'error');
+            }
+        }
+        
+        // 打开主题编辑器
+        function openThemeEditor() {
+            log('🔄 打开主题编辑器...', 'info');
+            
+            if (window.WallpaperApp) {
+                window.WallpaperApp.setEditType('phone');
+                window.WallpaperApp.switchMode('theme');
+                window.WallpaperApp.show();
+                log('✅ 主题编辑器已打开', 'success');
+            } else {
+                log('❌ WallpaperApp未加载', 'error');
+            }
+        }
+        
+        // 测试持久化保存
+        function testPersistence() {
+            log('🔄 测试持久化保存...', 'info');
+            
+            const testColor = '#ff6b6b';
+            testColor(testColor);
+            
+            setTimeout(() => {
+                // 模拟页面刷新后的加载
+                if (window.WallpaperApp) {
+                    window.WallpaperApp.loadColorConfig();
+                    
+                    setTimeout(() => {
+                        const $phone = $('#phone_interface');
+                        if ($phone.length > 0) {
+                            const computedStyle = window.getComputedStyle($phone[0]);
+                            const iconColor = computedStyle.getPropertyValue('--status-bar-icon-color').trim();
+                            
+                            if (iconColor === testColor) {
+                                log('✅ 持久化保存测试成功', 'success');
+                            } else {
+                                log('❌ 持久化保存测试失败', 'error');
+                            }
+                        }
+                    }, 200);
+                }
+            }, 500);
+        }
+        
+        // 测试布局修复
+        function testLayoutFix() {
+            log('🔄 测试布局修复...', 'info');
+            openThemeEditor();
+            
+            setTimeout(() => {
+                const configDisplay = $('.current-config-display');
+                if (configDisplay.length > 0) {
+                    const flexDirection = configDisplay.css('flex-direction');
+                    if (flexDirection === 'column') {
+                        log('✅ 布局修复：使用垂直布局', 'success');
+                    } else {
+                        log('❌ 布局修复：布局不正确', 'error');
+                    }
+                } else {
+                    log('❌ 布局修复：找不到配置显示元素', 'error');
+                }
+            }, 1000);
+        }
+        
+        // 重置为默认
+        function resetToDefault() {
+            log('🔄 重置为默认...', 'info');
+            
+            if (window.WallpaperApp) {
+                window.WallpaperApp.resetThemeConfig();
+                log('✅ 已重置为默认配置', 'success');
+            } else {
+                log('❌ WallpaperApp未加载', 'error');
+            }
+        }
+        
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            log('页面加载完成，开始初始化...', 'info');
+            
+            // 检查必要的组件是否加载
+            if (typeof window.PhoneShell === 'undefined') {
+                log('❌ PhoneShell未加载', 'error');
+                return;
+            }
+            
+            if (typeof window.PhoneInterface === 'undefined') {
+                log('❌ PhoneInterface未加载', 'error');
+                return;
+            }
+            
+            if (typeof window.WallpaperApp === 'undefined') {
+                log('❌ WallpaperApp未加载', 'error');
+                return;
+            }
+            
+            // 初始化组件
+            window.PhoneShell.init();
+            window.PhoneInterface.initButtonOnly();
+            window.WallpaperApp.init();
+            
+            log('✅ 所有组件初始化完成', 'success');
+            
+            // 创建测试手机界面
+            const testContent = `
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    <h3>最终修复验证界面</h3>
+                    <p>测试颜色设置和布局修复</p>
+                    <p>点击上方的颜色按钮测试图标颜色</p>
+                </div>
+            `;
+            
+            const phoneHTML = window.PhoneShell.createShellHTML(testContent, 'test_phone');
+            $('#demoArea').html(phoneHTML);
+            
+            // 显示手机界面
+            window.PhoneShell.show('test_phone');
+            
+            log('📱 测试手机界面已创建', 'success');
+            log('✅ 测试环境初始化完成，可以开始测试', 'success');
+            log('💡 提示：点击颜色按钮测试图标颜色效果', 'info');
+        });
+    </script>
+</body>
+</html>

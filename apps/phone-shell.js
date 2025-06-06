@@ -69,8 +69,7 @@
             <div class="phone-shell-status-bar">
               <div class="phone-shell-status-time" id="${shellId}_status_time">9:41</div>
               <div class="phone-shell-status-icons">
-                <span class="phone-shell-signal-icon"></span>
-                <span class="phone-shell-battery-icon"></span>
+                ${this.getStatusIconsSVG()}
               </div>
             </div>
             
@@ -154,21 +153,290 @@
       return this.themes;
     },
 
-    // 更新时间显示 - 与现有时间显示代码保持一致
+    // 设置边框颜色（独立控制）
+    setBorderColor: function (color, shellId = 'phone_shell') {
+      const $shell = $(`#${shellId}`);
+      if ($shell.length === 0) {
+        console.error(`❌ 手机外壳元素 #${shellId} 不存在`);
+        return false;
+      }
+
+      $shell.css('--phone-border-color', color);
+      console.log(`🎨 边框颜色已设置为: ${color}`);
+      return true;
+    },
+
+    // 设置图标颜色（独立控制时间和电量信号图标）
+    setIconColors: function (timeColor, iconColor, shellId = 'phone_shell') {
+      const $shell = $(`#${shellId}`);
+      if ($shell.length === 0) {
+        console.error(`❌ 手机外壳元素 #${shellId} 不存在`);
+        return false;
+      }
+
+      if (timeColor) {
+        $shell.css('--status-bar-time-color', timeColor);
+        console.log(`🕐 时间颜色已设置为: ${timeColor}`);
+      }
+
+      if (iconColor) {
+        $shell.css('--status-bar-icon-color', iconColor);
+        // 根据图标颜色自动计算filter
+        const filter = this.calculateIconFilter(iconColor);
+        $shell.css('--status-bar-icon-filter', filter);
+        console.log(`📱 图标颜色已设置为: ${iconColor}`);
+      }
+
+      return true;
+    },
+
+    // 计算图标filter（根据颜色自动生成）- 增强版本
+    calculateIconFilter: function (color) {
+      // 预设颜色的精确映射
+      const colorMap = {
+        '#000000': 'brightness(0)',
+        '#ffffff': 'brightness(0) invert(1)',
+        '#831843': 'brightness(0) saturate(100%) invert(8%) sepia(96%) saturate(4456%) hue-rotate(316deg)',
+        '#1e40af': 'brightness(0) saturate(100%) invert(25%) sepia(95%) saturate(1749%) hue-rotate(216deg)',
+        '#15803d': 'brightness(0) saturate(100%) invert(29%) sepia(96%) saturate(1003%) hue-rotate(88deg)',
+        '#dc2626': 'brightness(0) saturate(100%) invert(17%) sepia(95%) saturate(7471%) hue-rotate(356deg)',
+        '#7c3aed': 'brightness(0) saturate(100%) invert(25%) sepia(95%) saturate(6500%) hue-rotate(271deg)',
+        '#ea580c': 'brightness(0) saturate(100%) invert(45%) sepia(95%) saturate(6500%) hue-rotate(15deg)',
+      };
+
+      const lowerColor = color.toLowerCase();
+
+      // 如果有预设映射，直接返回
+      if (colorMap[lowerColor]) {
+        return colorMap[lowerColor];
+      }
+
+      // 动态计算filter - 基于RGB值
+      return this.generateDynamicFilter(color);
+    },
+
+    // 动态生成CSS filter（基于RGB值）- 修复版本
+    generateDynamicFilter: function (color) {
+      try {
+        // 解析颜色值
+        const rgb = this.hexToRgb(color);
+        if (!rgb) {
+          console.warn('⚠️ 无法解析颜色:', color);
+          return 'brightness(0)'; // 默认黑色
+        }
+
+        const { r, g, b } = rgb;
+        console.log(`🎨 生成动态filter: ${color} -> RGB(${r}, ${g}, ${b})`);
+
+        // 使用更精确的颜色转换算法
+        // 参考: https://css-tricks.com/converting-color-spaces-in-javascript/
+
+        // 将RGB转换为0-1范围
+        const rNorm = r / 255;
+        const gNorm = g / 255;
+        const bNorm = b / 255;
+
+        // 计算相对亮度
+        const luminance = 0.2126 * rNorm + 0.7152 * gNorm + 0.0722 * bNorm;
+
+        // 计算HSL值
+        const max = Math.max(rNorm, gNorm, bNorm);
+        const min = Math.min(rNorm, gNorm, bNorm);
+        const diff = max - min;
+
+        // 色相计算
+        let hue = 0;
+        if (diff !== 0) {
+          switch (max) {
+            case rNorm:
+              hue = ((gNorm - bNorm) / diff) % 6;
+              break;
+            case gNorm:
+              hue = (bNorm - rNorm) / diff + 2;
+              break;
+            case bNorm:
+              hue = (rNorm - gNorm) / diff + 4;
+              break;
+          }
+        }
+        hue = Math.round(hue * 60);
+        if (hue < 0) hue += 360;
+
+        // 饱和度计算
+        const lightness = (max + min) / 2;
+        const saturation = diff === 0 ? 0 : diff / (1 - Math.abs(2 * lightness - 1));
+
+        // 生成filter
+        const satPercent = Math.round(saturation * 100);
+        const brightPercent = Math.round(luminance * 100);
+
+        // 根据亮度选择策略
+        if (luminance < 0.5) {
+          // 深色：使用invert策略
+          const filter = `brightness(0) invert(1) hue-rotate(${hue}deg) saturate(${satPercent}%) brightness(${brightPercent}%)`;
+          console.log(`🔧 深色filter: ${filter}`);
+          return filter;
+        } else {
+          // 浅色：直接调整
+          const filter = `brightness(0) saturate(${satPercent}%) hue-rotate(${hue}deg) brightness(${
+            brightPercent + 50
+          }%)`;
+          console.log(`🔧 浅色filter: ${filter}`);
+          return filter;
+        }
+      } catch (error) {
+        console.error('❌ 动态filter生成失败:', error);
+        return 'brightness(0)';
+      }
+    },
+
+    // 十六进制颜色转RGB
+    hexToRgb: function (hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : null;
+    },
+
+    // RGB转色相
+    rgbToHue: function (r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const diff = max - min;
+
+      if (diff === 0) return 0;
+
+      let hue;
+      switch (max) {
+        case r:
+          hue = (g - b) / diff + (g < b ? 6 : 0);
+          break;
+        case g:
+          hue = (b - r) / diff + 2;
+          break;
+        case b:
+          hue = (r - g) / diff + 4;
+          break;
+      }
+
+      return Math.round(hue * 60);
+    },
+
+    // RGB转饱和度
+    rgbToSaturation: function (r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const diff = max - min;
+
+      if (max === 0) return 0;
+
+      return Math.round((diff / max) * 100);
+    },
+
+    // 高级主题配置（支持分别设置边框和图标颜色）
+    setAdvancedTheme: function (config, shellId = 'phone_shell') {
+      const $shell = $(`#${shellId}`);
+      if ($shell.length === 0) {
+        console.error(`❌ 手机外壳元素 #${shellId} 不存在`);
+        return false;
+      }
+
+      // 设置基础主题
+      if (config.baseTheme && this.themes[config.baseTheme]) {
+        this.setTheme(config.baseTheme, shellId);
+      }
+
+      // 覆盖边框颜色
+      if (config.borderColor) {
+        this.setBorderColor(config.borderColor, shellId);
+      }
+
+      // 覆盖图标颜色
+      if (config.timeColor || config.iconColor) {
+        this.setIconColors(config.timeColor, config.iconColor, shellId);
+      }
+
+      console.log('🎨 高级主题配置已应用:', config);
+      return true;
+    },
+
+    // 获取当前主题配置
+    getCurrentThemeConfig: function (shellId = 'phone_shell') {
+      const $shell = $(`#${shellId}`);
+      if ($shell.length === 0) {
+        console.warn(`⚠️ 手机外壳元素 #${shellId} 不存在`);
+        return {
+          borderColor: '#e0e0e0',
+          timeColor: '#000000',
+          iconColor: '#000000',
+        };
+      }
+
+      // 从CSS变量中读取当前配置
+      const computedStyle = window.getComputedStyle($shell[0]);
+      const borderColor = computedStyle.getPropertyValue('--phone-border-color').trim() || '#e0e0e0';
+      const timeColor = computedStyle.getPropertyValue('--status-bar-time-color').trim() || '#000000';
+      const iconColor = computedStyle.getPropertyValue('--status-bar-icon-color').trim() || '#000000';
+
+      return {
+        borderColor,
+        timeColor,
+        iconColor,
+      };
+    },
+
+    // 获取状态栏图标SVG内容（只保留信号和电量图标）
+    getStatusIconsSVG: function () {
+      return `
+        <svg width="50" height="14" viewBox="0 0 50 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 信号强度图标 -->
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M19.8498 2.03301C19.8498 1.39996 19.3723 0.88678 18.7832 0.88678H17.7165C17.1274 0.88678 16.6498 1.39996 16.6498 2.03301V11.967C16.6498 12.6 17.1274 13.1132 17.7165 13.1132H18.7832C19.3723 13.1132 19.8498 12.6 19.8498 11.967V2.03301ZM12.4157 3.33206H13.4824C14.0715 3.33206 14.5491 3.85756 14.5491 4.5058V11.9395C14.5491 12.5877 14.0715 13.1132 13.4824 13.1132H12.4157C11.8266 13.1132 11.3491 12.5877 11.3491 11.9395V4.5058C11.3491 3.85756 11.8266 3.33206 12.4157 3.33206ZM8.08396 5.98111H7.01729C6.42819 5.98111 5.95062 6.5133 5.95062 7.16979V11.9245C5.95062 12.581 6.42819 13.1132 7.01729 13.1132H8.08396C8.67306 13.1132 9.15062 12.581 9.15062 11.9245V7.16979C9.15062 6.5133 8.67306 5.98111 8.08396 5.98111ZM2.78317 8.4264H1.71651C1.1274 8.4264 0.649841 8.95099 0.649841 9.5981V11.9415C0.649841 12.5886 1.1274 13.1132 1.71651 13.1132H2.78317C3.37228 13.1132 3.84984 12.5886 3.84984 11.9415V9.5981C3.84984 8.95099 3.37228 8.4264 2.78317 8.4264Z" fill="currentColor"/>
+
+          <!-- 电池图标 -->
+          <g transform="translate(-25, 0)">
+            <rect x="51" y="2" width="24" height="10" rx="2" stroke="currentColor" stroke-width="1" fill="none"/>
+            <rect x="75.5" y="4.5" width="2" height="5" rx="1" fill="currentColor"/>
+            <rect x="53" y="4" width="18" height="6" rx="1" fill="currentColor" opacity="0.8"/>
+            <text x="63" y="9" font-family="Arial, sans-serif" font-size="6" text-anchor="middle" fill="currentColor" font-weight="bold">80</text>
+          </g>
+        </svg>
+      `;
+    },
+
+    // 更新时间显示 - 确保正确获取系统时间
     updateTime: function (shellId = 'phone_shell') {
+      // 获取当前系统时间
       const now = new Date();
 
-      // 格式化时间为 HH:MM 格式（与phone-interface.js保持一致）
+      // 格式化时间为 HH:MM 格式
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const timeString = `${hours}:${minutes}`;
 
       // 更新状态栏时间显示
-      $(`#${shellId}_status_time`).text(timeString);
+      const timeElement = $(`#${shellId}_status_time`);
+      if (timeElement.length > 0) {
+        timeElement.text(timeString);
+      } else {
+        // 如果找不到指定ID的元素，尝试通用选择器
+        $('.phone-shell-status-time').text(timeString);
+      }
 
       // 如果存在调试模式，输出时间更新信息
       if (this.debugMode) {
-        console.log(`⏰ 时间更新 (${shellId}): ${timeString}`);
+        console.log(`⏰ 时间更新 (${shellId}): ${timeString} - 系统时间: ${now.toLocaleString()}`);
       }
     },
 

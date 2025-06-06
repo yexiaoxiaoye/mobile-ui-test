@@ -3,17 +3,23 @@
 
 /* CSS变量定义 - 主题颜色系统 */
 :root {
-  /* 手机外壳主题颜色 - 修复：边框保持白色，内容区域透明 */
+  /* 手机外壳主题颜色 - 分离边框和图标颜色控制 */
   --phone-shell-primary: #ffffff;
   --phone-shell-secondary: transparent;
   --phone-shell-accent: #007bff;
-  --phone-shell-border: #e0e0e0;
   --phone-shell-shadow: rgba(0, 0, 0, 0.4);
+
+  /* 边框颜色系统 - 独立控制 */
+  --phone-border-color: #e0e0e0;
+  --phone-border-style: solid;
 
   /* 状态栏主题颜色 */
   --status-bar-bg: transparent;
-  --status-bar-text: #000000;
   --status-bar-text-shadow: rgba(255, 255, 255, 0.8);
+
+  /* 图标颜色系统 - 独立控制时间和电量信号图标 */
+  --status-bar-time-color: #000000;
+  --status-bar-icon-color: #000000;
   --status-bar-icon-filter: brightness(0);
 
   /* 动态岛主题颜色 - 始终保持黑色 */
@@ -52,14 +58,15 @@
   --z-status-bar: 40;
 }
 
-/* 主题颜色预设 */
+/* 主题颜色预设 - 使用新的分离变量系统 */
 /* 经典白色主题 */
 .phone-theme-classic {
   --phone-shell-primary: #ffffff;
   --phone-shell-secondary: #f5f5f5;
   --phone-shell-accent: #007bff;
-  --phone-shell-border: #e0e0e0;
-  --status-bar-text: #000000;
+  --phone-border-color: #e0e0e0;
+  --status-bar-time-color: #000000;
+  --status-bar-icon-color: #000000;
   --status-bar-icon-filter: brightness(0);
   --dynamic-island-bg: #000000;
 }
@@ -69,8 +76,9 @@
   --phone-shell-primary: #1a1a1a;
   --phone-shell-secondary: #2d2d2d;
   --phone-shell-accent: #0d6efd;
-  --phone-shell-border: #404040;
-  --status-bar-text: #ffffff;
+  --phone-border-color: #404040;
+  --status-bar-time-color: #ffffff;
+  --status-bar-icon-color: #ffffff;
   --status-bar-icon-filter: brightness(0) invert(1);
   --dynamic-island-bg: #000000; /* 保持黑色 */
 }
@@ -80,8 +88,9 @@
   --phone-shell-primary: #fdf2f8;
   --phone-shell-secondary: #fce7f3;
   --phone-shell-accent: #ec4899;
-  --phone-shell-border: #f9a8d4;
-  --status-bar-text: #831843;
+  --phone-border-color: #f9a8d4;
+  --status-bar-time-color: #831843;
+  --status-bar-icon-color: #831843;
   --status-bar-icon-filter: brightness(0) saturate(100%) invert(8%) sepia(96%) saturate(4456%) hue-rotate(316deg);
   --dynamic-island-bg: #000000; /* 保持黑色 */
 }
@@ -91,8 +100,9 @@
   --phone-shell-primary: #eff6ff;
   --phone-shell-secondary: transparent; /* 修复：设为透明，不遮挡壁纸 */
   --phone-shell-accent: #3b82f6;
-  --phone-shell-border: #93c5fd;
-  --status-bar-text: #1e40af;
+  --phone-border-color: #93c5fd;
+  --status-bar-time-color: #1e40af;
+  --status-bar-icon-color: #1e40af;
   --status-bar-icon-filter: brightness(0) saturate(100%) invert(25%) sepia(95%) saturate(1749%) hue-rotate(216deg);
   --dynamic-island-bg: #000000; /* 保持黑色 */
 }
@@ -102,8 +112,9 @@
   --phone-shell-primary: #f0fdf4;
   --phone-shell-secondary: #dcfce7;
   --phone-shell-accent: #22c55e;
-  --phone-shell-border: #86efac;
-  --status-bar-text: #15803d;
+  --phone-border-color: #86efac;
+  --status-bar-time-color: #15803d;
+  --status-bar-icon-color: #15803d;
   --status-bar-icon-filter: brightness(0) saturate(100%) invert(29%) sepia(96%) saturate(1003%) hue-rotate(88deg);
   --dynamic-island-bg: #000000; /* 保持黑色 */
 }
@@ -118,11 +129,11 @@
   width: var(--phone-width);
   height: var(--phone-height);
   border-radius: var(--phone-border-radius);
-  border: var(--phone-border-width) solid var(--phone-shell-primary);
+  border: var(--phone-border-width) var(--phone-border-style) var(--phone-border-color);
   box-shadow: 0 20px 60px var(--phone-shell-shadow);
   overflow: hidden;
   z-index: var(--z-phone-shell);
-  background: var(--phone-shell-primary); /* 修复：使用主题背景色，不强制透明 */
+  background: var(--phone-shell-primary); /* 使用主题背景色 */
   display: none;
 }
 
@@ -180,50 +191,33 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--status-bar-padding);
-  color: var(--status-bar-text);
   font-size: var(--status-bar-font-size);
   font-weight: var(--status-bar-font-weight);
   z-index: var(--z-status-bar);
   pointer-events: none;
 }
 
-/* 状态栏时间 */
+/* 状态栏时间 - 使用独立的时间颜色 */
 .phone-shell-status-time {
   font-size: var(--status-bar-font-size);
   font-weight: var(--status-bar-font-weight);
-  color: var(--status-bar-text);
+  color: var(--status-bar-time-color);
   text-shadow: 0 1px 2px var(--status-bar-text-shadow);
 }
 
-/* 状态栏图标容器 */
+/* 状态栏图标容器 - 直接使用SVG，支持currentColor */
 .phone-shell-status-icons {
   display: flex;
   align-items: center;
-  gap: var(--status-bar-icon-gap);
-  color: var(--status-bar-text);
-  font-size: 12px;
-  font-weight: 600;
+  justify-content: flex-end;
+  color: var(--status-bar-icon-color);
+  width: 50px;
+  height: 14px;
 }
 
-/* 状态栏图标 */
-.phone-shell-signal-icon,
-.phone-shell-battery-icon {
-  display: inline-block;
-  width: var(--status-bar-icon-width);
-  height: var(--status-bar-icon-height);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  filter: var(--status-bar-icon-filter);
-  font-size: 0;
-}
-
-.phone-shell-signal-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='20' height='14' viewBox='0 0 20 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M19.8498 2.03301C19.8498 1.39996 19.3723 0.88678 18.7832 0.88678H17.7165C17.1274 0.88678 16.6498 1.39996 16.6498 2.03301V11.967C16.6498 12.6 17.1274 13.1132 17.7165 13.1132H18.7832C19.3723 13.1132 19.8498 12.6 19.8498 11.967V2.03301ZM12.4157 3.33206H13.4824C14.0715 3.33206 14.5491 3.85756 14.5491 4.5058V11.9395C14.5491 12.5877 14.0715 13.1132 13.4824 13.1132H12.4157C11.8266 13.1132 11.3491 12.5877 11.3491 11.9395V4.5058C11.3491 3.85756 11.8266 3.33206 12.4157 3.33206ZM8.08396 5.98111H7.01729C6.42819 5.98111 5.95062 6.5133 5.95062 7.16979V11.9245C5.95062 12.581 6.42819 13.1132 7.01729 13.1132H8.08396C8.67306 13.1132 9.15062 12.581 9.15062 11.9245V7.16979C9.15062 6.5133 8.67306 5.98111 8.08396 5.98111ZM2.78317 8.4264H1.71651C1.1274 8.4264 0.649841 8.95099 0.649841 9.5981V11.9415C0.649841 12.5886 1.1274 13.1132 1.71651 13.1132H2.78317C3.37228 13.1132 3.84984 12.5886 3.84984 11.9415V9.5981C3.84984 8.95099 3.37228 8.4264 2.78317 8.4264Z' fill='black'/%3E%3C/svg%3E");
-}
-
-.phone-shell-battery-icon {
-  background-image: url("data:image/svg+xml,%3Csvg width='27' height='14' viewBox='50 0 28 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg clip-path='url(%23clip0_0_1)'%3E%3Cg opacity='0.3'%3E%3Cpath d='M51.6574 1.77772C50.9915 2.78661 50.9915 4.19108 50.9915 7C50.9915 9.80892 50.9915 11.2134 51.6574 12.2223C51.9457 12.659 52.3162 13.034 52.7477 13.3259C53.7444 14 55.1319 14 57.9069 14H68.7741C71.5491 14 72.9366 14 73.9333 13.3259C74.3648 13.034 74.7353 12.659 75.0236 12.2223C75.6896 11.2134 75.6896 9.80892 75.6896 7C75.6896 4.19108 75.6896 2.78661 75.0236 1.77772C74.7353 1.34096 74.3648 0.965956 73.9333 0.674122C72.9366 0 71.5491 0 68.7741 0H57.9069C55.1319 0 53.7444 0 52.7477 0.674122C52.3162 0.965956 51.9457 1.34096 51.6574 1.77772Z' fill='%235A5A5A'/%3E%3Cpath d='M77.9915 6.75C77.9915 7.62313 77.4737 8.41122 76.6775 8.75V4.75C77.4737 5.08878 77.9915 5.87687 77.9915 6.75Z' fill='%235A5A5A'/%3E%3C/g%3E%3Crect width='21' height='14' transform='translate(50.9915)' fill='%23121212'/%3E%3Cpath d='M60.0032 11.1719C59.3801 11.1719 58.8323 11.077 58.3596 10.8872C57.887 10.6938 57.5181 10.4271 57.2532 10.0869C56.9882 9.74316 56.8557 9.34749 56.8557 8.8999V8.88916C56.8557 8.55257 56.9327 8.24821 57.0867 7.97607C57.2442 7.70394 57.4591 7.47835 57.7312 7.29932C58.0033 7.1167 58.3149 6.99137 58.6658 6.92334V6.89111C58.211 6.78011 57.8422 6.57243 57.5593 6.26807C57.28 5.96012 57.1404 5.59489 57.1404 5.17236V5.16162C57.1404 4.76058 57.2621 4.4043 57.5056 4.09277C57.7491 3.77767 58.0857 3.5306 58.5154 3.35156C58.9451 3.16895 59.441 3.07764 60.0032 3.07764C60.5653 3.07764 61.0613 3.16895 61.491 3.35156C61.9207 3.5306 62.2572 3.77767 62.5007 4.09277C62.7442 4.4043 62.866 4.76058 62.866 5.16162V5.17236C62.866 5.59489 62.7245 5.96012 62.4417 6.26807C62.1588 6.57243 61.7917 6.78011 61.3406 6.89111V6.92334C61.6915 6.99137 62.003 7.1167 62.2751 7.29932C62.5473 7.47835 62.7603 7.70394 62.9143 7.97607C63.0719 8.24821 63.1506 8.55257 63.1506 8.88916V8.8999C63.1506 9.34749 63.0181 9.74316 62.7532 10.0869C62.4882 10.4271 62.1176 10.6938 61.6414 10.8872C61.1687 11.077 60.6226 11.1719 60.0032 11.1719ZM60.0032 9.99023C60.2861 9.99023 60.5367 9.9401 60.7551 9.83984C60.9736 9.736 61.1436 9.59456 61.2654 9.41553C61.3907 9.23291 61.4534 9.02523 61.4534 8.79248V8.78174C61.4534 8.54899 61.3925 8.3431 61.2708 8.16406C61.149 7.98145 60.9789 7.83822 60.7605 7.73438C60.5421 7.63053 60.2896 7.57861 60.0032 7.57861C59.7167 7.57861 59.4643 7.63053 59.2458 7.73438C59.0274 7.83822 58.8556 7.98145 58.7302 8.16406C58.6085 8.3431 58.5476 8.54899 58.5476 8.78174V8.79248C58.5476 9.02523 58.6103 9.23291 58.7356 9.41553C58.8609 9.59456 59.0328 9.736 59.2512 9.83984C59.4696 9.9401 59.7203 9.99023 60.0032 9.99023ZM60.0032 6.40234C60.2502 6.40234 60.4687 6.35758 60.6584 6.26807C60.8482 6.17497 60.995 6.04785 61.0989 5.88672C61.2063 5.72559 61.26 5.53939 61.26 5.32812V5.31738C61.26 5.10612 61.2063 4.91992 61.0989 4.75879C60.9915 4.59766 60.8429 4.47233 60.6531 4.38281C60.4669 4.29329 60.2502 4.24854 60.0032 4.24854C59.7561 4.24854 59.5377 4.29329 59.3479 4.38281C59.1581 4.47233 59.0095 4.59766 58.9021 4.75879C58.7947 4.91992 58.741 5.10612 58.741 5.31738V5.32812C58.741 5.53939 58.7947 5.72559 58.9021 5.88672C59.0095 6.04785 59.1581 6.17497 59.3479 6.26807C59.5377 6.35758 59.7561 6.40234 60.0032 6.40234ZM67.0334 11.1987C66.3961 11.1987 65.8464 11.034 65.3845 10.7046C64.9262 10.3716 64.5735 9.90072 64.3264 9.29199C64.0793 8.68327 63.9558 7.96175 63.9558 7.12744V7.1167C63.9558 6.27881 64.0793 5.55729 64.3264 4.95215C64.5735 4.34342 64.9262 3.87435 65.3845 3.54492C65.8464 3.21549 66.3961 3.05078 67.0334 3.05078C67.6744 3.05078 68.224 3.21549 68.6824 3.54492C69.1407 3.87435 69.4934 4.34342 69.7405 4.95215C69.9875 5.55729 70.1111 6.27881 70.1111 7.1167V7.12744C70.1111 7.96175 69.9875 8.68327 69.7405 9.29199C69.4934 9.90072 69.1407 10.3716 68.6824 10.7046C68.224 11.034 67.6744 11.1987 67.0334 11.1987ZM67.0334 9.91504C67.3414 9.91504 67.601 9.80404 67.8123 9.58203C68.0271 9.36003 68.19 9.04134 68.301 8.62598C68.4156 8.21061 68.4729 7.7111 68.4729 7.12744V7.1167C68.4729 6.52946 68.4156 6.02995 68.301 5.61816C68.19 5.2028 68.0271 4.8859 67.8123 4.66748C67.601 4.44548 67.3414 4.33447 67.0334 4.33447C66.7291 4.33447 66.4695 4.44548 66.2546 4.66748C66.0434 4.8859 65.8805 5.2028 65.7659 5.61816C65.6549 6.02995 65.5994 6.52946 65.5994 7.1167V7.12744C65.5994 7.7111 65.6549 8.21061 65.7659 8.62598C65.8805 9.04134 66.0434 9.36003 66.2546 9.58203C66.4695 9.80404 66.7291 9.91504 67.0334 9.91504Z' fill='white'/%3E%3C/g%3E%3Cdefs%3E%3CclipPath id='clip0_0_1'%3E%3Crect x='50.9915' width='27.3587' height='14' rx='4' fill='white'/%3E%3C/clipPath%3E%3C/defs%3E%3C/svg%3E");
+.phone-shell-status-icons svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* 应用内容区域 */

@@ -46,6 +46,14 @@
       // 加载保存的主题
       this.loadSavedTheme();
 
+      // 加载保存的颜色配置
+      this.loadColorConfig();
+
+      // 绑定添加预设按钮事件（延迟绑定，确保DOM已创建）
+      setTimeout(() => {
+        this.bindAddPresetEvents();
+      }, 500);
+
       console.log('✅ 美化应用初始化完成');
     },
 
@@ -155,6 +163,11 @@
           currentWallpaper: self.currentWallpaper,
           history: self.wallpaperHistory,
           qqBackgrounds: self.qqBackgrounds, // 包含QQ背景数据
+          themeConfig: self.getCurrentThemeConfig(), // 包含主题配置
+          customColors: {
+            border: self.getCustomColors('border'), // 自定义边框颜色预设
+            icon: self.getCustomColors('icon'), // 自定义图标颜色预设
+          },
         };
         self.exportConfig(data);
       });
@@ -167,8 +180,17 @@
           .then(() => {
             // 刷新界面显示
             self.loadCurrentWallpaper();
+            self.loadColorConfig(); // 加载主题配置
             self.refreshHistoryDisplay();
-            alert('✅ 配置文件导入成功！');
+
+            // 如果当前在主题模式，刷新主题界面
+            if (self.currentMode === 'theme') {
+              setTimeout(() => {
+                self.refreshThemeInterface();
+              }, 200);
+            }
+
+            alert('✅ 配置文件导入成功！壁纸和主题设置已恢复。');
           })
           .catch(error => {
             alert('❌ 导入失败: ' + error.message);
@@ -194,18 +216,78 @@
         console.log('🔄 模式切换按钮点击:', mode);
       });
 
-      // 主题选择事件
-      $(document).on('click', '.theme-option-btn', function (e) {
+      // 颜色选择事件（替换原有的主题选择事件）
+      $(document).on('click', '.color-option', function (e) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        const themeName = $(this).data('theme');
 
-        // 应用主题
-        self.applyPhoneTheme(themeName);
+        const colorType = $(this).data('type'); // 'border' 或 'icon'
+        const colorValue = $(this).data('color');
 
-        console.log('🎨 主题选择按钮点击:', themeName);
+        // 应用颜色配置
+        self.applyColorConfig(colorType, colorValue);
+
+        console.log('🎨 颜色选择:', colorType, colorValue);
       });
+
+      // 自定义颜色应用事件
+      $(document).on('click', '.apply-custom-color-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const colorType = $(this).data('type'); // 'border' 或 'icon'
+        const inputId = colorType === 'border' ? '#customBorderColor' : '#customIconColor';
+        const colorValue = $(inputId).val();
+
+        // 应用自定义颜色
+        self.applyColorConfig(colorType, colorValue);
+
+        console.log('🎨 自定义颜色应用:', colorType, colorValue);
+      });
+
+      // 主题重置事件
+      $(document).on('click', '.theme-reset-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        self.resetThemeConfig();
+        console.log('🔄 主题重置');
+      });
+
+      // 主题预览事件
+      $(document).on('click', '.theme-preview-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        // 显示当前配置信息
+        const config = self.getCurrentThemeConfig();
+        alert(`当前配置:\n边框颜色: ${config.borderColor}\n图标颜色: ${config.iconColor}`);
+        console.log('👀 主题预览:', config);
+      });
+
+      // 删除自定义预设颜色事件
+      $(document).on('click', '.color-delete-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const colorType = $(this).data('type');
+        const colorValue = $(this).data('color');
+
+        if (confirm(`确定要删除这个自定义预设颜色吗？\n颜色: ${colorValue}`)) {
+          self.removeCustomColor(colorType, colorValue);
+        }
+
+        console.log('🗑️ 删除自定义颜色:', colorType, colorValue);
+      });
+
+      // 注意：添加预设颜色事件现在通过 bindAddPresetEvents() 方法绑定
+
+      // DOM插入监听器已移除，现在使用 bindAddPresetEvents() 方法
 
       // 美化应用容器点击事件（防止冒泡）
       $(document).on('click', '.wallpaper-app-content', function (e) {
@@ -305,7 +387,10 @@
             </button>
           </div>
 
-          <!-- 模式切换按钮 -->
+          <!-- 模式切换按钮 - 只在手机壁纸模式下显示 -->
+          ${
+            this.currentEditType === 'phone'
+              ? `
           <div class="wallpaper-mode-switcher">
             <button class="wallpaper-mode-btn ${
               this.currentMode === 'wallpaper' ? 'active' : ''
@@ -316,6 +401,9 @@
               美化主题
             </button>
           </div>
+          `
+              : ''
+          }
 
           <!-- 应用主体 -->
           <div class="wallpaper-app-body">
@@ -329,7 +417,7 @@
     getEditTitle() {
       switch (this.currentEditType) {
         case 'phone':
-          return '美化 - 手机壁纸';
+          return '美化'; // 简化标题，只显示"美化"
         case 'qq-home':
           return '美化 - QQ主页背景';
         case 'qq-chat':
@@ -1099,10 +1187,43 @@
                 }
               });
 
+              // 应用导入的主题配置
+              if (data.themeConfig && window.PhoneShell) {
+                console.log('🎨 应用导入的主题配置:', data.themeConfig);
+                window.PhoneShell.setAdvancedTheme(
+                  {
+                    borderColor: data.themeConfig.borderColor,
+                    timeColor: data.themeConfig.timeColor || data.themeConfig.iconColor,
+                    iconColor: data.themeConfig.iconColor,
+                  },
+                  'phone_interface',
+                );
+
+                // 保存主题配置到localStorage
+                localStorage.setItem('phoneColorConfig', JSON.stringify(data.themeConfig));
+              }
+
+              // 恢复自定义预设颜色
+              if (data.customColors) {
+                console.log('🎨 恢复自定义预设颜色:', data.customColors);
+
+                // 恢复边框颜色预设
+                if (data.customColors.border && Array.isArray(data.customColors.border)) {
+                  this.saveCustomColors('border', data.customColors.border);
+                  console.log('✅ 边框颜色预设已恢复:', data.customColors.border.length + '个');
+                }
+
+                // 恢复图标颜色预设
+                if (data.customColors.icon && Array.isArray(data.customColors.icon)) {
+                  this.saveCustomColors('icon', data.customColors.icon);
+                  console.log('✅ 图标颜色预设已恢复:', data.customColors.icon.length + '个');
+                }
+              }
+
               // 保存到localStorage
               localStorage.setItem('wallpaper_data', JSON.stringify(data));
 
-              console.log('📁 配置文件已导入，包含所有背景设置');
+              console.log('📁 配置文件已导入，包含所有背景设置和主题配置');
               resolve(data);
             } catch (error) {
               reject(new Error('配置文件格式错误'));
@@ -1184,68 +1305,162 @@
       this.show();
     },
 
-    // 获取主题编辑内容
+    // 获取主题编辑内容（仅在手机壁纸模式下显示）
     getThemeContent() {
-      // 定义基础主题
-      const themes = {
-        classic: { name: '经典白色', class: 'phone-theme-classic', description: '简洁的白色主题' },
-        dark: { name: '深色主题', class: 'phone-theme-dark', description: '护眼的深色主题' },
-        pink: { name: '粉色主题', class: 'phone-theme-pink', description: '温馨的粉色主题' },
-        blue: { name: '蓝色主题', class: 'phone-theme-blue', description: '清新的蓝色主题' },
-        green: { name: '绿色主题', class: 'phone-theme-green', description: '自然的绿色主题' },
-      };
+      // 只在手机壁纸编辑模式下显示主题选择器
+      if (this.currentEditType !== 'phone') {
+        return ''; // QQ背景和聊天背景页面不显示主题选择器
+      }
 
-      // 获取当前主题
-      const currentTheme = themes[this.currentSavedTheme] || themes.classic;
+      // 获取当前配置
+      const currentConfig = this.getCurrentThemeConfig();
 
-      const themeButtons = Object.entries(themes)
-        .map(([key, theme]) => {
-          const isActive = currentTheme.name === theme.name;
+      // 基础预设颜色（只保留黑白）
+      const basicBorderColors = [
+        { name: '浅灰', value: '#e0e0e0', description: '经典边框' },
+        { name: '黑色', value: '#000000', description: '深色边框' },
+      ];
+
+      const basicIconColors = [
+        { name: '黑色', value: '#000000', description: '经典黑色' },
+        { name: '白色', value: '#ffffff', description: '纯净白色' },
+      ];
+
+      // 获取用户自定义预设颜色
+      const customBorderColors = this.getCustomColors('border');
+      const customIconColors = this.getCustomColors('icon');
+
+      // 合并基础预设和用户自定义预设
+      const borderColors = [...basicBorderColors, ...customBorderColors];
+      const iconColors = [...basicIconColors, ...customIconColors];
+
+      // 生成边框颜色选项
+      const borderColorOptions = borderColors
+        .map(color => {
+          const isActive = currentConfig.borderColor === color.value;
+          const deleteBtn = color.custom
+            ? `<button class="color-delete-btn" data-type="border" data-color="${color.value}" title="删除此预设">×</button>`
+            : '';
           return `
-          <button class="theme-option-btn ${isActive ? 'active' : ''}" data-theme="${key}">
-            <div class="theme-preview ${theme.class}">
-              <div class="theme-preview-phone">
-                <div class="theme-preview-island"></div>
-                <div class="theme-preview-status"></div>
-              </div>
+          <div class="color-option ${isActive ? 'active' : ''}" data-type="border" data-color="${color.value}">
+            <div class="color-preview" style="background-color: ${color.value}; border: 2px solid ${
+            color.value
+          };"></div>
+            <div class="color-info">
+              <div class="color-name">${color.name}</div>
+              <div class="color-description">${color.description}</div>
             </div>
-            <div class="theme-info">
-              <div class="theme-name">${theme.name}</div>
-              <div class="theme-description">${theme.description}</div>
-            </div>
-            ${isActive ? '<div class="theme-active-indicator">✓</div>' : ''}
-          </button>
+            ${isActive ? '<div class="color-active-indicator">✓</div>' : ''}
+            ${deleteBtn}
+          </div>
         `;
         })
         .join('');
 
+      // 添加"添加预设"按钮
+      const addBorderColorBtn = `
+        <div class="color-option add-color-option" data-type="border">
+          <div class="add-color-preview">+</div>
+          <div class="color-info">
+            <div class="color-name">添加预设</div>
+            <div class="color-description">保存当前颜色</div>
+          </div>
+        </div>
+      `;
+
+      // 生成图标颜色选项
+      const iconColorOptions = iconColors
+        .map(color => {
+          const isActive = currentConfig.iconColor === color.value;
+          const deleteBtn = color.custom
+            ? `<button class="color-delete-btn" data-type="icon" data-color="${color.value}" title="删除此预设">×</button>`
+            : '';
+          return `
+          <div class="color-option ${isActive ? 'active' : ''}" data-type="icon" data-color="${color.value}">
+            <div class="color-preview" style="background-color: ${color.value}; border: 2px solid ${
+            color.value === '#ffffff' ? '#e0e0e0' : color.value
+          };"></div>
+            <div class="color-info">
+              <div class="color-name">${color.name}</div>
+              <div class="color-description">${color.description}</div>
+            </div>
+            ${isActive ? '<div class="color-active-indicator">✓</div>' : ''}
+            ${deleteBtn}
+          </div>
+        `;
+        })
+        .join('');
+
+      // 添加"添加预设"按钮
+      const addIconColorBtn = `
+        <div class="color-option add-color-option" data-type="icon">
+          <div class="add-color-preview">+</div>
+          <div class="color-info">
+            <div class="color-name">添加预设</div>
+            <div class="color-description">保存当前颜色</div>
+          </div>
+        </div>
+      `;
+
       return `
-        <!-- 当前主题显示 -->
-        <div class="current-theme-section">
-          <h3>当前主题</h3>
-          <div class="current-theme-display">
-            <div class="current-theme-preview ${currentTheme.class || ''}">
-              <div class="current-theme-phone">
-                <div class="current-theme-island"></div>
-                <div class="current-theme-status"></div>
-              </div>
+        <!-- 当前配置显示 -->
+        <div class="current-config-section">
+          <h3>当前配置</h3>
+          <div class="current-config-display">
+            <div class="config-item">
+              <span class="config-label">边框颜色:</span>
+              <div class="config-color-preview" style="background-color: ${
+                currentConfig.borderColor || '#e0e0e0'
+              }"></div>
+              <span class="config-value">${currentConfig.borderColor || '#e0e0e0'}</span>
             </div>
-            <div class="current-theme-info">
-              <div class="current-theme-name">${currentTheme.name}</div>
-              <div class="current-theme-desc">当前使用的手机主题</div>
+            <div class="config-item">
+              <span class="config-label">图标颜色:</span>
+              <div class="config-color-preview" style="background-color: ${currentConfig.iconColor || '#000000'}"></div>
+              <span class="config-value">${currentConfig.iconColor || '#000000'}</span>
             </div>
           </div>
         </div>
 
-        <!-- 主题选择 -->
-        <div class="theme-selection-section">
-          <h3>选择主题</h3>
-          <div class="theme-options-grid">
-            ${themeButtons}
+        <!-- 边框颜色选择 -->
+        <div class="border-color-section">
+          <h3>边框颜色</h3>
+          <div class="color-options-grid">
+            ${borderColorOptions}
+            ${addBorderColorBtn}
+          </div>
+          <div class="custom-color-section">
+            <h4>自定义边框颜色</h4>
+            <div class="custom-color-input">
+              <input type="color" id="customBorderColor" value="${currentConfig.borderColor || '#e0e0e0'}">
+              <button class="apply-custom-color-btn" data-type="border">应用自定义颜色</button>
+            </div>
           </div>
         </div>
 
-        <!-- 主题说明 -->
+        <!-- 图标颜色选择 -->
+        <div class="icon-color-section">
+          <h3>图标颜色</h3>
+          <div class="color-options-grid">
+            ${iconColorOptions}
+            ${addIconColorBtn}
+          </div>
+          <div class="custom-color-section">
+            <h4>自定义图标颜色</h4>
+            <div class="custom-color-input">
+              <input type="color" id="customIconColor" value="${currentConfig.iconColor || '#000000'}">
+              <button class="apply-custom-color-btn" data-type="icon">应用自定义颜色</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="theme-actions-section">
+          <button class="theme-reset-btn">重置为默认</button>
+          <button class="theme-preview-btn">预览效果</button>
+        </div>
+
+        <!-- 说明信息 -->
         <div class="theme-info-section">
           <div class="theme-tip">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -1253,10 +1468,415 @@
               <path d="M12 16V12" stroke="currentColor" stroke-width="2"/>
               <path d="M12 8H12.01" stroke="currentColor" stroke-width="2"/>
             </svg>
-            <span>主题会影响手机外壳的颜色和样式，选择您喜欢的主题来个性化您的手机外观。</span>
+            <span>边框颜色控制手机外壳边框，图标颜色控制时间和电量信号图标的颜色。您可以选择预设颜色或使用自定义颜色。</span>
           </div>
         </div>
       `;
+    },
+
+    // 获取当前主题配置
+    getCurrentThemeConfig() {
+      // 默认配置
+      const defaultConfig = {
+        borderColor: '#e0e0e0',
+        timeColor: '#000000',
+        iconColor: '#000000',
+      };
+
+      // 尝试从PhoneShell获取配置
+      if (window.PhoneShell && typeof window.PhoneShell.getCurrentThemeConfig === 'function') {
+        const shellConfig = window.PhoneShell.getCurrentThemeConfig('phone_interface');
+        if (shellConfig) {
+          return {
+            borderColor: shellConfig.borderColor || defaultConfig.borderColor,
+            timeColor: shellConfig.timeColor || shellConfig.iconColor || defaultConfig.timeColor,
+            iconColor: shellConfig.iconColor || defaultConfig.iconColor,
+          };
+        }
+      }
+
+      // 尝试从localStorage获取保存的配置
+      try {
+        const saved = localStorage.getItem('phoneColorConfig');
+        if (saved) {
+          const config = JSON.parse(saved);
+          return {
+            borderColor: config.borderColor || defaultConfig.borderColor,
+            timeColor: config.timeColor || config.iconColor || defaultConfig.timeColor,
+            iconColor: config.iconColor || defaultConfig.iconColor,
+          };
+        }
+      } catch (error) {
+        console.warn('⚠️ 读取保存的配置失败:', error);
+      }
+
+      // 尝试从CSS变量获取当前颜色
+      const $phone = $('#phone_interface');
+      if ($phone.length > 0) {
+        const computedStyle = window.getComputedStyle($phone[0]);
+        const borderColor = computedStyle.getPropertyValue('--phone-shell-primary').trim();
+        const iconColor = computedStyle.getPropertyValue('--status-bar-icon-color').trim();
+
+        if (borderColor || iconColor) {
+          return {
+            borderColor: borderColor || defaultConfig.borderColor,
+            timeColor: iconColor || defaultConfig.timeColor,
+            iconColor: iconColor || defaultConfig.iconColor,
+          };
+        }
+      }
+
+      return defaultConfig;
+    },
+
+    // 应用颜色配置
+    applyColorConfig(type, color) {
+      console.log(`🎨 应用${type}颜色: ${color}`);
+
+      if (!window.PhoneShell) {
+        console.error('❌ PhoneShell系统未找到');
+        return;
+      }
+
+      // 记录当前滚动位置
+      const currentScrollTop = $('.wallpaper-app-body').scrollTop() || 0;
+
+      if (type === 'border') {
+        window.PhoneShell.setBorderColor(color, 'phone_interface');
+      } else if (type === 'icon') {
+        // 同时设置时间和图标颜色
+        window.PhoneShell.setIconColors(color, color, 'phone_interface');
+      }
+
+      // 保存配置
+      this.saveColorConfig();
+
+      // 刷新界面显示，但保持滚动位置
+      setTimeout(() => {
+        this.refreshThemeInterface(currentScrollTop);
+      }, 100);
+
+      console.log(`✅ ${type}颜色应用成功`);
+    },
+
+    // 刷新主题界面但保持滚动位置 - 针对SillyTavern优化
+    refreshThemeInterface(scrollTop = 0) {
+      console.log('🔄 开始刷新主题界面...');
+      console.log('📊 当前模式:', this.currentMode);
+      console.log('📊 当前自定义预设数量:', {
+        border: this.getCustomColors('border').length,
+        icon: this.getCustomColors('icon').length,
+      });
+
+      if (this.currentMode !== 'theme') {
+        console.warn('⚠️ 当前不在主题模式，无法刷新');
+        return;
+      }
+
+      // 在SillyTavern中，直接重新创建整个界面更可靠
+      console.log('🔄 使用完全重建模式刷新界面');
+
+      // 保存当前滚动位置
+      const $currentContent = $('.wallpaper-app-body');
+      const currentScrollTop = scrollTop || ($currentContent.length > 0 ? $currentContent.scrollTop() : 0);
+
+      // 完全重新创建界面
+      this.showInPhoneInterface();
+
+      // 恢复滚动位置
+      setTimeout(() => {
+        const $newContent = $('.wallpaper-app-body');
+        if ($newContent.length > 0) {
+          $newContent.scrollTop(currentScrollTop);
+        }
+
+        // 验证界面更新
+        const borderOptions = $('.border-color-section .color-option').length;
+        const iconOptions = $('.icon-color-section .color-option').length;
+        const addButtons = $('.add-color-option').length;
+        console.log('📊 重建后颜色选项数量:', { border: borderOptions, icon: iconOptions, addButtons });
+
+        // 调试：检查添加预设按钮
+        $('.add-color-option').each(function (index) {
+          console.log(`📊 添加预设按钮${index + 1}:`, {
+            element: this,
+            dataType: $(this).data('type'),
+            visible: $(this).is(':visible'),
+            hasClickHandler: $._data(this, 'events')?.click?.length || 0,
+          });
+        });
+
+        // 重新绑定添加预设按钮事件
+        this.bindAddPresetEvents();
+
+        console.log('✅ 主题界面已完全重建');
+      }, 100);
+    },
+
+    // 保存颜色配置
+    saveColorConfig() {
+      try {
+        const config = this.getCurrentThemeConfig();
+        localStorage.setItem('phoneColorConfig', JSON.stringify(config));
+        console.log('💾 颜色配置已保存');
+      } catch (error) {
+        console.warn('⚠️ 保存颜色配置失败:', error);
+      }
+    },
+
+    // 加载颜色配置
+    loadColorConfig() {
+      try {
+        const saved = localStorage.getItem('phoneColorConfig');
+        if (saved) {
+          const config = JSON.parse(saved);
+          if (window.PhoneShell) {
+            window.PhoneShell.setAdvancedTheme(
+              {
+                borderColor: config.borderColor,
+                timeColor: config.timeColor || config.iconColor,
+                iconColor: config.iconColor,
+              },
+              'phone_interface',
+            );
+          }
+          console.log('📂 颜色配置已加载');
+        }
+      } catch (error) {
+        console.warn('⚠️ 加载颜色配置失败:', error);
+      }
+    },
+
+    // 重置主题配置
+    resetThemeConfig() {
+      console.log('🔄 重置主题配置');
+
+      if (window.PhoneShell) {
+        window.PhoneShell.setAdvancedTheme(
+          {
+            baseTheme: 'classic',
+            borderColor: '#e0e0e0',
+            timeColor: '#000000',
+            iconColor: '#000000',
+          },
+          'phone_interface',
+        );
+      }
+
+      // 清除保存的配置
+      localStorage.removeItem('phoneColorConfig');
+
+      // 刷新界面
+      setTimeout(() => {
+        this.showInPhoneInterface();
+      }, 100);
+
+      console.log('✅ 主题配置已重置');
+    },
+
+    // 获取用户自定义预设颜色
+    getCustomColors(type) {
+      try {
+        const key = `customColors_${type}`;
+        const saved = localStorage.getItem(key);
+        return saved ? JSON.parse(saved) : [];
+      } catch (error) {
+        console.warn('⚠️ 获取自定义颜色失败:', error);
+        return [];
+      }
+    },
+
+    // 保存用户自定义预设颜色
+    saveCustomColors(type, colors) {
+      try {
+        const key = `customColors_${type}`;
+        localStorage.setItem(key, JSON.stringify(colors));
+        console.log(`💾 自定义${type}颜色已保存:`, colors);
+      } catch (error) {
+        console.warn('⚠️ 保存自定义颜色失败:', error);
+      }
+    },
+
+    // 添加自定义预设颜色
+    addCustomColor(type, color, name, description) {
+      console.log(`🎨 开始添加自定义${type}颜色:`, { color, name, description });
+
+      const customColors = this.getCustomColors(type);
+      console.log(`📊 当前${type}自定义颜色数量:`, customColors.length);
+
+      // 检查是否已存在相同颜色
+      const exists = customColors.some(c => c.value.toLowerCase() === color.toLowerCase());
+      if (exists) {
+        console.warn(`⚠️ 颜色${color}已存在于${type}预设中`);
+        alert('该颜色已存在于预设中！');
+        return false;
+      }
+
+      // 添加新颜色
+      const newColor = {
+        name: name || `自定义${customColors.length + 1}`,
+        value: color,
+        description: description || '用户自定义颜色',
+        custom: true,
+      };
+
+      customColors.push(newColor);
+      console.log(`📊 添加后${type}颜色数组:`, customColors);
+
+      this.saveCustomColors(type, customColors);
+
+      // 验证保存
+      const savedColors = this.getCustomColors(type);
+      console.log(`📊 保存后验证${type}颜色数量:`, savedColors.length);
+
+      // 强制刷新界面 - 在SillyTavern中使用完全重建
+      console.log('🔄 准备强制刷新界面...');
+      setTimeout(() => {
+        if (this.currentMode === 'theme') {
+          console.log('🔄 执行强制界面重建');
+          this.refreshThemeInterface();
+        }
+      }, 100);
+
+      console.log(`✅ 已添加自定义${type}颜色:`, newColor);
+      return true;
+    },
+
+    // 删除自定义预设颜色
+    removeCustomColor(type, colorValue) {
+      console.log(`🗑️ 开始删除自定义${type}颜色:`, colorValue);
+
+      const customColors = this.getCustomColors(type);
+      console.log(`📊 删除前${type}颜色数量:`, customColors.length);
+
+      const filteredColors = customColors.filter(c => c.value !== colorValue);
+
+      if (filteredColors.length < customColors.length) {
+        this.saveCustomColors(type, filteredColors);
+
+        // 验证删除
+        const savedColors = this.getCustomColors(type);
+        console.log(`📊 删除后验证${type}颜色数量:`, savedColors.length);
+
+        // 强制刷新界面
+        console.log('🔄 准备强制刷新界面...');
+        setTimeout(() => {
+          if (this.currentMode === 'theme') {
+            console.log('🔄 执行强制界面重建');
+            this.refreshThemeInterface();
+          }
+        }, 100);
+
+        console.log(`✅ 已删除自定义${type}颜色:`, colorValue);
+        return true;
+      }
+
+      console.warn(`⚠️ 未找到要删除的${type}颜色:`, colorValue);
+      return false;
+    },
+
+    // 绑定添加预设按钮事件
+    bindAddPresetEvents() {
+      const self = this;
+      console.log('🔗 开始绑定添加预设按钮事件...');
+
+      // 移除之前的事件绑定（防止重复绑定）
+      $('.add-color-option').off('click.addPreset');
+
+      // 绑定新的事件
+      $('.add-color-option').on('click.addPreset', function (e) {
+        console.log('🔥 添加预设按钮被点击了！', this);
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const $this = $(this);
+        const colorType = $this.data('type');
+        console.log(`🎨 点击添加${colorType}预设按钮，按钮元素:`, $this[0]);
+
+        if (!colorType) {
+          console.error('❌ 无法获取颜色类型，data-type属性:', $this.attr('data-type'));
+          alert('无法获取颜色类型，请重试');
+          return;
+        }
+
+        // 获取当前配置，确保有有效值
+        const currentConfig = self.getCurrentThemeConfig();
+        console.log('📊 当前配置:', currentConfig);
+
+        let currentColor = colorType === 'border' ? currentConfig.borderColor : currentConfig.iconColor;
+        console.log(`📊 从配置获取的${colorType}颜色:`, currentColor);
+
+        // 如果获取的颜色无效，尝试从CSS变量获取
+        if (!currentColor || currentColor === 'undefined' || currentColor === undefined) {
+          const $phone = $('#phone_interface');
+          if ($phone.length > 0) {
+            const computedStyle = window.getComputedStyle($phone[0]);
+            if (colorType === 'border') {
+              currentColor = computedStyle.getPropertyValue('--phone-shell-primary').trim() || '#e0e0e0';
+            } else {
+              currentColor = computedStyle.getPropertyValue('--status-bar-icon-color').trim() || '#000000';
+            }
+          } else {
+            currentColor = colorType === 'border' ? '#e0e0e0' : '#000000';
+          }
+          console.log(`⚠️ 从CSS变量获取${colorType}颜色:`, currentColor);
+        }
+
+        console.log(`🎨 最终确定的${colorType}颜色:`, currentColor);
+
+        // 检查颜色是否已存在
+        const customColors = self.getCustomColors(colorType);
+        console.log(`📊 当前${colorType}自定义预设:`, customColors);
+
+        const basicColors =
+          colorType === 'border'
+            ? [{ value: '#e0e0e0' }, { value: '#000000' }]
+            : [{ value: '#000000' }, { value: '#ffffff' }];
+        const allColors = [...basicColors, ...customColors];
+
+        const exists = allColors.some(c => c.value && c.value.toLowerCase() === currentColor.toLowerCase());
+        if (exists) {
+          console.warn(`⚠️ 颜色${currentColor}已存在于预设中`);
+          alert(`该颜色 ${currentColor} 已存在于预设中！`);
+          return;
+        }
+
+        // 弹出对话框让用户输入名称
+        const colorName = prompt(
+          `为当前${colorType === 'border' ? '边框' : '图标'}颜色添加预设\n颜色: ${currentColor}\n\n请输入预设名称:`,
+        );
+
+        if (colorName && colorName.trim()) {
+          console.log(`🎨 开始添加预设: ${colorName.trim()}`);
+          const success = self.addCustomColor(colorType, currentColor, colorName.trim(), '用户自定义预设');
+          if (success) {
+            console.log('✅ 预设添加成功');
+            alert('预设颜色添加成功！');
+          } else {
+            console.error('❌ 预设添加失败');
+            alert('预设颜色添加失败！');
+          }
+        } else {
+          console.log('⚠️ 用户取消了添加预设');
+        }
+
+        console.log('➕ 添加预设颜色完成:', colorType, currentColor);
+      });
+
+      // 验证事件绑定
+      const boundButtons = $('.add-color-option').length;
+      console.log(`✅ 已绑定${boundButtons}个添加预设按钮的事件`);
+
+      // 验证每个按钮的事件绑定
+      $('.add-color-option').each(function (index) {
+        const hasHandler = $._data(this, 'events')?.click?.length || 0;
+        console.log(`📊 按钮${index + 1}事件绑定状态:`, {
+          element: this,
+          dataType: $(this).data('type'),
+          hasClickHandler: hasHandler,
+        });
+      });
     },
 
     // 切换界面模式
