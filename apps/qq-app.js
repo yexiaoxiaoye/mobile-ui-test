@@ -4728,6 +4728,7 @@
     console.log('基本状态检查:');
     console.log('- 已初始化:', updater.isInitialized);
     console.log('- 正在监听:', updater.isMonitoring);
+    console.log('- 已暂停:', updater.isPaused);
     console.log('- 回调数量:', updater.updateCallbacks.size);
 
     // 测试回调注册
@@ -4757,6 +4758,22 @@
         console.log('测试完成，已清理测试回调');
       }, 1000);
     }, 500);
+  };
+
+  // 手动暂停实时更新
+  window.pauseRealtimeUpdates = function () {
+    if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater) {
+      window.HQDataExtractor.realtimeUpdater.pauseMonitoring();
+      console.log('⏸️ 实时更新已手动暂停');
+    }
+  };
+
+  // 手动恢复实时更新
+  window.resumeRealtimeUpdates = function () {
+    if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater) {
+      window.HQDataExtractor.realtimeUpdater.resumeMonitoring();
+      console.log('▶️ 实时更新已手动恢复');
+    }
   };
 
   // 全局图像质量优化函数

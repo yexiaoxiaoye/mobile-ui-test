@@ -547,6 +547,7 @@
       // 状态管理
       isInitialized: false,
       isMonitoring: false,
+      isPaused: false,
       lastMessageCount: 0,
       lastChatId: null,
 
@@ -577,6 +578,7 @@
           // 重置状态
           this.isInitialized = false;
           this.isMonitoring = false;
+          this.isPaused = false;
 
           // 获取初始状态
           this.updateInitialState();
@@ -791,9 +793,22 @@
 
         this.checkInterval = setInterval(async () => {
           try {
-            // 性能优化：只在手机插件可见时运行检查
-            if (!this.isMobilePluginVisible()) {
+            // 智能监听器管理：检查手机插件可见性
+            const isVisible = this.isMobilePluginVisible();
+
+            if (!isVisible) {
+              // 如果手机插件不可见，暂停监听器（但不完全停止）
+              if (this.isMonitoring && !this.isPaused) {
+                console.log('📱 手机插件不可见，暂停监听器以节省资源');
+                this.pauseMonitoring();
+              }
               return;
+            } else {
+              // 如果手机插件可见且监听器被暂停，恢复监听
+              if (this.isPaused) {
+                console.log('📱 手机插件重新可见，恢复监听器');
+                this.resumeMonitoring();
+              }
             }
 
             const chatData = await HQDataExtractor.getChatData();
@@ -828,20 +843,79 @@
       // 检查手机插件是否可见
       isMobilePluginVisible: function () {
         try {
-          // 检查QQ应用是否存在且可见
-          const qqAppVisible =
-            window.QQApp &&
-            (document.querySelector('.qq-app-container:not([style*="display: none"])') ||
-              document.querySelector('#phone_interface:not([style*="display: none"])') ||
-              document.querySelector('.mobile-plugin:not([style*="display: none"])'));
-
           // 检查页面是否可见
           const pageVisible = !document.hidden && document.visibilityState === 'visible';
+          if (!pageVisible) {
+            return false;
+          }
 
-          return qqAppVisible && pageVisible;
+          // 检查QQ应用是否存在
+          if (!window.QQApp) {
+            return false;
+          }
+
+          // 检查QQ应用容器是否可见
+          const containers = [
+            '.qq-app-container',
+            '#phone_interface',
+            '.mobile-plugin',
+            '.phone-container',
+            '.qq-interface',
+          ];
+
+          let containerVisible = false;
+          for (const selector of containers) {
+            const element = document.querySelector(selector);
+            if (element) {
+              const style = window.getComputedStyle(element);
+              const isVisible =
+                style.display !== 'none' &&
+                style.visibility !== 'hidden' &&
+                style.opacity !== '0' &&
+                element.offsetWidth > 0 &&
+                element.offsetHeight > 0;
+              if (isVisible) {
+                containerVisible = true;
+                break;
+              }
+            }
+          }
+
+          // 如果没有找到容器，检查QQ应用是否在DOM中有任何可见元素
+          if (!containerVisible) {
+            const qqElements = document.querySelectorAll(
+              '[class*="qq-"], [id*="qq-"], [class*="phone"], [id*="phone"]',
+            );
+            for (const element of qqElements) {
+              const style = window.getComputedStyle(element);
+              if (style.display !== 'none' && element.offsetWidth > 0 && element.offsetHeight > 0) {
+                containerVisible = true;
+                break;
+              }
+            }
+          }
+
+          return containerVisible;
         } catch (error) {
-          // 如果检查失败，默认认为可见（保守策略）
-          return true;
+          console.warn('⚠️ 检查手机插件可见性失败:', error);
+          // 如果检查失败，默认认为不可见（节能策略）
+          return false;
+        }
+      },
+
+      // 暂停监听器（保持初始化状态，但停止处理事件）
+      pauseMonitoring: function () {
+        if (!this.isPaused) {
+          this.isPaused = true;
+          console.log('⏸️ 监听器已暂停');
+        }
+      },
+
+      // 恢复监听器
+      resumeMonitoring: function () {
+        if (this.isPaused) {
+          this.isPaused = false;
+          console.log('▶️ 监听器已恢复');
         }
       },
 
@@ -849,6 +923,12 @@
       scheduleUpdate: function (source) {
         if (!this.isMonitoring) {
           console.log(`⏭️ 监听器未运行，跳过调度更新 - 来源: ${source}`);
+          return;
+        }
+
+        // 检查是否被暂停
+        if (this.isPaused) {
+          console.log(`⏸️ 监听器已暂停，跳过更新 - 来源: ${source}`);
           return;
         }
 
@@ -983,6 +1063,7 @@
         console.log('🛑 停止实时更新监听器...');
 
         this.isMonitoring = false;
+        this.isPaused = false;
 
         // 清除定时器
         if (this.debounceTimer) {
@@ -1080,9 +1161,11 @@
         return {
           isInitialized: this.isInitialized,
           isMonitoring: this.isMonitoring,
+          isPaused: this.isPaused,
           callbackCount: this.updateCallbacks.size,
           hasEventListeners: this.eventListeners.size > 0,
           hasInterval: !!this.checkInterval,
+          isMobilePluginVisible: this.isMobilePluginVisible(),
         };
       },
     },
