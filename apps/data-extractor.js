@@ -291,6 +291,30 @@
 
         // 添加消息到群组
         if (groupMap.has(groupId)) {
+          // 尝试从同一条聊天记录中提取发送者的QQ号
+          let senderQQNumber = null;
+          if (!isMyMessage && allChatMessages && allChatMessages[item.messageIndex]) {
+            const currentChatMessage = allChatMessages[item.messageIndex];
+            const chatMessageText = currentChatMessage.mes || '';
+
+            // 静默查找QQ号，减少日志输出
+            // 方法1: 查找该发送者对应的头像增强数据
+            const senderAvatarMatch = chatMessageText.match(
+              new RegExp(`\\[头像增强\\|(\\d+)\\|[^]]*?"contactName":"${sender}"`),
+            );
+            if (senderAvatarMatch) {
+              senderQQNumber = senderAvatarMatch[1];
+            } else {
+              // 方法2: 使用预定义的映射表（从QQ应用获取）
+              if (window.QQApp && window.QQApp.senderNameToQqNumberMap) {
+                const mappedQQ = window.QQApp.senderNameToQqNumberMap[sender];
+                if (mappedQQ) {
+                  senderQQNumber = mappedQQ;
+                }
+              }
+            }
+          }
+
           const messageData = {
             sender: sender,
             content: content,
@@ -299,13 +323,13 @@
             matchIndex: item.matchIndex, // 添加匹配索引
             timestamp: item.timestamp,
             isMyMessage: isMyMessage,
+            qqNumber: senderQQNumber, // 添加QQ号信息
           };
 
           console.log(
-            `添加群聊消息: [${messageData.isMyMessage ? '我方' : messageData.sender}] ${messageData.content.substring(
-              0,
-              20,
-            )}... (messageIndex: ${messageData.messageIndex}, matchIndex: ${
+            `添加群聊消息: [${messageData.isMyMessage ? '我方' : messageData.sender}${
+              messageData.qqNumber ? ` (${messageData.qqNumber})` : ''
+            }] ${messageData.content.substring(0, 20)}... (messageIndex: ${messageData.messageIndex}, matchIndex: ${
               messageData.matchIndex
             }, 消息类型: ${messageType})`,
           );
@@ -515,8 +539,693 @@
         },
       };
     },
+
+    // ===================== 实时更新监听系统 =====================
+
+    // 实时更新管理器
+    realtimeUpdater: {
+      // 状态管理
+      isInitialized: false,
+      isMonitoring: false,
+      lastMessageCount: 0,
+      lastChatId: null,
+
+      // 回调函数存储
+      updateCallbacks: new Set(),
+
+      // 防抖定时器
+      debounceTimer: null,
+      debounceDelay: 300, // 300ms防抖延迟
+
+      // 检查间隔定时器
+      checkInterval: null,
+      checkIntervalDelay: 1000, // 1秒检查一次
+
+      // 监听事件类型
+      eventListeners: new Map(),
+
+      // 初始化实时更新监听
+      initialize: function () {
+        if (this.isInitialized && this.isMonitoring) {
+          console.log('📱 实时更新监听器已经初始化并运行中');
+          return;
+        }
+
+        console.log('🚀 初始化手机插件实时更新监听器...');
+
+        try {
+          // 重置状态
+          this.isInitialized = false;
+          this.isMonitoring = false;
+
+          // 获取初始状态
+          this.updateInitialState();
+
+          // 启动多种监听策略
+          this.startDOMObserver();
+          this.startEventListeners();
+          this.startIntervalCheck();
+
+          this.isInitialized = true;
+          this.isMonitoring = true;
+
+          console.log('✅ 实时更新监听器初始化完成');
+          console.log(
+            `📊 当前状态: 已初始化=${this.isInitialized}, 正在监听=${this.isMonitoring}, 回调数量=${this.updateCallbacks.size}`,
+          );
+
+          // 延迟验证监听器状态
+          setTimeout(() => {
+            if (!this.isMonitoring) {
+              console.log('🔧 检测到监听器状态异常，重新启动...');
+              this.isMonitoring = true;
+            }
+          }, 1000);
+
+          // 触发初始化完成事件
+          this.triggerUpdate('initialization', { source: 'init' });
+        } catch (error) {
+          console.error('❌ 初始化实时更新监听器失败:', error);
+          this.isInitialized = false;
+          this.isMonitoring = false;
+        }
+      },
+
+      // 更新初始状态
+      updateInitialState: async function () {
+        try {
+          const chatData = await HQDataExtractor.getChatData();
+          if (chatData) {
+            this.lastMessageCount = chatData.messages ? chatData.messages.length : 0;
+            this.lastChatId = chatData.chatId;
+            console.log(`📊 初始状态: ${this.lastMessageCount} 条消息, 聊天ID: ${this.lastChatId}`);
+          }
+        } catch (error) {
+          console.warn('⚠️ 获取初始状态失败:', error);
+        }
+      },
+
+      // 启动DOM观察器 - 监听聊天区域变化
+      startDOMObserver: function () {
+        try {
+          const chatContainer =
+            document.querySelector('#chat') ||
+            document.querySelector('.chat') ||
+            document.querySelector('#sheld') ||
+            document.body;
+
+          if (!chatContainer) {
+            console.warn('⚠️ 未找到聊天容器，使用document.body');
+          }
+
+          const observer = new MutationObserver(mutations => {
+            let hasRelevantChanges = false;
+
+            mutations.forEach(mutation => {
+              // 检查是否有新增的消息节点
+              if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                for (const node of mutation.addedNodes) {
+                  if (node.nodeType === Node.ELEMENT_NODE) {
+                    // 检查是否是消息相关的节点
+                    if (
+                      node.classList &&
+                      (node.classList.contains('mes') ||
+                        node.classList.contains('message') ||
+                        node.querySelector('.mes') ||
+                        node.querySelector('.message'))
+                    ) {
+                      hasRelevantChanges = true;
+                      break;
+                    }
+                  }
+                }
+              }
+
+              // 检查文本内容变化（AI回复更新）
+              if (
+                mutation.type === 'characterData' ||
+                (mutation.type === 'childList' && mutation.target.closest('.mes'))
+              ) {
+                hasRelevantChanges = true;
+              }
+
+              // 特别检查生成状态变化
+              if (mutation.type === 'attributes') {
+                const target = mutation.target;
+                if (target.id === 'send_but' || target.classList.contains('mes_edit_buttons')) {
+                  hasRelevantChanges = true;
+                }
+              }
+            });
+
+            if (hasRelevantChanges) {
+              console.log('🔍 DOM观察器检测到聊天变化');
+              this.scheduleUpdate('dom_change');
+            }
+          });
+
+          observer.observe(chatContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+            attributeFilter: ['class', 'style', 'disabled'],
+          });
+
+          this.eventListeners.set('domObserver', observer);
+          console.log('✅ DOM观察器已启动');
+        } catch (error) {
+          console.error('❌ 启动DOM观察器失败:', error);
+        }
+      },
+
+      // 启动事件监听器 - 监听SillyTavern事件
+      startEventListeners: function () {
+        try {
+          const events = [
+            'message_sent',
+            'message_received',
+            'generation_ended',
+            'generation_stopped',
+            'generation_started',
+            'chat_changed',
+            'character_message_rendered',
+            'message_edited',
+            'message_deleted',
+            'message_rendered',
+            'character_first_message',
+          ];
+
+          events.forEach(eventName => {
+            const handler = event => {
+              console.log(`🎯 捕获事件: ${eventName}`, event);
+              this.scheduleUpdate(`event_${eventName}`);
+            };
+
+            // 尝试多个可能的事件目标
+            const targets = [
+              document,
+              window,
+              window.parent,
+              document.getElementById('send_form'),
+              document.getElementById('chat'),
+            ].filter(Boolean);
+
+            targets.forEach(target => {
+              try {
+                target.addEventListener(eventName, handler);
+                console.log(`✅ 已添加事件监听: ${eventName} 到`, target);
+              } catch (e) {
+                // 静默失败，某些目标可能不支持事件监听
+              }
+            });
+
+            this.eventListeners.set(`event_${eventName}`, handler);
+          });
+
+          // 特别监听自定义事件
+          const customHandler = event => {
+            console.log('🎯 捕获自定义更新事件', event);
+            this.scheduleUpdate('custom_event');
+          };
+
+          document.addEventListener('chat_update_required', customHandler);
+          document.addEventListener('mobile_plugin_refresh', customHandler);
+          this.eventListeners.set('customEvents', customHandler);
+
+          // 监听SillyTavern特有的生成完成事件
+          const generationHandler = event => {
+            console.log('🎯 捕获生成事件', event.type, event);
+            this.scheduleUpdate(`generation_${event.type}`);
+          };
+
+          // 监听多种可能的生成完成事件
+          const generationEvents = [
+            'generation_ended',
+            'generation_stopped',
+            'message_rendered',
+            'character_message_rendered',
+          ];
+
+          generationEvents.forEach(eventType => {
+            document.addEventListener(eventType, generationHandler);
+            window.addEventListener(eventType, generationHandler);
+
+            // 也尝试监听eventSource
+            if (window.eventSource) {
+              window.eventSource.addEventListener(eventType, generationHandler);
+            }
+          });
+
+          this.eventListeners.set('generationEvents', generationHandler);
+        } catch (error) {
+          console.error('❌ 启动事件监听器失败:', error);
+        }
+      },
+
+      // 启动定时检查 - 兜底机制
+      startIntervalCheck: function () {
+        if (this.checkInterval) {
+          clearInterval(this.checkInterval);
+        }
+
+        this.checkInterval = setInterval(async () => {
+          try {
+            // 性能优化：只在手机插件可见时运行检查
+            if (!this.isMobilePluginVisible()) {
+              return;
+            }
+
+            const chatData = await HQDataExtractor.getChatData();
+            if (!chatData) return;
+
+            const currentMessageCount = chatData.messages ? chatData.messages.length : 0;
+            const currentChatId = chatData.chatId;
+
+            // 检查聊天是否切换
+            if (currentChatId !== this.lastChatId) {
+              console.log(`🔄 检测到聊天切换: ${this.lastChatId} -> ${currentChatId}`);
+              this.lastChatId = currentChatId;
+              this.lastMessageCount = currentMessageCount;
+              this.scheduleUpdate('chat_switch');
+              return;
+            }
+
+            // 检查消息数量变化
+            if (currentMessageCount !== this.lastMessageCount) {
+              console.log(`📊 检测到消息数量变化: ${this.lastMessageCount} -> ${currentMessageCount}`);
+              this.lastMessageCount = currentMessageCount;
+              this.scheduleUpdate('message_count_change');
+            }
+          } catch (error) {
+            // 静默处理错误，避免控制台垃圾信息
+          }
+        }, this.checkIntervalDelay);
+
+        console.log(`✅ 定时检查已启动 (${this.checkIntervalDelay}ms间隔)`);
+      },
+
+      // 检查手机插件是否可见
+      isMobilePluginVisible: function () {
+        try {
+          // 检查QQ应用是否存在且可见
+          const qqAppVisible =
+            window.QQApp &&
+            (document.querySelector('.qq-app-container:not([style*="display: none"])') ||
+              document.querySelector('#phone_interface:not([style*="display: none"])') ||
+              document.querySelector('.mobile-plugin:not([style*="display: none"])'));
+
+          // 检查页面是否可见
+          const pageVisible = !document.hidden && document.visibilityState === 'visible';
+
+          return qqAppVisible && pageVisible;
+        } catch (error) {
+          // 如果检查失败，默认认为可见（保守策略）
+          return true;
+        }
+      },
+
+      // 调度更新 - 防抖处理
+      scheduleUpdate: function (source) {
+        if (!this.isMonitoring) {
+          console.log(`⏭️ 监听器未运行，跳过调度更新 - 来源: ${source}`);
+          return;
+        }
+
+        // 性能优化：只在手机插件可见时处理更新
+        if (!this.isMobilePluginVisible()) {
+          console.log(`⏭️ 手机插件不可见，跳过更新 - 来源: ${source}`);
+          return;
+        }
+
+        // 清除之前的防抖定时器
+        if (this.debounceTimer) {
+          clearTimeout(this.debounceTimer);
+        }
+
+        // 动态调整防抖延迟 - 群聊时使用更长延迟
+        const isGroupChatContext = this.isInGroupChatContext();
+        const dynamicDelay = isGroupChatContext ? this.debounceDelay * 2 : this.debounceDelay;
+
+        // 设置新的防抖定时器
+        this.debounceTimer = setTimeout(() => {
+          this.triggerUpdate(source);
+        }, dynamicDelay);
+      },
+
+      // 检测是否在群聊环境
+      isInGroupChatContext: function () {
+        try {
+          // 方法1: 检查DOM结构
+          const hasGroupElements =
+            document.querySelector('.qq-group-wrapper') ||
+            document.querySelector('[data-group-id]') ||
+            document.querySelector('.custom-qq-qun');
+
+          // 方法2: 检查最近的消息内容
+          const recentMessages = document.querySelectorAll('.mes_text');
+          let hasGroupKeywords = false;
+          if (recentMessages.length > 0) {
+            const lastMessage = recentMessages[recentMessages.length - 1];
+            const messageText = lastMessage?.textContent || '';
+            hasGroupKeywords =
+              messageText.includes('群聊') ||
+              messageText.includes('发送群聊') ||
+              messageText.includes('群里') ||
+              messageText.includes('群成员');
+          }
+
+          // 方法3: 检查当前QQ应用状态（如果可用）
+          const isQQGroupActive =
+            (window.QQApp && document.querySelector('.qq-group-wrapper.active')) ||
+            document.querySelector('.custom-qq-qun.active');
+
+          return hasGroupElements || hasGroupKeywords || isQQGroupActive;
+        } catch (error) {
+          console.warn('⚠️ 检测群聊环境失败:', error);
+          return false;
+        }
+      },
+
+      // 触发更新回调
+      triggerUpdate: async function (source, additionalData = {}) {
+        if (!this.isMonitoring) {
+          console.log(`⏭️ 监听器未运行，跳过更新 - 来源: ${source}`);
+          return;
+        }
+
+        console.log(`🔄 触发手机插件更新 - 来源: ${source}, 回调数量: ${this.updateCallbacks.size}`);
+
+        try {
+          // 获取最新数据
+          const updateData = {
+            source: source,
+            timestamp: Date.now(),
+            chatData: await HQDataExtractor.getChatData(),
+            ...additionalData,
+          };
+
+          // 调用所有注册的回调函数
+          let callbackCount = 0;
+          this.updateCallbacks.forEach(callback => {
+            try {
+              if (typeof callback === 'function') {
+                callback(updateData);
+                callbackCount++;
+              }
+            } catch (error) {
+              console.error('❌ 更新回调执行失败:', error);
+            }
+          });
+
+          console.log(`✅ 已执行 ${callbackCount} 个回调函数`);
+
+          // 触发全局事件，让其他组件知道有更新
+          try {
+            const event = new CustomEvent('mobile_plugin_data_updated', {
+              detail: updateData,
+            });
+            document.dispatchEvent(event);
+
+            // 同时触发父窗口事件（如果在iframe中）
+            if (window.parent !== window) {
+              window.parent.document.dispatchEvent(event);
+            }
+          } catch (error) {
+            console.warn('⚠️ 触发全局事件失败:', error);
+          }
+        } catch (error) {
+          console.error('❌ 触发更新失败:', error);
+        }
+      },
+
+      // 注册更新回调
+      onUpdate: function (callback) {
+        if (typeof callback === 'function') {
+          this.updateCallbacks.add(callback);
+          console.log(`✅ 已注册更新回调，当前共 ${this.updateCallbacks.size} 个回调`);
+          return true;
+        }
+        return false;
+      },
+
+      // 取消注册更新回调
+      offUpdate: function (callback) {
+        const removed = this.updateCallbacks.delete(callback);
+        if (removed) {
+          console.log(`✅ 已移除更新回调，当前共 ${this.updateCallbacks.size} 个回调`);
+        }
+        return removed;
+      },
+
+      // 停止监听
+      stop: function () {
+        console.log('🛑 停止实时更新监听器...');
+
+        this.isMonitoring = false;
+
+        // 清除定时器
+        if (this.debounceTimer) {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = null;
+        }
+
+        if (this.checkInterval) {
+          clearInterval(this.checkInterval);
+          this.checkInterval = null;
+        }
+
+        // 清除事件监听器
+        this.eventListeners.forEach((listener, key) => {
+          try {
+            if (key === 'domObserver' && listener.disconnect) {
+              listener.disconnect();
+            } else if (typeof listener === 'function') {
+              document.removeEventListener(key.replace('event_', ''), listener);
+              window.removeEventListener(key.replace('event_', ''), listener);
+
+              // 清除生成事件监听器
+              if (key === 'generationEvents') {
+                const generationEvents = [
+                  'generation_ended',
+                  'generation_stopped',
+                  'message_rendered',
+                  'character_message_rendered',
+                ];
+                generationEvents.forEach(eventType => {
+                  document.removeEventListener(eventType, listener);
+                  window.removeEventListener(eventType, listener);
+                });
+              }
+            }
+          } catch (error) {
+            console.warn(`⚠️ 清除事件监听器失败: ${key}`, error);
+          }
+        });
+
+        this.eventListeners.clear();
+        this.updateCallbacks.clear();
+
+        console.log('✅ 实时更新监听器已停止');
+      },
+
+      // 重启监听器
+      restart: function () {
+        this.stop();
+        setTimeout(() => {
+          this.initialize();
+        }, 100);
+      },
+
+      // 手动触发更新
+      forceUpdate: function () {
+        console.log('💪 手动触发更新');
+        this.triggerUpdate('manual_force');
+      },
+
+      // 检查并修复监听器状态
+      checkAndFixStatus: function () {
+        console.log('🔍 检查实时更新器状态...');
+        console.log(
+          `当前状态: 已初始化=${this.isInitialized}, 正在监听=${this.isMonitoring}, 回调数量=${this.updateCallbacks.size}`,
+        );
+
+        if (this.isInitialized && !this.isMonitoring) {
+          console.log('🔧 检测到监听器状态异常，修复中...');
+          this.isMonitoring = true;
+
+          // 重新启动监听器组件
+          try {
+            if (this.eventListeners.size === 0) {
+              console.log('🔧 重新启动事件监听器...');
+              this.startEventListeners();
+            }
+
+            if (!this.eventListeners.has('domObserver')) {
+              console.log('🔧 重新启动DOM观察器...');
+              this.startDOMObserver();
+            }
+
+            if (!this.checkInterval) {
+              console.log('🔧 重新启动定时检查器...');
+              this.startIntervalCheck();
+            }
+
+            console.log('✅ 监听器状态已修复');
+          } catch (error) {
+            console.error('❌ 修复监听器状态失败:', error);
+          }
+        }
+
+        return {
+          isInitialized: this.isInitialized,
+          isMonitoring: this.isMonitoring,
+          callbackCount: this.updateCallbacks.size,
+          hasEventListeners: this.eventListeners.size > 0,
+          hasInterval: !!this.checkInterval,
+        };
+      },
+    },
+
+    // ===================== 便捷方法 =====================
+
+    // 启动实时更新（便捷方法）
+    startRealtimeUpdates: function (callback) {
+      console.log('🚀 启动手机插件实时更新功能');
+
+      // 如果提供了回调函数，注册它
+      if (callback && typeof callback === 'function') {
+        this.realtimeUpdater.onUpdate(callback);
+      }
+
+      // 初始化监听器
+      this.realtimeUpdater.initialize();
+
+      return this.realtimeUpdater;
+    },
+
+    // 停止实时更新（便捷方法）
+    stopRealtimeUpdates: function () {
+      console.log('🛑 停止手机插件实时更新功能');
+      this.realtimeUpdater.stop();
+    },
+
+    // 检查是否正在监听
+    isRealtimeActive: function () {
+      return this.realtimeUpdater.isMonitoring;
+    },
   };
 
   // 导出到全局
   window['HQDataExtractor'] = HQDataExtractor;
+
+  // ===================== 使用示例和自动初始化 =====================
+
+  // 自动初始化实时更新功能（可选）
+  function autoInitialize() {
+    // 等待页面加载完成后再初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(autoInitialize, 1000);
+      });
+      return;
+    }
+
+    // 检查是否已经有手机插件在运行
+    const mobilePluginExists =
+      window.QQApp ||
+      window.PhoneInterface ||
+      document.querySelector('.qq-app-container') ||
+      document.querySelector('#phone_interface');
+
+    if (mobilePluginExists) {
+      console.log('🚀 检测到手机插件，自动启动实时更新功能...');
+
+      // 启动实时更新，并设置通用回调
+      HQDataExtractor.startRealtimeUpdates(updateData => {
+        console.log('📱 手机插件数据更新:', updateData.source);
+
+        // 通知所有可能的手机插件组件
+        const componentsToNotify = ['QQApp', 'PhoneInterface', 'WeChatApp', 'ContactManager', 'QQDataManager'];
+
+        componentsToNotify.forEach(componentName => {
+          const component = window[componentName];
+          if (component) {
+            // 尝试调用组件的更新方法
+            if (typeof component.handleDataUpdate === 'function') {
+              component.handleDataUpdate(updateData);
+            } else if (typeof component.refresh === 'function') {
+              component.refresh(updateData);
+            } else if (typeof component.updateData === 'function') {
+              component.updateData(updateData);
+            } else if (typeof component.reload === 'function') {
+              component.reload();
+            }
+          }
+        });
+
+        // 更新好友管理器的头像显示
+        if (window.QQDataManager && typeof window.QQDataManager.updateFriendManagerAvatars === 'function') {
+          window.QQDataManager.updateFriendManagerAvatars();
+        }
+      });
+    }
+  }
+
+  // 延迟自动初始化，确保其他组件先加载
+  setTimeout(autoInitialize, 2000);
+
+  // 也在页面加载完成时尝试初始化
+  if (document.readyState === 'complete') {
+    setTimeout(autoInitialize, 500);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(autoInitialize, 500);
+    });
+  }
+
+  // ===================== 全局便捷方法 =====================
+
+  // 添加全局便捷方法到window对象
+  window.HQRealtimeUpdater = {
+    start: callback => HQDataExtractor.startRealtimeUpdates(callback),
+    stop: () => HQDataExtractor.stopRealtimeUpdates(),
+    isActive: () => HQDataExtractor.isRealtimeActive(),
+    forceUpdate: () => HQDataExtractor.realtimeUpdater.forceUpdate(),
+
+    // 使用示例
+    example: function () {
+      console.log('💡 实时更新使用示例:');
+      console.log('');
+      console.log('// 方法1: 启动实时更新并注册回调');
+      console.log('HQDataExtractor.startRealtimeUpdates((updateData) => {');
+      console.log('  console.log("数据更新来源:", updateData.source);');
+      console.log('  console.log("更新时间:", updateData.timestamp);');
+      console.log('  console.log("聊天数据:", updateData.chatData);');
+      console.log('  ');
+      console.log('  // 在这里更新你的手机插件界面');
+      console.log('  updateYourMobilePlugin(updateData);');
+      console.log('});');
+      console.log('');
+      console.log('// 方法2: 手动注册回调');
+      console.log('HQDataExtractor.realtimeUpdater.onUpdate((updateData) => {');
+      console.log('  // 处理更新');
+      console.log('});');
+      console.log('');
+      console.log('// 方法3: 监听全局事件');
+      console.log('document.addEventListener("mobile_plugin_data_updated", (event) => {');
+      console.log('  const updateData = event.detail;');
+      console.log('  // 处理更新');
+      console.log('});');
+      console.log('');
+      console.log('// 手动触发更新');
+      console.log('HQDataExtractor.realtimeUpdater.forceUpdate();');
+      console.log('');
+      console.log('// 停止实时更新');
+      console.log('HQDataExtractor.stopRealtimeUpdates();');
+    },
+  };
+
+  console.log('✅ HQDataExtractor 实时更新功能已加载');
+  console.log('💡 使用 HQRealtimeUpdater.example() 查看使用示例');
 })(window);

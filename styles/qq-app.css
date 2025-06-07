@@ -373,7 +373,7 @@ body.chat-detail-active .dialog-head {
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  border: 2px solid #ddd !important; /* 添加边框 */
+  border: none !important; /* 移除白边 */
 
   /* 图像渲染优化 - 提升清晰度 */
   image-rendering: -webkit-optimize-contrast !important;
@@ -662,10 +662,17 @@ body.chat-detail-active .dialog-head {
   width: 48px !important;
   height: 48px !important;
   border-radius: 50% !important;
-  border: 2px solid rgba(255, 255, 255, 0.5) !important;
-  transition: transform 0.2s ease, border-color 0.2s ease !important;
+  border: none !important; /* 移除白边 */
+  transition: transform 0.2s ease !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   cursor: pointer !important;
+
+  /* 图像质量优化 */
+  image-rendering: -webkit-optimize-contrast !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  -webkit-transform-style: preserve-3d !important;
+  transform-style: preserve-3d !important;
 }
 
 /* 删除头像悬停效果，避免干扰旋转变换 */
@@ -954,11 +961,18 @@ body.chat-detail-active .dialog-head {
   font-weight: bold;
   overflow: hidden;
   color: black;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: none; /* 移除白边 */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
+  /* 图像质量优化 */
+  image-rendering: -webkit-optimize-contrast;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
 }
 
 .message-avatar img {
