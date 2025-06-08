@@ -303,16 +303,162 @@ this.senderNameToQqNumberMap = this.contactNameMap;
 3. **配置化管理** - 防抖延迟等参数可配置
 4. **事件驱动** - 基于事件的松耦合架构
 
+## 🎭 智能消息动画系统 (新增功能)
+
+### 概述
+为了解决用户反馈的问题，新增了智能消息动画系统，提供更好的用户体验：
+
+**解决的问题**：
+- ❌ 实时更新后总是滚动到最底部，用户需要翻页查看新消息
+- ❌ 所有新消息一次性显示，缺乏动态效果
+
+**新增功能**：
+- ✅ 智能滚动定位：页面停留在第一条新消息位置
+- ✅ 动态显示动画：新消息逐条出现，模拟真实收到短信效果
+- ✅ 新消息识别：自动区分哪些是本次更新的新消息
+
+### 核心函数
+
+#### 1. 消息状态管理
+```javascript
+// 捕获更新前状态
+captureCurrentMessageState($chatMessages) {
+  const $messages = $chatMessages.find('.custom-message');
+  return {
+    messageCount: $messages.length,
+    lastMessageContent: $messages.last().find('.message-text').text().trim(),
+    timestamp: Date.now()
+  };
+}
+
+// 识别新消息
+identifyNewMessages(allMessages, beforeUpdate) {
+  if (allMessages.length <= beforeUpdate.messageCount) return [];
+  return allMessages.slice(beforeUpdate.messageCount);
+}
+```
+
+#### 2. 智能重建与动画
+```javascript
+// 智能重建消息HTML
+async rebuildChatMessagesWithAnimation($chatMessages, messages, chatId, beforeUpdate) {
+  const newMessages = this.identifyNewMessages(messages, beforeUpdate);
+
+  // 构建HTML并标记新消息
+  messages.forEach((message, index) => {
+    const $messageElement = $(this.createMessageHTML(message, chatId));
+    const isNewMessage = newMessages.some(newMsg => /* 匹配逻辑 */);
+
+    if (isNewMessage) {
+      $messageElement.addClass('new-message-hidden');
+      $messageElement.attr('data-new-message', 'true');
+    }
+
+    $chatMessages.append($messageElement);
+  });
+
+  // 智能滚动和动画
+  await this.smartScrollToNewMessages($chatMessages, newMessages.length);
+  if (newMessages.length > 0) {
+    await this.animateNewMessages($chatMessages);
+  }
+}
+```
+
+#### 3. 智能滚动定位
+```javascript
+async smartScrollToNewMessages($chatMessages, newMessageCount) {
+  if (newMessageCount === 0) return;
+
+  const $allMessages = $chatMessages.find('.custom-message');
+  const firstNewMessageIndex = $allMessages.length - newMessageCount;
+  const $firstNewMessage = $allMessages.eq(firstNewMessageIndex);
+
+  if ($firstNewMessage.length > 0) {
+    const targetScrollTop = currentScrollTop + messageTop - 20; // 20px边距
+    $chatMessages.animate({ scrollTop: targetScrollTop }, 300, 'ease-out');
+  }
+}
+```
+
+#### 4. 动态显示动画
+```javascript
+async animateNewMessages($chatMessages) {
+  const $newMessages = $chatMessages.find('[data-new-message="true"]');
+
+  // 逐条显示新消息
+  for (let i = 0; i < $newMessages.length; i++) {
+    const $message = $newMessages.eq(i);
+
+    // 等待间隔（模拟真实收到消息）
+    if (i > 0) await new Promise(resolve => setTimeout(resolve, 800));
+
+    // 淡入动画
+    $message.removeClass('new-message-hidden')
+            .addClass('new-message-appearing')
+            .css({ opacity: 0, transform: 'translateY(20px)' })
+            .animate({ opacity: 1 }, 400, 'ease-out')
+            .css({ transform: 'translateY(0)' });
+  }
+}
+```
+
+### CSS动画样式
+```css
+/* 新消息隐藏状态 */
+.new-message-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(20px) !important;
+  transition: none !important;
+}
+
+/* 新消息出现动画 */
+.new-message-appearing {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out !important;
+}
+
+/* 关键帧动画 */
+@keyframes newMessageFadeIn {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  50% { opacity: 0.7; transform: translateY(10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+```
+
+### 使用效果
+
+**实时更新流程**：
+1. 🔍 捕获更新前的消息状态
+2. 📊 重新提取消息数据
+3. 🆕 识别新增的消息
+4. 🎭 为新消息添加隐藏标记
+5. 📜 滚动到第一条新消息位置
+6. ✨ 逐条显示新消息动画
+
+**用户体验**：
+- 📱 页面停留在新消息开始位置，无需手动翻页
+- 🎭 新消息逐条出现，模拟真实收到短信的效果
+- ⏱️ 每条消息间隔800ms，给用户充分的阅读时间
+- 🎨 平滑的淡入和移动动画，视觉效果优雅
+
 ## 📝 后续优化方向
 
 1. **WebSocket支持** - 实现真正的实时通信
 2. **离线缓存** - 支持离线状态下的数据同步
 3. **增量同步** - 只传输变化的数据
 4. **智能预测** - 预测用户行为，提前加载数据
+5. **自定义动画** - 允许用户调整消息出现间隔和动画效果
+6. **音效支持** - 为新消息添加提示音
+7. **消息类型识别** - 不同类型消息使用不同动画
 
 ---
 
-**作者**: AI Assistant  
-**创建时间**: 2024年12月  
-**适用版本**: SillyTavern + QQ手机插件  
-**维护状态**: 活跃维护 
+**作者**: AI Assistant
+**创建时间**: 2024年12月
+**最后更新**: 2024年12月 (新增智能消息动画系统)
+**适用版本**: SillyTavern + QQ手机插件
+**维护状态**: 活跃维护

@@ -319,6 +319,54 @@ body.chat-detail-active .dialog-head {
   font-size: 14px;
 }
 
+/* 🎭 新消息动态显示动画样式 */
+.new-message-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translateY(20px) !important;
+  transition: none !important;
+}
+
+.new-message-appearing {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+  transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
+/* 新消息淡入动画关键帧 */
+@keyframes newMessageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 新消息出现动画 */
+.custom-message[data-new-message='true'] {
+  animation: newMessageFadeIn 0.6s ease-out forwards;
+}
+
+/* 消息容器滚动优化 */
+.chat-messages {
+  scroll-behavior: smooth;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 智能滚动时的平滑过渡 */
+.chat-messages.smart-scrolling {
+  scroll-behavior: smooth;
+}
+
 /* QQ装饰栏隐藏类 - 保持原有display属性 */
 .qq-decoration-hidden {
   visibility: hidden !important;
