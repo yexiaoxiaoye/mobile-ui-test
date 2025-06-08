@@ -109,6 +109,10 @@
       try {
         console.log('🔄 设置QQ应用实时更新系统...');
 
+        // 初始化实时更新状态
+        this.lastRealtimeUpdateTime = null;
+        this.isUpdating = false;
+
         // 检查数据提取器是否可用
         if (!window.HQDataExtractor) {
           console.warn('⚠️ HQDataExtractor不可用，延迟重试...');
@@ -123,18 +127,29 @@
         const updateCallback = updateData => {
           console.log('🔄 [QQ实时更新] 检测到新消息，来源:', updateData.source);
 
-          // 防抖处理，避免频繁更新
+          // 🎯 优化防抖处理：首次更新立即执行，后续更新防抖
           if (this.realtimeUpdateTimer) {
             clearTimeout(this.realtimeUpdateTimer);
           }
 
-          // 检测是否在群聊环境，动态调整防抖延迟
-          const isInGroupChat = this.isCurrentlyInGroupChat();
-          const debounceDelay = isInGroupChat ? 1500 : 800; // 群聊1.5秒，私聊800ms
+          // 检查是否是首次更新（没有正在进行的更新）
+          const isFirstUpdate = !this.isUpdating && !this.lastRealtimeUpdateTime;
 
-          this.realtimeUpdateTimer = setTimeout(() => {
+          if (isFirstUpdate) {
+            // 首次更新立即执行，减少延迟
+            console.log('🚀 [QQ实时更新] 首次更新，立即执行');
+            this.lastRealtimeUpdateTime = Date.now();
             this.handleRealtimeUpdate();
-          }, debounceDelay);
+          } else {
+            // 后续更新使用防抖，避免频繁更新
+            const isInGroupChat = this.isCurrentlyInGroupChat();
+            const debounceDelay = isInGroupChat ? 1000 : 500; // 减少防抖延迟：群聊1秒，私聊500ms
+
+            this.realtimeUpdateTimer = setTimeout(() => {
+              this.lastRealtimeUpdateTime = Date.now();
+              this.handleRealtimeUpdate();
+            }, debounceDelay);
+          }
         };
 
         // 保存回调函数引用，用于后续管理
@@ -591,7 +606,7 @@
       }
     },
 
-    // 🎯 智能滚动到新消息位置
+    // 🎯 智能滚动到新消息位置（优化版：减少延迟）
     async smartScrollToNewMessages($chatMessages, newMessageCount) {
       try {
         if (newMessageCount === 0) {
@@ -599,9 +614,7 @@
           return;
         }
 
-        // 等待DOM更新完成
-        await new Promise(resolve => setTimeout(resolve, 50));
-
+        // 🎯 移除DOM等待延迟，立即执行滚动
         const $container = $chatMessages;
         const $allMessages = $container.find('.custom-message');
 
@@ -623,21 +636,75 @@
           // 计算目标滚动位置（让第一条新消息显示在容器顶部附近）
           const targetScrollTop = currentScrollTop + messageTop - 20; // 20px的边距
 
-          // 使用平滑滚动
-          $container.css('scroll-behavior', 'smooth');
+          // 🎯 使用立即滚动，无动画延迟
+          $container.css('scroll-behavior', 'auto');
           $container[0].scrollTop = targetScrollTop;
 
-          // 恢复默认滚动行为
-          setTimeout(() => {
-            $container.css('scroll-behavior', 'auto');
-          }, 300);
-
-          console.log(`📜 [智能滚动] 滚动到第一条新消息位置 (索引: ${firstNewMessageIndex})`);
+          console.log(`📜 [智能滚动] 立即滚动到第一条新消息位置 (索引: ${firstNewMessageIndex})`);
         } else {
           console.log('📜 [智能滚动] 未找到第一条新消息元素');
         }
       } catch (error) {
         console.error('⚠️ 智能滚动失败:', error);
+      }
+    },
+
+    // 🔊 播放消息通知音效
+    playMessageNotificationSound() {
+      try {
+        // 创建更明显的通知音效（类似QQ/微信）
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // 创建双音调通知音效
+        const playTone = (frequency, duration, delay = 0) => {
+          setTimeout(() => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = 'sine';
+
+            // 音量包络（淡入淡出效果）
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+          }, delay);
+        };
+
+        // 播放双音调：高音-低音（类似QQ通知音）
+        playTone(800, 0.15, 0); // 第一个音调：800Hz，持续150ms
+        playTone(600, 0.2, 100); // 第二个音调：600Hz，持续200ms，延迟100ms
+
+        console.log('🔊 [通知音效] 播放消息通知音效');
+      } catch (error) {
+        console.warn('⚠️ [通知音效] 播放音效失败，使用备用方案:', error);
+        // 备用方案：使用系统beep
+        try {
+          // 创建短促的beep音效
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.setValueAtTime(750, audioContext.currentTime);
+          oscillator.type = 'square';
+
+          gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (fallbackError) {
+          console.warn('⚠️ [通知音效] 备用音效也失败:', fallbackError);
+        }
       }
     },
 
@@ -653,11 +720,14 @@
 
         console.log(`🎭 [动画显示] 开始显示 ${$newMessages.length} 条新消息`);
 
+        // 🔊 播放消息通知音效（只在有新消息时播放一次）
+        this.playMessageNotificationSound();
+
         // 逐条显示新消息
         for (let i = 0; i < $newMessages.length; i++) {
           const $message = $newMessages.eq(i);
 
-          // 等待一定时间间隔（模拟真实收到消息的效果）
+          // 🎯 第一条消息立即显示，后续消息有间隔
           if (i > 0) {
             await new Promise(resolve => setTimeout(resolve, 800)); // 每条消息间隔800ms
           }
@@ -673,15 +743,16 @@
             transition: 'opacity 0.4s ease, transform 0.4s ease',
           });
 
-          // 使用setTimeout触发动画
+          // 🎯 第一条消息无延迟显示，后续消息正常延迟
+          const animationDelay = i === 0 ? 0 : 50;
           setTimeout(() => {
             $message.css({
               opacity: 1,
               transform: 'translateY(0)',
             });
-          }, 50);
+          }, animationDelay);
 
-          console.log(`✨ [动画显示] 显示第 ${i + 1} 条新消息`);
+          console.log(`✨ [动画显示] 显示第 ${i + 1} 条新消息${i === 0 ? '（立即显示）' : ''}`);
         }
 
         // 动画完成后清理标记
@@ -3826,15 +3897,14 @@
             window.QQApp.hideMainPageDecorations();
           }
 
-          // 🎯 首次打开聊天页面时直接定位到底部（无动画）
-          setTimeout(() => {
-            const $messagesContainer = $chatPage.find('.chat-messages');
-            if ($messagesContainer.length > 0) {
-              // 直接设置滚动位置，无动画效果
-              $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
-              console.log('📜 [首次打开] 已定位到消息底部');
-            }
-          }, 50); // 减少延迟
+          // 🎯 首次打开聊天页面时直接定位到底部（无动画，无延迟）
+          const $messagesContainer = $chatPage.find('.chat-messages');
+          if ($messagesContainer.length > 0) {
+            // 立即设置滚动位置，完全无动画效果
+            $messagesContainer.css('scroll-behavior', 'auto');
+            $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
+            console.log('📜 [首次打开] 已立即定位到消息底部');
+          }
         });
 
       // QQ群组包装容器点击事件
@@ -3871,15 +3941,14 @@
             window.QQApp.hideMainPageDecorations();
           }
 
-          // 🎯 首次打开群聊页面时直接定位到底部（无动画）
-          setTimeout(() => {
-            const $messagesContainer = $chatPage.find('.chat-messages');
-            if ($messagesContainer.length > 0) {
-              // 直接设置滚动位置，无动画效果
-              $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
-              console.log('📜 [首次打开] 已定位到群聊底部');
-            }
-          }, 50); // 减少延迟
+          // 🎯 首次打开群聊页面时直接定位到底部（无动画，无延迟）
+          const $messagesContainer = $chatPage.find('.chat-messages');
+          if ($messagesContainer.length > 0) {
+            // 立即设置滚动位置，完全无动画效果
+            $messagesContainer.css('scroll-behavior', 'auto');
+            $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
+            console.log('📜 [首次打开] 已立即定位到群聊底部');
+          }
         });
 
       // 小房子按钮点击事件（聊天页面内）
