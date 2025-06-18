@@ -51,6 +51,33 @@
   flex: 1;
 }
 
+/* 点数显示按钮 */
+.points-display-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  color: white;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.points-display-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.points-display-btn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .taobao-header .app-title {
   font-size: 20px;
   font-weight: 700;

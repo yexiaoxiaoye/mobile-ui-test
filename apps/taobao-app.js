@@ -391,19 +391,28 @@
                 <div class="taobao-header">
                     <div class="header-left">
                         <h1 class="app-title">淘宝</h1>
-                        <div class="points-display" id="points_display">
-                            点数: <span id="user_points">0</span>
-                        </div>
+                        <button class="points-display-btn" onclick="TaobaoApp.refreshPoints()" title="点击刷新点数">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                            <span id="user_points">0</span>
+                        </button>
                     </div>
                     <div class="header-right">
                         <button class="header-btn refresh-products-btn" onclick="TaobaoApp.refreshProducts()" title="刷新商品">
-                            <i class="fas fa-box"></i>
-                        </button>
-                        <button class="header-btn refresh-points-btn" onclick="TaobaoApp.refreshPoints()" title="刷新点数">
-                            <i class="fas fa-coins"></i>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                <path d="M21 3v5h-5"/>
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                <path d="M3 21v-5h5"/>
+                            </svg>
                         </button>
                         <button class="header-btn cart-btn" onclick="TaobaoApp.showCartPage()" title="购物车">
-                            <i class="fas fa-shopping-cart"></i>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="21" r="1"/>
+                                <circle cx="20" cy="21" r="1"/>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                            </svg>
                             <span class="cart-badge" id="cart_badge_count" style="display: none;"></span>
                         </button>
                         <button class="header-btn search-btn" onclick="TaobaoApp.toggleSearch()" title="搜索商品">

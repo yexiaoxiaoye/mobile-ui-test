@@ -766,6 +766,13 @@
                 console.log(
                   `Set Taobao content mode BEFORE calling show(), #phone_interface is now in Taobao content mode.`,
                 );
+              } else if (appName === 'TaskApp') {
+                // 任务应用像QQ一样在手机界面内显示
+                $('#phone_interface').addClass('show show-task-app-content');
+                $('body').addClass('task-app-mode');
+                console.log(
+                  `Set Task content mode BEFORE calling show(), #phone_interface is now in Task content mode.`,
+                );
               } else if (appName === 'WallpaperApp') {
                 // 美化应用也保持手机界面显示，但不需要特殊的QQ模式
                 $('#phone_interface').addClass('show');
@@ -779,12 +786,19 @@
               // 调用应用的show方法
               appObject.show();
 
-              if (appName !== 'QQApp' && appName !== 'TaobaoApp' && appName !== 'WallpaperApp') {
-                // For other apps (except QQ, Taobao and Wallpaper), hide the entire phone_interface
+              if (
+                appName !== 'QQApp' &&
+                appName !== 'TaobaoApp' &&
+                appName !== 'TaskApp' &&
+                appName !== 'WallpaperApp'
+              ) {
+                // For other apps (except QQ, Taobao, Task and Wallpaper), hide the entire phone_interface
                 setTimeout(() => {
-                  // Ensure qq-mode and taobao-mode are also removed if another app is opened.
-                  $('#phone_interface').removeClass('show show-qq-app-content show-taobao-app-content');
-                  $('body').removeClass('qq-app-mode taobao-app-mode');
+                  // Ensure all app modes are also removed if another app is opened.
+                  $('#phone_interface').removeClass(
+                    'show show-qq-app-content show-taobao-app-content show-task-app-content',
+                  );
+                  $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
                   console.log(`Opened ${appName}, hid phone_interface.`);
                 }, 0);
               }
@@ -892,12 +906,15 @@
 
         $phoneInterface = $('#phone_interface'); // 重新获取元素引用
         if ($phoneInterface.length > 0) {
-          $phoneInterface.addClass('show').removeClass('show-qq-app-content show-taobao-app-content');
-          $('body').removeClass('qq-app-mode taobao-app-mode');
+          $phoneInterface
+            .addClass('show')
+            .removeClass('show-qq-app-content show-taobao-app-content show-task-app-content');
+          $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
 
           // 强制隐藏所有应用容器，确保手机主页内容优先显示
           $('#phone_interface .qq-app-container').hide();
           $('#phone_interface .taobao-app-container').hide();
+          $('#phone_interface .task-app-container').hide();
           $('#phone_interface .wallpaper-app-container').hide();
 
           // 强制显示手机主屏幕的核心元素
@@ -997,7 +1014,12 @@
       }
 
       // 关闭任务应用界面
-      $('#task_interface').hide();
+      if (window.TaskApp && typeof window.TaskApp.hide === 'function') {
+        window.TaskApp.hide();
+      } else {
+        $('#phone_interface .task-app-container').hide();
+        $('#task_interface').hide(); // 兼容旧版本
+      }
       $('#accept_task_dialog').remove(); // 任务接受弹窗
 
       // 关闭背包应用界面
@@ -1019,8 +1041,8 @@
       this.removeMobilePluginDialogs();
 
       // Reset phone_interface from all app modes
-      $('#phone_interface').removeClass('show-qq-app-content show-taobao-app-content');
-      $('body').removeClass('qq-app-mode taobao-app-mode');
+      $('#phone_interface').removeClass('show-qq-app-content show-taobao-app-content show-task-app-content');
+      $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
       console.log('所有应用界面已关闭, 所有应用模式已移除.');
     },
 
@@ -1045,6 +1067,7 @@
       if (
         $('#taobao_interface').is(':visible') ||
         $('#task_interface').is(':visible') ||
+        $('#phone_interface .task-app-container').is(':visible') ||
         $('#backpack_interface').is(':visible') ||
         $('#chouka_interface').is(':visible') ||
         $('#wallpaper_interface').is(':visible')

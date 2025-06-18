@@ -1,66 +1,785 @@
-/* 任务应用样式 */
+/* 任务应用样式 - v0风格美化 */
 
-/* 任务界面容器 */
-.task-interface {
-    /* 任务界面基础样式 */
+/* ===== 应用容器基础样式 - 集成到主手机界面内 ===== */
+.task-app-container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border-radius: 50px;
+  overflow: hidden;
+  opacity: 1;
+  position: relative;
+  z-index: 30;
 }
 
-/* 任务标签页 */
-.task-tabs {
-    /* 标签页容器样式 */
+.task-app-container > div,
+.task-app-container .task-app {
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
 }
 
-.task-tab {
-    /* 单个标签页样式 */
+/* 确保应用在主手机界面内正确显示 */
+#phone_interface.show-task-app-content .task-app-container {
+  display: block !important;
+  visibility: visible !important;
 }
 
-.task-tab.active {
-    /* 激活的标签页样式 */
+#phone_interface.show-task-app-content .phone-background,
+#phone_interface.show-task-app-content .phone-home-screen,
+#phone_interface.show-task-app-content .phone-dock {
+  display: none !important;
 }
 
-/* 任务列表 */
-.task-list {
-    /* 任务列表样式 */
+/* 应用模式下的body样式 */
+body.task-app-mode {
+  /* 可以添加全局样式调整 */
 }
 
-/* 任务项 */
-.task-item {
-    /* 任务项基础样式 */
+/* ===== 应用主容器 - 为phone-shell状态栏预留空间 ===== */
+.task-app {
+  /* 状态栏总高度 = 37px(状态栏) + 10px(顶部边距) = 47px */
+  padding-top: 47px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-.task-item.available {
-    /* 可接受任务样式 */
+/* ===== 状态栏兼容区域 ===== */
+.task-app-status-spacer {
+  height: 0;
+  /* 状态栏空间已在.task-app的padding-top中处理 */
 }
 
-.task-item.accepted {
-    /* 已接受任务样式 */
+/* ===== 应用头部样式 ===== */
+.task-app-header {
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #3b82f6 100%);
+  padding: 16px 20px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.task-item.completed {
-    /* 已完成任务样式 */
+/* 装饰性背景元素 */
+.task-app-header::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
-/* 任务标题 */
-.task-title {
-    /* 任务标题样式 */
+.task-app-header::after {
+  content: '';
+  position: absolute;
+  bottom: -32px;
+  left: -32px;
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
 }
 
-/* 任务描述 */
-.task-description {
-    /* 任务描述样式 */
+.task-app-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 10;
 }
 
-/* 任务奖励 */
-.task-reward {
-    /* 任务奖励样式 */
+.task-app-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* 任务状态 */
-.task-status {
-    /* 任务状态样式 */
+.task-app-title-indicator {
+  width: 8px;
+  height: 32px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 任务按钮 */
-.task-btn {
-    /* 任务按钮样式 */
-} 
+.task-app-title {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.task-app-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== 头部按钮样式 ===== */
+.task-app-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: auto;
+}
+
+.task-app-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.task-app-btn svg {
+  flex-shrink: 0;
+}
+
+/* 点数按钮特殊样式 */
+.task-app-points-btn {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.4);
+}
+
+.task-app-points-btn:hover {
+  background: rgba(255, 215, 0, 0.3);
+}
+
+/* ===== 标签页样式 ===== */
+.task-app-tabs {
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.task-app-tabs-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.task-app-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.task-app-tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-app-tab:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.task-app-tab.active {
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.task-app-tab-emoji {
+  font-size: 16px;
+}
+
+/* ===== 任务内容区域 ===== */
+.task-app-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+  height: 0; /* 关键：使flex子元素可滚动的技巧 */
+  min-height: 0;
+  -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
+}
+
+/* 自定义滚动条样式 */
+.task-app-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.task-app-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.task-app-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 2px;
+}
+
+.task-app-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* ===== 任务列表样式 ===== */
+.task-app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== 任务卡片样式 ===== */
+.task-app-task-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.task-app-task-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.task-app-task-card.clickable {
+  cursor: pointer;
+}
+
+.task-app-task-card.clickable:hover {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+  border-color: #e0e7ff;
+}
+
+/* ===== 任务卡片头部 ===== */
+.task-app-task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.task-app-task-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-app-task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.task-app-task-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.task-app-task-id {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+/* ===== 难度徽章样式 ===== */
+.task-app-difficulty-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.task-app-difficulty-badge.difficulty-easy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.task-app-difficulty-badge.difficulty-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.task-app-difficulty-badge.difficulty-hard {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===== 任务奖励样式 ===== */
+.task-app-task-reward {
+  text-align: right;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.task-app-task-reward.status-available {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.task-app-task-reward.status-accepted {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+}
+
+.task-app-task-reward.status-completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* ===== 任务描述样式 ===== */
+.task-app-task-description {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+/* ===== 任务底部样式 ===== */
+.task-app-task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.task-app-task-publisher {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.task-app-publisher-name {
+  font-weight: 500;
+  color: #475569;
+}
+
+.task-app-accept-hint {
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+/* ===== 空状态样式 ===== */
+.task-app-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+}
+
+.task-app-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.task-app-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.task-app-empty-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ===== 模态框样式 ===== */
+.task-app-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10005;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+
+.task-app-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 0;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===== 模态框头部 ===== */
+.task-app-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.task-app-modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.task-app-modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.task-app-modal-close:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* ===== 模态框内容 ===== */
+.task-app-modal-content {
+  padding: 20px 24px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.task-app-modal-task-info {
+  margin-bottom: 16px;
+}
+
+.task-app-modal-task-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.task-app-modal-task-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.task-app-modal-task-id {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.task-app-modal-task-description {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #6366f1;
+}
+
+.task-app-modal-task-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.task-app-modal-task-publisher {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.task-app-modal-publisher-name {
+  font-weight: 500;
+  color: #475569;
+}
+
+.task-app-modal-task-reward {
+  font-size: 18px;
+  font-weight: bold;
+  color: #6366f1;
+}
+
+/* ===== 模态框按钮 ===== */
+.task-app-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.task-app-modal-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.task-app-modal-btn-cancel {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.task-app-modal-btn-cancel:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.task-app-modal-btn-confirm {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.task-app-modal-btn-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.task-app-modal-btn-icon {
+  font-size: 14px;
+}
+
+/* ===== 响应式设计 ===== */
+
+/* 小屏幕适配 */
+@media (max-width: 480px) {
+  .task-app-header {
+    padding: 12px 16px;
+  }
+
+  .task-app-title {
+    font-size: 18px;
+  }
+
+  .task-app-header-buttons {
+    gap: 6px;
+  }
+
+  .task-app-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .task-app-tabs {
+    padding: 10px 12px;
+  }
+
+  .task-app-tab {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .task-app-content {
+    padding: 12px;
+  }
+
+  .task-app-task-card {
+    padding: 12px;
+  }
+
+  .task-app-task-title {
+    font-size: 15px;
+  }
+
+  .task-app-modal {
+    margin: 8px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .task-app-modal-header,
+  .task-app-modal-content,
+  .task-app-modal-actions {
+    padding: 16px 20px;
+  }
+}
+
+/* 极小屏幕适配 */
+@media (max-width: 320px) {
+  .task-app-header-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .task-app-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .task-app-task-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .task-app-task-reward {
+    align-self: flex-end;
+  }
+}
+
+/* 横屏模式适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .task-app {
+    padding-top: 35px; /* 减少状态栏空间 */
+  }
+
+  .task-app-header {
+    padding: 8px 16px;
+  }
+
+  .task-app-tabs {
+    padding: 8px 16px;
+  }
+
+  .task-app-content {
+    padding: 12px;
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (min-width: 768px) {
+  .task-app-task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2);
+  }
+
+  .task-app-modal {
+    max-width: 480px;
+  }
+}
+
+/* 深色模式支持（如果需要） */
+@media (prefers-color-scheme: dark) {
+  /* 可以在这里添加深色模式样式 */
+}
+
+/* ===== 动画和过渡效果 ===== */
+
+/* 任务卡片进入动画 */
+.task-app-task-card {
+  animation: taskCardFadeIn 0.3s ease forwards;
+}
+
+@keyframes taskCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 标签页切换动画 */
+.task-app-list {
+  animation: listFadeIn 0.2s ease;
+}
+
+@keyframes listFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 按钮点击反馈 */
+.task-app-btn:active,
+.task-app-tab:active,
+.task-app-modal-btn:active {
+  transform: scale(0.98);
+}
+
+/* 加载状态（如果需要） */
+.task-app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #64748b;
+}
+
+.task-app-loading::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
