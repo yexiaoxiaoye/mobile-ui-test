@@ -759,6 +759,13 @@
                 $('#phone_interface').addClass('show show-qq-app-content');
                 $('body').addClass('qq-app-mode');
                 console.log(`Set QQ content mode BEFORE calling show(), #phone_interface is now in QQ content mode.`);
+              } else if (appName === 'TaobaoApp') {
+                // 淘宝应用像QQ一样在手机界面内显示
+                $('#phone_interface').addClass('show show-taobao-app-content');
+                $('body').addClass('taobao-app-mode');
+                console.log(
+                  `Set Taobao content mode BEFORE calling show(), #phone_interface is now in Taobao content mode.`,
+                );
               } else if (appName === 'WallpaperApp') {
                 // 美化应用也保持手机界面显示，但不需要特殊的QQ模式
                 $('#phone_interface').addClass('show');
@@ -772,12 +779,12 @@
               // 调用应用的show方法
               appObject.show();
 
-              if (appName !== 'QQApp' && appName !== 'WallpaperApp') {
-                // For other apps (except QQ and Wallpaper), hide the entire phone_interface
+              if (appName !== 'QQApp' && appName !== 'TaobaoApp' && appName !== 'WallpaperApp') {
+                // For other apps (except QQ, Taobao and Wallpaper), hide the entire phone_interface
                 setTimeout(() => {
-                  // Ensure qq-mode is also removed if another app is opened.
-                  $('#phone_interface').removeClass('show show-qq-app-content');
-                  $('body').removeClass('qq-app-mode');
+                  // Ensure qq-mode and taobao-mode are also removed if another app is opened.
+                  $('#phone_interface').removeClass('show show-qq-app-content show-taobao-app-content');
+                  $('body').removeClass('qq-app-mode taobao-app-mode');
                   console.log(`Opened ${appName}, hid phone_interface.`);
                 }, 0);
               }
@@ -885,11 +892,12 @@
 
         $phoneInterface = $('#phone_interface'); // 重新获取元素引用
         if ($phoneInterface.length > 0) {
-          $phoneInterface.addClass('show').removeClass('show-qq-app-content');
-          $('body').removeClass('qq-app-mode');
+          $phoneInterface.addClass('show').removeClass('show-qq-app-content show-taobao-app-content');
+          $('body').removeClass('qq-app-mode taobao-app-mode');
 
-          // 强制隐藏QQ容器和美化应用容器，确保手机主页内容优先显示
+          // 强制隐藏所有应用容器，确保手机主页内容优先显示
           $('#phone_interface .qq-app-container').hide();
+          $('#phone_interface .taobao-app-container').hide();
           $('#phone_interface .wallpaper-app-container').hide();
 
           // 强制显示手机主屏幕的核心元素
@@ -982,7 +990,11 @@
       $('#user_avatar_dialog').remove(); // user avatar dialog 使用 remove 而不是 hide
 
       // 关闭淘宝应用界面
-      $('#taobao_interface').hide();
+      if (window.TaobaoApp && typeof window.TaobaoApp.hide === 'function') {
+        window.TaobaoApp.hide();
+      } else {
+        $('#phone_interface .taobao-app-container').hide();
+      }
 
       // 关闭任务应用界面
       $('#task_interface').hide();
@@ -1006,11 +1018,10 @@
       // 使用白名单方式，只删除手机插件创建的特定弹窗，避免误删SillyTavern原生组件
       this.removeMobilePluginDialogs();
 
-      // Reset phone_interface from QQ mode, but don't hide #phone_interface itself here.
-      // The decision to hide #phone_interface is usually up to the phone button or click-outside logic.
-      $('#phone_interface').removeClass('show-qq-app-content');
-      $('body').removeClass('qq-app-mode');
-      console.log('所有应用界面已关闭, show-qq-app-content class removed from phone_interface.');
+      // Reset phone_interface from all app modes
+      $('#phone_interface').removeClass('show-qq-app-content show-taobao-app-content');
+      $('body').removeClass('qq-app-mode taobao-app-mode');
+      console.log('所有应用界面已关闭, 所有应用模式已移除.');
     },
 
     // 检查是否有任何应用界面正在显示

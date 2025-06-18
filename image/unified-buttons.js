@@ -299,6 +299,42 @@ const UNIFIED_BUTTONS_CSS = `
   transform: scale(0.9);
   background: rgba(0, 122, 255, 0.2);
 }
+
+/* 淘宝应用小房子按钮 */
+.taobao-home-btn {
+  background: none;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.taobao-home-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.taobao-home-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.taobao-home-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.2);
+}
 `;
 
 // 注入CSS样式
@@ -353,6 +389,7 @@ window.UnifiedButtons = {
       '.friend-manager-home-btn',
       '.friend-manager .home-button',
       '.wallpaper-home-btn',
+      '.taobao-home-btn',
     ];
 
     homeButtonSelectors.forEach(selector => {
@@ -437,7 +474,7 @@ window.UnifiedButtons = {
               // 检查是否添加了新的按钮
               const homeButtons = node.querySelectorAll
                 ? node.querySelectorAll(
-                    '#home_btn_main, .home-btn, .chat-home-btn, .friend-manager-home-btn, .friend-manager .home-button, .wallpaper-home-btn',
+                    '#home_btn_main, .home-btn, .chat-home-btn, .friend-manager-home-btn, .friend-manager .home-button, .wallpaper-home-btn, .taobao-home-btn',
                   )
                 : [];
               const backButtons = node.querySelectorAll
@@ -454,7 +491,7 @@ window.UnifiedButtons = {
               if (
                 node.matches &&
                 (node.matches(
-                  '#home_btn_main, .home-btn, .chat-home-btn, .friend-manager-home-btn, .friend-manager .home-button, .wallpaper-home-btn',
+                  '#home_btn_main, .home-btn, .chat-home-btn, .friend-manager-home-btn, .friend-manager .home-button, .wallpaper-home-btn, .taobao-home-btn',
                 ) ||
                   node.matches(
                     '.back-to-main-list-btn, #friend_manager_back_btn, .friend-manager .back-button, .wallpaper-back-btn, .back',
