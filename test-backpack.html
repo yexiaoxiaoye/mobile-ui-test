@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>背包应用测试</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="styles/phone-shell.css" />
+    <link rel="stylesheet" href="styles/phone-interface.css" />
+    <link rel="stylesheet" href="styles/backpack-app.css" />
+  </head>
+  <body>
+    <div style="padding: 20px">
+      <h1>背包应用测试页面</h1>
+      <p>点击下面的按钮测试背包应用：</p>
+      <button
+        id="test-backpack-btn"
+        style="padding: 10px 20px; background: #f97316; color: white; border: none; border-radius: 8px; cursor: pointer"
+      >
+        测试背包应用
+      </button>
+      <button
+        id="test-phone-btn"
+        style="
+          padding: 10px 20px;
+          background: #3b82f6;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          margin-left: 10px;
+        "
+      >
+        显示手机界面
+      </button>
+
+      <div
+        style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6"
+      >
+        <h3 style="margin: 0 0 10px 0; color: #1e40af">测试说明</h3>
+        <ul style="margin: 0; color: #1e40af">
+          <li>点击背包界面内部（物品、分类标签等）应该<strong>不会</strong>返回主页</li>
+          <li>点击手机屏幕外部应该关闭手机并返回主页</li>
+          <li>点击小房子按钮应该返回手机主页</li>
+          <li>点击物品应该弹出使用对话框</li>
+          <li><strong>新功能</strong>：分类标签会根据实际物品类型动态生成</li>
+          <li><strong>新功能</strong>：每个分类标签显示该类别的物品数量</li>
+          <li><strong>新功能</strong>：物品图标会根据类型自动匹配emoji</li>
+          <li><strong>新功能</strong>：分类标签栏支持淘宝风格的丝滑拖拽条，可以拖拽或点击快速滚动</li>
+          <li><strong>新功能</strong>：支持"已使用"物品管理，使用过的物品会自动移到已使用栏</li>
+          <li><strong>新功能</strong>：使用物品页面集成在手机中，不再是弹窗形式</li>
+        </ul>
+      </div>
+
+      <div
+        style="margin-top: 15px; padding: 15px; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #22c55e"
+      >
+        <h3 style="margin: 0 0 10px 0; color: #15803d">测试数据说明</h3>
+        <p style="margin: 0; color: #15803d; font-size: 14px">
+          测试数据包含15个物品，分为13个类别。使用物品后会自动移到"已使用"标签页，
+          不再出现在普通物品列表中。点击物品会进入集成的使用页面，支持返回操作。
+        </p>
+      </div>
+    </div>
+
+    <!-- 模拟数据提取器 -->
+    <script>
+      window.HQDataExtractor = {
+        extractBackpackItems: async function () {
+          // 模拟异步数据加载
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          return [
+            {
+              name: '生命药水',
+              type: '药水',
+              count: 5,
+              description: '恢复大量生命值的神奇药水，在危险时刻能够挽救生命，是冒险者必备的物品',
+            },
+            {
+              name: '魔法护符',
+              type: '装备',
+              count: 1,
+              description: '蕴含古老魔法力量的护符，能够提升佩戴者的魔法防御力和法术威力',
+            },
+            {
+              name: '精钢矿石',
+              type: '材料',
+              count: 12,
+              description: '稀有的精钢矿石，质地坚硬，是锻造高级武器和防具的重要材料',
+            },
+            {
+              name: '时空卷轴',
+              type: '卷轴',
+              count: 1,
+              description: '记录着时空魔法的神秘卷轴，使用后可以短暂操控时间流速，极其珍贵',
+            },
+            {
+              name: '蜂蜜面包',
+              type: '食物',
+              count: 8,
+              description: '香甜可口的蜂蜜面包，能够快速恢复体力和精神，是长途旅行的理想食物',
+            },
+            {
+              name: '钢铁长剑',
+              type: '武器',
+              count: 1,
+              description: '锋利的钢铁长剑，是战士们的可靠伙伴，能够造成巨大的物理伤害',
+            },
+            {
+              name: '法力水晶',
+              type: '药水',
+              count: 15,
+              description: '纯净的法力水晶，能够快速恢复魔法值，是法师职业的重要补给品',
+            },
+            {
+              name: '龙鳞盾牌',
+              type: '防具',
+              count: 1,
+              description: '由真龙鳞片打造的传奇盾牌，拥有极强的防御力和魔法抗性',
+            },
+            {
+              name: '凤凰羽毛',
+              type: '材料',
+              count: 2,
+              description: '传说中凤凰的羽毛，蕴含重生之力，是炼制复活药剂的核心材料',
+            },
+            {
+              name: '智慧之书',
+              type: '书籍',
+              count: 1,
+              description: '记录着古老智慧的神秘书籍，阅读后能够永久提升智力属性',
+            },
+            {
+              name: '火焰法杖',
+              type: '法杖',
+              count: 1,
+              description: '蕴含火焰魔法的强大法杖，能够释放毁灭性的火球术',
+            },
+            {
+              name: '治疗药剂',
+              type: '药剂',
+              count: 20,
+              description: '快速恢复伤势的治疗药剂，冒险者的必备补给品',
+            },
+            {
+              name: '秘银矿石',
+              type: '矿石',
+              count: 8,
+              description: '稀有的秘银矿石，是制作高级装备的珍贵材料',
+            },
+            {
+              name: '隐身斗篷',
+              type: '斗篷',
+              count: 1,
+              description: '神奇的隐身斗篷，穿上后可以短暂隐身，避开敌人的视线',
+            },
+            {
+              name: '魔法符文',
+              type: '符文',
+              count: 5,
+              description: '刻有古老魔法的符文石，可以用来强化武器和装备',
+            },
+          ];
+        },
+      };
+    </script>
+
+    <!-- 加载应用脚本 -->
+    <script src="apps/phone-shell.js"></script>
+    <script src="apps/phone-interface.js"></script>
+    <script src="apps/backpack-app.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        // 初始化phone-shell系统
+        if (window.PhoneShell) {
+          window.PhoneShell.init();
+        }
+
+        // 初始化手机界面（仅按钮模式）
+        if (window.PhoneInterface) {
+          window.PhoneInterface.initButtonOnly();
+        }
+
+        // 初始化背包应用
+        if (window.BackpackApp) {
+          window.BackpackApp.init();
+        }
+
+        // 测试按钮事件
+        $('#test-backpack-btn').on('click', function () {
+          console.log('测试背包应用...');
+          if (window.BackpackApp) {
+            window.BackpackApp.show();
+          } else {
+            alert('背包应用未加载');
+          }
+        });
+
+        $('#test-phone-btn').on('click', function () {
+          console.log('显示手机界面...');
+          if (window.PhoneInterface) {
+            // 如果界面不存在，先创建
+            if ($('#phone_interface').length === 0) {
+              window.PhoneInterface.createInterfaceAndShow();
+            } else {
+              window.PhoneInterface.show();
+            }
+          } else {
+            alert('手机界面未加载');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

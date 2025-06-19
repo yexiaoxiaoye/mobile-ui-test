@@ -1,70 +1,885 @@
-/* 背包应用样式 */
+/* 背包应用样式 - 参考v0设计的iPhone风格 */
 
-/* 背包界面容器 */
-.backpack-interface {
-    /* 背包界面基础样式 */
+/* 背包应用容器 - 集成到主手机界面内 */
+.backpack-app-container {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border-radius: 50px;
+  overflow: hidden;
+  opacity: 1;
+  position: relative;
+  z-index: 30;
 }
 
-/* 背包物品网格 */
-.backpack-grid {
-    /* 物品网格样式 */
+.backpack-app-container > div,
+.backpack-app-container .backpack-app {
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
 }
 
-/* 背包物品槽 */
-.backpack-slot {
-    /* 物品槽基础样式 */
+/* 确保背包应用在主手机界面内正确显示 */
+#phone_interface.show-backpack-app-content .backpack-app-container {
+  display: block !important;
+  visibility: visible !important;
 }
 
-.backpack-slot.empty {
-    /* 空物品槽样式 */
+#phone_interface.show-backpack-app-content .phone-background,
+#phone_interface.show-backpack-app-content .phone-home-screen,
+#phone_interface.show-backpack-app-content .phone-dock {
+  display: none !important;
 }
 
-.backpack-slot.filled {
-    /* 有物品的槽样式 */
+/* 背包应用模式下的body样式 */
+body.backpack-app-mode {
+  /* 可以添加全局样式调整 */
 }
 
-/* 背包物品 */
-.backpack-item {
-    /* 物品基础样式 */
+/* 背包应用主容器 - 为phone-shell状态栏预留空间 */
+.backpack-app {
+  /* 状态栏总高度 = 37px(状态栏) + 10px(顶部边距) = 47px */
+  padding-top: 47px;
+  background: linear-gradient(135deg, #fdba74, #f97316, #ea580c);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
 
-.backpack-item.common {
-    /* 普通物品样式 */
+/* 背包头部区域 */
+.backpack-header {
+  padding: 16px;
+  background: linear-gradient(to right, #f97316, #dc2626, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.backpack-item.rare {
-    /* 稀有物品样式 */
+/* 装饰性背景元素 */
+.backpack-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(40px, -40px);
 }
 
-.backpack-item.epic {
-    /* 史诗物品样式 */
+.backpack-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-32px, 32px);
 }
 
-.backpack-item.legendary {
-    /* 传说物品样式 */
+.backpack-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 10;
 }
 
-/* 物品图标 */
+.backpack-header-indicator {
+  width: 8px;
+  height: 32px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.backpack-header-title {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.backpack-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 10;
+}
+
+.backpack-refresh-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.backpack-home-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.backpack-refresh-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.backpack-home-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.backpack-refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.backpack-home-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px) scale(1.05);
+}
+
+.backpack-refresh-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.backpack-home-btn:active {
+  transform: translateY(0) scale(0.9);
+}
+
+/* 状态标签页区域 */
+.backpack-status-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+  padding: 0 16px;
+}
+
+.backpack-status-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  color: #6b7280;
+}
+
+.backpack-status-tab.active {
+  color: #f97316;
+}
+
+.backpack-status-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(to right, #f97316, #dc2626);
+  border-radius: 2px 2px 0 0;
+}
+
+.backpack-status-tab-emoji {
+  font-size: 16px;
+}
+
+/* 分类标签区域 */
+.backpack-categories {
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+/* 隐藏分类标签（在已使用标签页时） */
+.backpack-categories.hidden {
+  display: none;
+}
+
+.backpack-category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.backpack-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* 分类标签拖拽条 - 参考淘宝应用实现 */
+.backpack-category-scrollbar {
+  height: 4px;
+  background: #f0f0f0;
+  margin: 0 16px 8px 16px;
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.backpack-category-scrollbar-thumb {
+  height: 100%;
+  background: linear-gradient(90deg, #f97316, #dc2626);
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+  transition: left 0.2s ease;
+  min-width: 20px;
+  cursor: grab;
+}
+
+.backpack-category-scrollbar-thumb:active,
+.backpack-category-scrollbar-thumb.dragging {
+  cursor: grabbing;
+}
+
+/* 拖拽条隐藏状态 */
+.backpack-category-scrollbar:not(:hover) {
+  opacity: 0.6;
+}
+
+.backpack-category-scrollbar:hover {
+  opacity: 1;
+}
+
+.backpack-category-tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.backpack-category-tab.active {
+  background: linear-gradient(to right, #f97316, #dc2626);
+  color: white;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+.backpack-category-tab:not(.active) {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.backpack-category-tab:not(.active):hover {
+  background: #e5e7eb;
+}
+
+/* 分类数量标签 */
+.backpack-category-count {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+  font-weight: normal;
+  min-width: 16px;
+  text-align: center;
+  display: inline-block;
+}
+
+.backpack-category-tab.active .backpack-category-count {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.backpack-category-tab:not(.active) .backpack-category-count {
+  background: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
+
+/* 杂物分类样式 */
+.backpack-item-category.misc {
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+/* 物品列表区域 */
+.backpack-items-container {
+  flex: 1;
+  overflow-y: auto;
+  background: #f9fafb;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(249, 115, 22, 0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+  /* 确保滚动区域内的点击不会冒泡 */
+  position: relative;
+  z-index: 1;
+}
+
+.backpack-items-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.backpack-items-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.backpack-items-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #fdba74, #f97316);
+  border-radius: 2px;
+  min-height: 20px;
+  max-height: 60px;
+}
+
+.backpack-items-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #f97316, #ea580c);
+}
+
+.backpack-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 物品卡片 */
+.backpack-item-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.backpack-item-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.backpack-item-content {
+  display: flex;
+  padding: 12px;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* 物品图标区域 */
 .backpack-item-icon {
-    /* 物品图标样式 */
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
 }
 
-/* 物品名称 */
+/* 物品信息区域 */
+.backpack-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .backpack-item-name {
-    /* 物品名称样式 */
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 物品数量 */
-.backpack-item-count {
-    /* 物品数量样式 */
-}
-
-/* 物品描述 */
 .backpack-item-description {
-    /* 物品描述样式 */
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* 背包分类标签 */
-.backpack-category {
-    /* 分类标签样式 */
-} 
+.backpack-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.backpack-item-category {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.backpack-item-category.consumable {
+  color: #059669;
+  background: #d1fae5;
+}
+
+.backpack-item-category.equipment {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.backpack-item-category.material {
+  color: #d97706;
+  background: #fed7aa;
+}
+
+.backpack-item-category.special {
+  color: #7c3aed;
+  background: #e9d5ff;
+}
+
+.backpack-item-category.food {
+  color: #dc2626;
+  background: #fecaca;
+}
+
+.backpack-item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.backpack-item-quantity-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f97316;
+}
+
+/* 空状态 */
+.backpack-empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: #9ca3af;
+}
+
+.backpack-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.backpack-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #6b7280;
+}
+
+.backpack-empty-description {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+/* 使用物品对话框样式 */
+.backpack-use-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10005;
+  padding: 16px;
+}
+
+.backpack-use-dialog-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.backpack-use-dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.backpack-use-dialog-item {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.backpack-use-dialog-item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f97316;
+  margin-bottom: 8px;
+}
+
+.backpack-use-dialog-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.backpack-use-dialog-item-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.backpack-use-dialog-form {
+  margin-bottom: 20px;
+}
+
+.backpack-use-dialog-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.backpack-use-dialog-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.backpack-use-dialog-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.backpack-use-dialog-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.backpack-use-dialog-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.backpack-use-dialog-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.backpack-use-dialog-btn-cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.backpack-use-dialog-btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.backpack-use-dialog-btn-confirm {
+  background: linear-gradient(to right, #f97316, #dc2626);
+  color: white;
+}
+
+.backpack-use-dialog-btn-confirm:hover {
+  background: linear-gradient(to right, #ea580c, #b91c1c);
+}
+
+.backpack-use-dialog-btn-confirm:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* 使用物品页面样式 */
+.backpack-use-item-page {
+  flex: 1;
+  padding: 20px;
+  background: #f9fafb;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 返回按钮 */
+.backpack-back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.backpack-back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 物品信息卡片 */
+.backpack-use-item-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.backpack-use-item-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  flex-shrink: 0;
+}
+
+.backpack-use-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.backpack-use-item-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+}
+
+.backpack-use-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.backpack-use-item-count {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.backpack-use-item-count strong {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.backpack-use-item-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 使用表单 */
+.backpack-use-item-form {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.backpack-use-item-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.backpack-use-item-textarea {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+  background: white;
+  color: #1f2937;
+}
+
+.backpack-use-item-textarea:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.backpack-use-item-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+/* 操作按钮 */
+.backpack-use-item-buttons {
+  display: flex;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.backpack-use-item-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.backpack-use-item-btn-cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.backpack-use-item-btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.backpack-use-item-btn-confirm {
+  background: linear-gradient(to right, #f97316, #dc2626);
+  color: white;
+}
+
+.backpack-use-item-btn-confirm:hover:not(:disabled) {
+  background: linear-gradient(to right, #ea580c, #b91c1c);
+  transform: translateY(-1px);
+}
+
+.backpack-use-item-btn-confirm:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 已使用物品卡片样式 */
+.used-item-card {
+  opacity: 0.8;
+  position: relative;
+}
+
+.used-item-card::after {
+  content: '✅';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 20px;
+}
+
+.backpack-item-used-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.backpack-item-used-date-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+}

@@ -154,6 +154,39 @@
         body.wallpaper-app-mode #wallpaper_interface {
           display: none !important;
         }
+
+        /* 背包应用容器 - 默认隐藏 */
+        .backpack-app-container {
+          display: none !important;
+        }
+
+        /* 背包应用容器 inside phone screen - 只在背包应用激活时显示 */
+        #phone_interface.show-backpack-app-content .phone-screen .backpack-app-container {
+          display: block !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 50px !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          z-index: 10 !important;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Hide other phone elements when backpack app is active */
+        #phone_interface.show-backpack-app-content .phone-home-screen,
+        #phone_interface.show-backpack-app-content .phone-dock {
+          display: none !important;
+        }
+
+        /* Hide the original backpack interface when in phone mode */
+        body.backpack-app-mode #backpack_interface {
+          display: none !important;
+        }
       `;
       document.head.appendChild(styleElement);
     },
@@ -773,6 +806,13 @@
                 console.log(
                   `Set Task content mode BEFORE calling show(), #phone_interface is now in Task content mode.`,
                 );
+              } else if (appName === 'BackpackApp') {
+                // 背包应用像QQ一样在手机界面内显示
+                $('#phone_interface').addClass('show show-backpack-app-content');
+                $('body').addClass('backpack-app-mode');
+                console.log(
+                  `Set Backpack content mode BEFORE calling show(), #phone_interface is now in Backpack content mode.`,
+                );
               } else if (appName === 'WallpaperApp') {
                 // 美化应用也保持手机界面显示，但不需要特殊的QQ模式
                 $('#phone_interface').addClass('show');
@@ -790,15 +830,16 @@
                 appName !== 'QQApp' &&
                 appName !== 'TaobaoApp' &&
                 appName !== 'TaskApp' &&
+                appName !== 'BackpackApp' &&
                 appName !== 'WallpaperApp'
               ) {
-                // For other apps (except QQ, Taobao, Task and Wallpaper), hide the entire phone_interface
+                // For other apps (except QQ, Taobao, Task, Backpack and Wallpaper), hide the entire phone_interface
                 setTimeout(() => {
                   // Ensure all app modes are also removed if another app is opened.
                   $('#phone_interface').removeClass(
-                    'show show-qq-app-content show-taobao-app-content show-task-app-content',
+                    'show show-qq-app-content show-taobao-app-content show-task-app-content show-backpack-app-content',
                   );
-                  $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
+                  $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode backpack-app-mode');
                   console.log(`Opened ${appName}, hid phone_interface.`);
                 }, 0);
               }
@@ -908,13 +949,14 @@
         if ($phoneInterface.length > 0) {
           $phoneInterface
             .addClass('show')
-            .removeClass('show-qq-app-content show-taobao-app-content show-task-app-content');
-          $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
+            .removeClass('show-qq-app-content show-taobao-app-content show-task-app-content show-backpack-app-content');
+          $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode backpack-app-mode');
 
           // 强制隐藏所有应用容器，确保手机主页内容优先显示
           $('#phone_interface .qq-app-container').hide();
           $('#phone_interface .taobao-app-container').hide();
           $('#phone_interface .task-app-container').hide();
+          $('#phone_interface .backpack-app-container').hide();
           $('#phone_interface .wallpaper-app-container').hide();
 
           // 强制显示手机主屏幕的核心元素
@@ -1023,7 +1065,12 @@
       $('#accept_task_dialog').remove(); // 任务接受弹窗
 
       // 关闭背包应用界面
-      $('#backpack_interface').hide();
+      if (window.BackpackApp && typeof window.BackpackApp.hide === 'function') {
+        window.BackpackApp.hide();
+      } else {
+        $('#phone_interface .backpack-app-container').hide();
+        $('#backpack_interface').hide(); // 兼容旧版本
+      }
       $('#use_item_dialog').remove(); // 背包使用物品弹窗
 
       // 关闭抽卡应用界面
@@ -1041,8 +1088,10 @@
       this.removeMobilePluginDialogs();
 
       // Reset phone_interface from all app modes
-      $('#phone_interface').removeClass('show-qq-app-content show-taobao-app-content show-task-app-content');
-      $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode');
+      $('#phone_interface').removeClass(
+        'show-qq-app-content show-taobao-app-content show-task-app-content show-backpack-app-content',
+      );
+      $('body').removeClass('qq-app-mode taobao-app-mode task-app-mode backpack-app-mode');
       console.log('所有应用界面已关闭, 所有应用模式已移除.');
     },
 
@@ -1068,6 +1117,7 @@
         $('#taobao_interface').is(':visible') ||
         $('#task_interface').is(':visible') ||
         $('#phone_interface .task-app-container').is(':visible') ||
+        $('#phone_interface .backpack-app-container').is(':visible') ||
         $('#backpack_interface').is(':visible') ||
         $('#chouka_interface').is(':visible') ||
         $('#wallpaper_interface').is(':visible')
@@ -1107,8 +1157,11 @@
       $('#chouka_interface').hide();
       $('#wallpaper_interface').hide();
 
-      // 清理QQ应用容器和美化应用容器
+      // 清理所有应用容器
       $('#phone_interface .qq-app-container').empty().hide();
+      $('#phone_interface .taobao-app-container').empty().hide();
+      $('#phone_interface .task-app-container').empty().hide();
+      $('#phone_interface .backpack-app-container').empty().hide();
       $('#phone_interface .wallpaper-app-container').empty().hide();
 
       // 使用安全的弹窗清理
