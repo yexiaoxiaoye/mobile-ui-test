@@ -460,6 +460,51 @@
       });
     },
 
+    // 提取物品使用记录
+    extractItemUsageData: async function () {
+      const messages = await this.parseChatMessages();
+
+      // 物品使用格式: [物品使用|物品名称:xxx|使用数量:x]
+      const itemUsageRegex = /\[物品使用\|物品名称:(.*?)\|使用数量:(\d+)\]/gs;
+      const usageRecords = this.extractDataWithRegex(messages, itemUsageRegex, '物品使用');
+
+      // 处理使用记录数据
+      const usageData = usageRecords.map(record => {
+        const [itemName, quantity] = record.groups;
+        return {
+          itemName: itemName.trim(),
+          quantity: parseInt(quantity) || 1,
+          messageIndex: record.messageIndex,
+          timestamp: record.timestamp,
+          sender: record.sender,
+          senderName: record.senderName,
+        };
+      });
+
+      // 按物品名称汇总使用数量
+      const usageSummary = {};
+      usageData.forEach(usage => {
+        if (!usageSummary[usage.itemName]) {
+          usageSummary[usage.itemName] = {
+            itemName: usage.itemName,
+            totalUsed: 0,
+            usageHistory: [],
+          };
+        }
+        usageSummary[usage.itemName].totalUsed += usage.quantity;
+        usageSummary[usage.itemName].usageHistory.push(usage);
+      });
+
+      console.log(
+        `📊 物品使用数据提取完成: 找到${usageData.length}条使用记录，涉及${Object.keys(usageSummary).length}种物品`,
+      );
+
+      return {
+        all: usageData,
+        summary: usageSummary,
+      };
+    },
+
     // 提取淘宝消费记录
     extractTaobaoExpenses: async function () {
       const messages = await this.parseChatMessages();

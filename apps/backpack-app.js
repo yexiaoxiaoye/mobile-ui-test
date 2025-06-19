@@ -234,17 +234,59 @@
       console.log('🔄 正在加载背包数据...');
 
       try {
+        // 提取原始物品数据
         const items = await window['HQDataExtractor'].extractBackpackItems();
-        console.log('🎒 提取到的物品数据:', items);
+        console.log('🎒 提取到的原始物品数据:', items);
 
-        // 存储所有物品数据
-        this.allItems = items;
+        // 提取物品使用记录
+        const usageData = await this.extractItemUsageFromChat();
+        console.log('📊 提取到的使用记录:', usageData);
 
-        // 分析已使用物品状态
-        this.analyzeUsedItemsFromChat();
+        // 计算实际剩余数量
+        this.allItems = items.map(item => {
+          const originalCount = parseInt(item.count) || 0;
+          const usedCount = usageData.summary[item.name] ? usageData.summary[item.name].totalUsed : 0;
+          const remainingCount = Math.max(0, originalCount - usedCount);
+
+          console.log(`📦 物品 "${item.name}": 原始${originalCount} - 已使用${usedCount} = 剩余${remainingCount}`);
+
+          return {
+            ...item,
+            count: remainingCount,
+            originalCount: originalCount,
+            usedCount: usedCount,
+          };
+        });
+
+        // 更新已使用物品列表
+        this.usedItems = Object.values(usageData.summary).map(usage => {
+          const originalItem = items.find(item => item.name === usage.itemName);
+          return {
+            name: usage.itemName,
+            type: originalItem ? originalItem.type : '未知',
+            description: originalItem ? originalItem.description : '已使用的物品',
+            usedQuantity: usage.totalUsed,
+            usageHistory: usage.usageHistory,
+            lastUsedAt:
+              usage.usageHistory.length > 0
+                ? usage.usageHistory[usage.usageHistory.length - 1].timestamp
+                : new Date().toISOString(),
+            originalItem: originalItem,
+          };
+        });
 
         // 分析物品类别
-        this.analyzeItemCategories(items);
+        this.analyzeItemCategories(this.allItems);
+
+        // 确保默认选择物品标签页
+        this.selectedTab = 'items';
+
+        // 更新状态标签页样式
+        $('.backpack-status-tab').removeClass('active');
+        $('.backpack-status-tab[data-tab="items"]').addClass('active');
+
+        // 显示分类标签区域
+        $('#backpack_categories_container').removeClass('hidden');
 
         // 重新生成分类标签
         this.updateCategoryTabs();
@@ -272,6 +314,89 @@
       this.itemCategories = Array.from(categories);
       console.log('🏷️ 分析出的物品类别:', this.itemCategories);
       return this.itemCategories;
+    },
+
+    // 提取物品使用记录（参考任务应用的点数计算方式）
+    extractItemUsageFromChat: async function () {
+      try {
+        // 检查HQDataExtractor是否可用
+        if (!window['HQDataExtractor'] || typeof window['HQDataExtractor'].extractItemUsageData !== 'function') {
+          console.warn('背包应用: HQDataExtractor未加载或不支持物品使用数据提取，使用DOM扫描方式');
+          return this.extractItemUsageFromDOM();
+        }
+
+        // 使用HQDataExtractor从SillyTavern上下文获取物品使用数据
+        const usageData = await window['HQDataExtractor'].extractItemUsageData();
+
+        if (usageData && usageData.summary) {
+          console.log(`📊 背包应用使用记录计算: 找到${Object.keys(usageData.summary).length}种物品的使用记录`);
+          return usageData;
+        } else {
+          console.log('背包应用: 未找到物品使用记录');
+          return { all: [], summary: {} };
+        }
+      } catch (error) {
+        console.error('背包应用提取使用记录时出错:', error);
+        console.log('背包应用: 尝试使用DOM扫描方式作为备用方案');
+        return this.extractItemUsageFromDOM();
+      }
+    },
+
+    // DOM扫描方式提取物品使用记录（备用方案）
+    extractItemUsageFromDOM: function () {
+      try {
+        // 获取所有聊天消息文本
+        const $messageElements = $('body').find('.mes_text');
+        const usageRecords = [];
+        const usageSummary = {};
+
+        if ($messageElements.length > 0) {
+          $messageElements.each(function () {
+            try {
+              const messageText = $(this).text();
+
+              // 查找物品使用标记格式: [物品使用|物品名称:xxx|使用数量:x]
+              const usageRegex = /\[物品使用\|物品名称:(.*?)\|使用数量:(\d+)\]/g;
+              let usageMatch;
+              while ((usageMatch = usageRegex.exec(messageText)) !== null) {
+                const itemName = usageMatch[1].trim();
+                const quantity = parseInt(usageMatch[2]) || 1;
+
+                const record = {
+                  itemName: itemName,
+                  quantity: quantity,
+                  timestamp: new Date().toISOString(),
+                };
+
+                usageRecords.push(record);
+
+                // 汇总使用数量
+                if (!usageSummary[itemName]) {
+                  usageSummary[itemName] = {
+                    itemName: itemName,
+                    totalUsed: 0,
+                    usageHistory: [],
+                  };
+                }
+                usageSummary[itemName].totalUsed += quantity;
+                usageSummary[itemName].usageHistory.push(record);
+
+                console.log(`📝 发现物品使用记录: ${itemName} x${quantity}`);
+              }
+            } catch (error) {
+              console.error('解析消息时出错:', error);
+            }
+          });
+        }
+
+        console.log(
+          `📊 DOM扫描完成: 找到${usageRecords.length}条使用记录，涉及${Object.keys(usageSummary).length}种物品`,
+        );
+        return { all: usageRecords, summary: usageSummary };
+      } catch (error) {
+        console.error('DOM扫描提取使用记录时出错:', error);
+        return { all: [], summary: {} };
+      }
     },
 
     // 分析聊天记录中的已使用物品（参考任务应用的实现）
@@ -375,9 +500,8 @@
         .map((category, index) => {
           const isActive = category === this.selectedCategory ? 'active' : '';
 
-          // 计算每个分类的物品数量（排除已使用的物品）
-          const usedItemNames = new Set(this.usedItems.map(item => item.name));
-          const availableItems = this.allItems.filter(item => !usedItemNames.has(item.name));
+          // 计算每个分类的物品数量（只计算数量大于0的物品）
+          const availableItems = this.allItems.filter(item => item.count > 0);
           const count =
             category === '全部' ? availableItems.length : availableItems.filter(item => item.type === category).length;
 
@@ -461,8 +585,12 @@
     createUsedItemCard: function (item) {
       const categoryClass = this.getCategoryClass(item.type);
       const categoryEmoji = this.getCategoryEmoji(item.type);
-      const usedDate = new Date(item.lastUsedAt || item.usedAt).toLocaleDateString();
       const usedQuantity = item.usedQuantity || 1;
+
+      // 清理物品名称，移除可能包含的数量信息
+      let cleanItemName = item.name;
+      // 移除名称中的数量前缀（如"2个"、"3个"等）
+      cleanItemName = cleanItemName.replace(/^\d+个\s*/, '');
 
       const $itemCard = $(`
         <div class="backpack-item-card used-item-card">
@@ -471,7 +599,7 @@
               ${categoryEmoji}
             </div>
             <div class="backpack-item-info">
-              <div class="backpack-item-name">${item.name}</div>
+              <div class="backpack-item-name">${cleanItemName}</div>
               <div class="backpack-item-description">${item.description}</div>
               <div class="backpack-item-meta">
                 <span class="backpack-item-category ${categoryClass}">${item.type}</span>
@@ -479,10 +607,6 @@
                   <div class="backpack-item-used-quantity">
                     <span>已使用:</span>
                     <span class="backpack-item-used-quantity-value">${usedQuantity}个</span>
-                  </div>
-                  <div class="backpack-item-used-date">
-                    <span>最后使用:</span>
-                    <span class="backpack-item-used-date-value">${usedDate}</span>
                   </div>
                 </div>
               </div>
@@ -681,13 +805,10 @@
       });
     },
 
-    // 过滤物品（根据实际的物品类型进行精确匹配，排除已使用的物品）
+    // 过滤物品（根据实际的物品类型进行精确匹配，只排除数量为0的物品）
     filterItems: function (items) {
-      // 获取已使用物品的名称集合
-      const usedItemNames = new Set(this.usedItems.map(item => item.name));
-
-      // 先过滤掉已使用的物品
-      let availableItems = items.filter(item => !usedItemNames.has(item.name));
+      // 先过滤掉数量为0或负数的物品
+      let availableItems = items.filter(item => item.count > 0);
 
       // 再按分类过滤
       if (this.selectedCategory === '全部') {
@@ -1160,8 +1281,13 @@
             if (!isDisabled && !$sendButton.hasClass('disabled') && currentValue === '') {
               // 构造消息文本，包含数量信息
               const quantityText = quantity > 1 ? `${quantity}个` : '';
-              const message = `对${target}使用了${quantityText}${item.name}`;
-              $originalInput.val(message);
+              const useMessage = `对${target}使用了${quantityText}${item.name}`;
+
+              // 添加标准格式的使用记录标记
+              const usageRecord = `[物品使用|物品名称:${item.name}|使用数量:${quantity}]`;
+              const fullMessage = `${useMessage}\n${usageRecord}`;
+
+              $originalInput.val(fullMessage);
 
               // 触发输入事件
               $originalInput.trigger('input');
@@ -1169,7 +1295,7 @@
               setTimeout(() => {
                 if (!$sendButton.hasClass('disabled')) {
                   $sendButton.click();
-                  console.log('物品使用消息已发送');
+                  console.log('物品使用消息和使用记录已发送');
                 }
               }, 200);
 
@@ -1204,19 +1330,26 @@
     processItemUsage: function (item, usedQuantity) {
       console.log(`📦 处理物品使用: ${item.name}, 使用数量: ${usedQuantity}, 原有数量: ${item.count}`);
 
-      // 减少物品数量
-      const remainingCount = item.count - usedQuantity;
+      // 在allItems数组中找到对应的物品并更新数量
+      const itemInArray = this.allItems.find(arrayItem => arrayItem.name === item.name);
+      if (itemInArray) {
+        // 减少物品数量
+        const remainingCount = itemInArray.count - usedQuantity;
+        itemInArray.count = Math.max(0, remainingCount); // 确保数量不会变成负数
 
-      if (remainingCount <= 0) {
-        // 物品完全用完，移到已使用列表
-        this.addToUsedItems(item, usedQuantity);
-        console.log(`✅ 物品 "${item.name}" 已完全使用，移到已使用列表`);
+        console.log(`📝 更新物品 "${item.name}" 数量: ${item.count} -> ${itemInArray.count}`);
+
+        if (remainingCount <= 0) {
+          console.log(`✅ 物品 "${item.name}" 已完全使用，数量归零`);
+        } else {
+          console.log(`📝 物品 "${item.name}" 剩余数量: ${remainingCount}`);
+        }
       } else {
-        // 物品还有剩余，更新数量并记录使用
-        item.count = remainingCount;
-        this.addToUsedItems(item, usedQuantity);
-        console.log(`📝 物品 "${item.name}" 剩余数量: ${remainingCount}`);
+        console.warn(`⚠️ 在allItems数组中未找到物品: ${item.name}`);
       }
+
+      // 记录使用历史（无论是否用完都要记录）
+      this.addToUsedItems(item, usedQuantity);
 
       // 刷新界面显示
       this.refreshCurrentView();

@@ -51,6 +51,13 @@
           <li><strong>新功能</strong>：使用物品页面集成在手机中，不再是弹窗形式</li>
           <li><strong>新功能</strong>：支持选择使用物品数量，精确管理物品库存</li>
           <li><strong>修复</strong>：修复了背包应用无法正确加载的问题</li>
+          <li><strong>修复</strong>：修复了物品数量管理问题，现在可以正确处理部分使用</li>
+          <li><strong>修复</strong>：修复了物品栏数量不减少的问题</li>
+          <li><strong>修复</strong>：修复了已使用栏数量显示错误的问题</li>
+          <li><strong>修复</strong>：修复了初次进入背包显示错误标签页的问题</li>
+          <li><strong>重大更新</strong>：实现了基于聊天记录的数据持久化，参考任务应用的点数计算方式</li>
+          <li><strong>新功能</strong>：物品使用后会在聊天记录中留下标准格式的使用记录</li>
+          <li><strong>修复</strong>：修复了重新打开背包时数量恢复原状的问题</li>
         </ul>
       </div>
 
@@ -59,8 +66,9 @@
       >
         <h3 style="margin: 0 0 10px 0; color: #15803d">测试数据说明</h3>
         <p style="margin: 0; color: #15803d; font-size: 14px">
-          测试数据包含15个物品，分为13个类别。现在支持精确的数量管理：
-          可以选择使用几个物品，只有用完的物品才会移到"已使用"标签页， 剩余物品会保留在物品栏中并正确显示数量。
+          测试数据包含15个物品，分为13个类别。现在支持基于聊天记录的数据持久化：
+          使用物品后会在聊天记录中生成标准格式的使用记录，重新打开背包时会根据这些记录
+          正确计算剩余数量，实现真正的数据持久化。
         </p>
       </div>
     </div>
@@ -164,6 +172,59 @@
               description: '刻有古老魔法的符文石，可以用来强化武器和装备',
             },
           ];
+        },
+
+        // 提取物品使用记录（模拟）
+        extractItemUsageData: async function () {
+          // 模拟异步数据加载
+          await new Promise(resolve => setTimeout(resolve, 300));
+
+          // 模拟从DOM扫描物品使用记录
+          const usageRecords = [];
+          const usageSummary = {};
+
+          // 扫描页面中的模拟使用记录
+          const $messageElements = $('body').find('.mes_text, .test-message');
+
+          $messageElements.each(function () {
+            const messageText = $(this).text();
+
+            // 查找物品使用标记格式: [物品使用|物品名称:xxx|使用数量:x]
+            const usageRegex = /\[物品使用\|物品名称:(.*?)\|使用数量:(\d+)\]/g;
+            let usageMatch;
+            while ((usageMatch = usageRegex.exec(messageText)) !== null) {
+              const itemName = usageMatch[1].trim();
+              const quantity = parseInt(usageMatch[2]) || 1;
+
+              const record = {
+                itemName: itemName,
+                quantity: quantity,
+                timestamp: new Date().toISOString(),
+              };
+
+              usageRecords.push(record);
+
+              // 汇总使用数量
+              if (!usageSummary[itemName]) {
+                usageSummary[itemName] = {
+                  itemName: itemName,
+                  totalUsed: 0,
+                  usageHistory: [],
+                };
+              }
+              usageSummary[itemName].totalUsed += quantity;
+              usageSummary[itemName].usageHistory.push(record);
+            }
+          });
+
+          console.log(
+            `📊 模拟物品使用数据: 找到${usageRecords.length}条使用记录，涉及${Object.keys(usageSummary).length}种物品`,
+          );
+
+          return {
+            all: usageRecords,
+            summary: usageSummary,
+          };
         },
       };
     </script>
