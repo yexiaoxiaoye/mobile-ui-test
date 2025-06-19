@@ -770,6 +770,69 @@ body.backpack-app-mode {
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 数量选择区域 */
+.backpack-use-item-quantity-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backpack-use-item-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+}
+
+.backpack-quantity-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #f97316;
+  background: white;
+  color: #f97316;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backpack-quantity-btn:hover {
+  background: #f97316;
+  color: white;
+  transform: scale(1.05);
+}
+
+.backpack-quantity-btn:active {
+  transform: scale(0.95);
+}
+
+.backpack-quantity-input {
+  width: 80px;
+  height: 40px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #1f2937;
+  outline: none;
+}
+
+/* 使用目标区域 */
+.backpack-use-item-target-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .backpack-use-item-label {
@@ -870,12 +933,25 @@ body.backpack-app-mode {
   font-size: 20px;
 }
 
+.backpack-item-used-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.backpack-item-used-quantity,
 .backpack-item-used-date {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
   color: #6b7280;
+}
+
+.backpack-item-used-quantity-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f97316;
 }
 
 .backpack-item-used-date-value {

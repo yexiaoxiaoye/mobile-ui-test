@@ -450,6 +450,15 @@
                             <!-- QQ应用容器 - 当QQ应用激活时显示 -->
                             <div class="qq-app-container"></div>
 
+                            <!-- 淘宝应用容器 - 当淘宝应用激活时显示 -->
+                            <div class="taobao-app-container"></div>
+
+                            <!-- 任务应用容器 - 当任务应用激活时显示 -->
+                            <div class="task-app-container"></div>
+
+                            <!-- 背包应用容器 - 当背包应用激活时显示 -->
+                            <div class="backpack-app-container"></div>
+
                             <!-- 美化应用容器 - 当美化应用激活时显示 -->
                             <div class="wallpaper-app-container"></div>
 

@@ -461,7 +461,8 @@
     createUsedItemCard: function (item) {
       const categoryClass = this.getCategoryClass(item.type);
       const categoryEmoji = this.getCategoryEmoji(item.type);
-      const usedDate = new Date(item.usedAt).toLocaleDateString();
+      const usedDate = new Date(item.lastUsedAt || item.usedAt).toLocaleDateString();
+      const usedQuantity = item.usedQuantity || 1;
 
       const $itemCard = $(`
         <div class="backpack-item-card used-item-card">
@@ -474,9 +475,15 @@
               <div class="backpack-item-description">${item.description}</div>
               <div class="backpack-item-meta">
                 <span class="backpack-item-category ${categoryClass}">${item.type}</span>
-                <div class="backpack-item-used-date">
-                  <span>使用时间:</span>
-                  <span class="backpack-item-used-date-value">${usedDate}</span>
+                <div class="backpack-item-used-info">
+                  <div class="backpack-item-used-quantity">
+                    <span>已使用:</span>
+                    <span class="backpack-item-used-quantity-value">${usedQuantity}个</span>
+                  </div>
+                  <div class="backpack-item-used-date">
+                    <span>最后使用:</span>
+                    <span class="backpack-item-used-date-value">${usedDate}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -910,14 +917,29 @@
 
             <!-- 使用表单 -->
             <div class="backpack-use-item-form">
-              <label class="backpack-use-item-label">使用目标及方法</label>
-              <textarea
-                id="use_target_input"
-                class="backpack-use-item-textarea"
-                placeholder="请输入使用目标以及使用方法..."
-                maxlength="300"
-                rows="4"></textarea>
-              <div class="backpack-use-item-hint">例如：对小明使用、对自己使用、对敌人使用等</div>
+              <!-- 使用数量选择 -->
+              <div class="backpack-use-item-quantity-section">
+                <label class="backpack-use-item-label">使用数量</label>
+                <div class="backpack-use-item-quantity-controls">
+                  <button type="button" class="backpack-quantity-btn" id="decrease_quantity">-</button>
+                  <input type="number" id="use_quantity_input" class="backpack-quantity-input"
+                         value="1" min="1" max="${item.count}" readonly>
+                  <button type="button" class="backpack-quantity-btn" id="increase_quantity">+</button>
+                </div>
+                <div class="backpack-use-item-hint">可用数量: ${item.count}</div>
+              </div>
+
+              <!-- 使用目标 -->
+              <div class="backpack-use-item-target-section">
+                <label class="backpack-use-item-label">使用目标及方法</label>
+                <textarea
+                  id="use_target_input"
+                  class="backpack-use-item-textarea"
+                  placeholder="请输入使用目标以及使用方法..."
+                  maxlength="300"
+                  rows="4"></textarea>
+                <div class="backpack-use-item-hint">例如：对小明使用、对自己使用、对敌人使用等</div>
+              </div>
             </div>
 
             <!-- 操作按钮 -->
@@ -945,13 +967,38 @@
         $('#use_target_input').focus();
       }, 100);
 
+      // 绑定数量控制按钮事件
+      $('#decrease_quantity')
+        .off('click')
+        .on('click', function () {
+          const $quantityInput = $('#use_quantity_input');
+          const currentValue = parseInt($quantityInput.val()) || 1;
+          const minValue = parseInt($quantityInput.attr('min')) || 1;
+          if (currentValue > minValue) {
+            $quantityInput.val(currentValue - 1);
+          }
+        });
+
+      $('#increase_quantity')
+        .off('click')
+        .on('click', function () {
+          const $quantityInput = $('#use_quantity_input');
+          const currentValue = parseInt($quantityInput.val()) || 1;
+          const maxValue = parseInt($quantityInput.attr('max')) || item.count;
+          if (currentValue < maxValue) {
+            $quantityInput.val(currentValue + 1);
+          }
+        });
+
       // 绑定确认按钮事件
       $('#confirm_use_item')
         .off('click')
         .on('click', function () {
           const target = String($('#use_target_input').val() || '').trim();
+          const quantity = parseInt($('#use_quantity_input').val()) || 1;
+
           if (target) {
-            self.useItem(item, target);
+            self.useItemWithQuantity(item, target, quantity);
             self.goBackToBackpack();
           } else {
             alert('请输入使用目标！');
@@ -1093,46 +1140,45 @@
       $('#confirm_use_item').addClass('disabled').prop('disabled', true);
     },
 
-    // 使用物品并发送快捷回复
-    useItem: function (item, target) {
-      console.log('正在使用物品:', item, '目标:', target);
+    // 使用指定数量的物品
+    useItemWithQuantity: function (item, target, quantity) {
+      console.log('正在使用物品:', item.name, '数量:', quantity, '目标:', target);
 
-      const self = this; // 保存this引用
+      const self = this;
 
       // 延迟执行，避免干扰正在进行的发送操作
       setTimeout(() => {
         try {
-          // 检查聊天输入框是否空闲 - 使用jQuery方式避免类型错误
+          // 检查聊天输入框是否空闲
           const $originalInput = $('#send_textarea');
           const $sendButton = $('#send_but');
 
-          // 检查元素是否存在
           if ($originalInput.length > 0 && $sendButton.length > 0) {
             const isDisabled = $originalInput.prop('disabled');
             const currentValue = $originalInput.val() || '';
 
             if (!isDisabled && !$sendButton.hasClass('disabled') && currentValue === '') {
-              // 构造消息文本
-              const message = `对${target}使用了${item.name}`;
+              // 构造消息文本，包含数量信息
+              const quantityText = quantity > 1 ? `${quantity}个` : '';
+              const message = `对${target}使用了${quantityText}${item.name}`;
               $originalInput.val(message);
 
-              // 触发输入事件，让系统知道输入框内容已更改
+              // 触发输入事件
               $originalInput.trigger('input');
 
-              // 给系统一点时间处理输入事件
               setTimeout(() => {
-                // 如果发送按钮可用，点击发送
                 if (!$sendButton.hasClass('disabled')) {
                   $sendButton.click();
                   console.log('物品使用消息已发送');
                 }
               }, 200);
 
-              // 将物品添加到已使用列表
-              self.addToUsedItems(item);
+              // 处理物品数量变化
+              self.processItemUsage(item, quantity);
 
               // 显示成功提示
-              self.showSuccessMessage(`成功使用物品：${item.name}`);
+              const quantityMsg = quantity > 1 ? `${quantity}个` : '';
+              self.showSuccessMessage(`成功使用${quantityMsg}${item.name}`);
             } else {
               console.warn('聊天输入框不可用或正在忙碌中');
               alert('当前聊天输入框不可用，请稍后再试');
@@ -1148,34 +1194,79 @@
       }, 500);
     },
 
+    // 使用物品并发送快捷回复（保留原方法作为兼容）
+    useItem: function (item, target) {
+      // 默认使用1个物品
+      this.useItemWithQuantity(item, target, 1);
+    },
+
+    // 处理物品使用后的数量变化
+    processItemUsage: function (item, usedQuantity) {
+      console.log(`📦 处理物品使用: ${item.name}, 使用数量: ${usedQuantity}, 原有数量: ${item.count}`);
+
+      // 减少物品数量
+      const remainingCount = item.count - usedQuantity;
+
+      if (remainingCount <= 0) {
+        // 物品完全用完，移到已使用列表
+        this.addToUsedItems(item, usedQuantity);
+        console.log(`✅ 物品 "${item.name}" 已完全使用，移到已使用列表`);
+      } else {
+        // 物品还有剩余，更新数量并记录使用
+        item.count = remainingCount;
+        this.addToUsedItems(item, usedQuantity);
+        console.log(`📝 物品 "${item.name}" 剩余数量: ${remainingCount}`);
+      }
+
+      // 刷新界面显示
+      this.refreshCurrentView();
+    },
+
+    // 刷新当前视图
+    refreshCurrentView: function () {
+      if (this.selectedTab === 'items') {
+        this.updateCategoryTabs();
+        this.renderItemsList(this.allItems);
+      } else if (this.selectedTab === 'used') {
+        this.renderUsedItemsList();
+      }
+    },
+
     // 将物品添加到已使用列表
-    addToUsedItems: function (item) {
+    addToUsedItems: function (item, usedQuantity = 1) {
       // 检查是否已经在已使用列表中
       const existingUsedItem = this.usedItems.find(usedItem => usedItem.name === item.name);
 
-      if (!existingUsedItem) {
+      if (existingUsedItem) {
+        // 如果已存在，增加使用数量和更新使用时间
+        existingUsedItem.usedQuantity = (existingUsedItem.usedQuantity || 1) + usedQuantity;
+        existingUsedItem.lastUsedAt = new Date().toISOString();
+        existingUsedItem.usageHistory = existingUsedItem.usageHistory || [];
+        existingUsedItem.usageHistory.push({
+          quantity: usedQuantity,
+          usedAt: new Date().toISOString(),
+        });
+        console.log(`📝 更新已使用物品 "${item.name}" 数量: +${usedQuantity}, 总计: ${existingUsedItem.usedQuantity}`);
+      } else {
         // 添加到已使用列表
         const usedItem = {
           name: item.name,
           type: item.type,
           description: item.description,
           usedAt: new Date().toISOString(),
+          lastUsedAt: new Date().toISOString(),
+          usedQuantity: usedQuantity,
           originalItem: item,
+          usageHistory: [
+            {
+              quantity: usedQuantity,
+              usedAt: new Date().toISOString(),
+            },
+          ],
         };
 
         this.usedItems.push(usedItem);
-        console.log(`✅ 物品 "${item.name}" 已添加到已使用列表`);
-
-        // 如果当前在已使用标签页，刷新显示
-        if (this.selectedTab === 'used') {
-          this.renderUsedItemsList();
-        }
-
-        // 如果当前在物品标签页，刷新分类标签数量
-        if (this.selectedTab === 'items') {
-          this.updateCategoryTabs();
-          this.renderItemsList(this.allItems);
-        }
+        console.log(`✅ 物品 "${item.name}" 已添加到已使用列表，数量: ${usedQuantity}`);
       }
     },
 
@@ -1195,6 +1286,39 @@
           $(this).remove();
         });
       }, 3000);
+    },
+
+    // 显示背包应用 - 与手机界面系统兼容的方法
+    show: async function () {
+      console.log('🎒 显示背包应用（现代化版本）');
+
+      const $phoneInterface = $('#phone_interface');
+      if ($phoneInterface.length === 0) {
+        console.error('❌ 主手机界面不存在');
+        return;
+      }
+
+      // 确保界面已创建
+      if ($phoneInterface.find('.backpack-app-container').length === 0) {
+        this.createInterface();
+      }
+
+      // 在手机界面内显示应用
+      this.showInPhoneInterface();
+    },
+
+    // 隐藏背包应用
+    hide: function () {
+      console.log('🔒 隐藏背包应用');
+      const $phoneInterface = $('#phone_interface');
+      const $appContainer = $phoneInterface.find('.backpack-app-container');
+
+      if ($appContainer.length > 0) {
+        $appContainer.hide();
+      }
+
+      // 显示主屏幕内容
+      $phoneInterface.find('.phone-background, .phone-home-screen, .phone-dock').show();
     },
   };
 

@@ -202,7 +202,7 @@
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                                 </svg>
-                                <span class="task-points-display">${this.userPoints}</span>
+                                <span class="task-points-display">0</span>
                             </button>
                             <button class="task-app-btn task-app-home-btn" onclick="TaskApp.goHome()" title="返回首页">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -243,7 +243,7 @@
     },
 
     // 在手机界面内显示应用
-    showInPhoneInterface: function () {
+    showInPhoneInterface: async function () {
       console.log('📱 在手机界面内显示任务应用');
 
       const $phoneInterface = $('#phone_interface');
@@ -257,6 +257,10 @@
       $phoneInterface.find('.phone-background, .phone-home-screen, .phone-dock').hide();
       $phoneInterface.find('.qq-app-container, .taobao-app-container').hide(); // 隐藏其他应用
       $taskContainer.show();
+
+      // 立即计算并更新点数显示
+      await this.calculateUserPoints();
+      console.log('📊 任务应用点数已更新:', this.userPoints);
 
       // 绑定应用内的事件
       this.bindAppEvents();
@@ -280,8 +284,8 @@
         this.createInterface();
       }
 
-      // 在手机界面内显示应用
-      this.showInPhoneInterface();
+      // 在手机界面内显示应用（异步调用以确保点数正确计算）
+      await this.showInPhoneInterface();
 
       try {
         const tasks = await window['HQDataExtractor'].extractTasks();

@@ -140,23 +140,102 @@
       }
     },
 
-    // 计算用户点数 - 保持不变
+    // 计算用户点数 - 修复为与任务应用一致的计算方法
     calculateUserPoints: async function () {
       try {
-        if (window['HQDataExtractor'] && typeof window['HQDataExtractor'].extractTaobaoExpenses === 'function') {
-          const expenses = await window['HQDataExtractor'].extractTaobaoExpenses();
-          this.userPoints = expenses.reduce((total, expense) => total + expense.amount, 0);
-          console.log('用户点数已更新:', this.userPoints);
-          this.updatePointsDisplay();
-        } else {
-          console.warn('HQDataExtractor 不可用，无法计算用户点数');
-          this.userPoints = 1000; // 默认点数
-          this.updatePointsDisplay();
+        // 重置点数
+        this.userPoints = 0;
+
+        // 检查HQDataExtractor是否可用
+        if (!window['HQDataExtractor'] || typeof window['HQDataExtractor'].extractPointsData !== 'function') {
+          console.warn('淘宝应用: HQDataExtractor未加载，使用DOM扫描方式');
+          return this.calculateUserPointsFromDOM();
         }
-      } catch (error) {
-        console.error('计算用户点数时出错:', error);
-        this.userPoints = 1000; // 默认点数
+
+        // 使用HQDataExtractor从SillyTavern上下文获取点数数据
+        const pointsData = await window['HQDataExtractor'].extractPointsData();
+
+        if (pointsData && pointsData.summary) {
+          this.userPoints = pointsData.summary.netPoints;
+          console.log(
+            `淘宝应用点数计算: 获得${pointsData.summary.totalEarned} - 消耗${pointsData.summary.totalSpent} = 剩余${this.userPoints}`,
+          );
+
+          // 如果需要，可以显示详细的点数记录
+          if (pointsData.all && pointsData.all.length > 0) {
+            console.log('点数记录详情:', pointsData.all);
+          }
+        } else {
+          console.log('淘宝应用: 未找到点数记录');
+        }
+
+        // 更新点数显示
         this.updatePointsDisplay();
+
+        return this.userPoints;
+      } catch (error) {
+        console.error('淘宝应用计算点数时出错:', error);
+        console.log('淘宝应用: 尝试使用DOM扫描方式作为备用方案');
+        return this.calculateUserPointsFromDOM();
+      }
+    },
+
+    // DOM扫描方式计算点数（备用方案）
+    calculateUserPointsFromDOM: function () {
+      try {
+        // 重置点数
+        this.userPoints = 0;
+
+        // 获取所有聊天消息文本
+        const $messageElements = $('body').find('.mes_text');
+        let earnedPoints = 0;
+        let spentPoints = 0;
+
+        // 定义正则表达式来匹配获得点数和消耗点数格式
+        const earnedPointsRegex = /\[获得点数\|(\d+)\]/g;
+        const spentPointsRegex = /\[消耗点数\|(\d+)\]/g;
+
+        if ($messageElements.length > 0) {
+          $messageElements.each(function () {
+            try {
+              const messageText = $(this).text();
+
+              // 提取获得点数
+              let earnedMatch;
+              earnedPointsRegex.lastIndex = 0; // 重置正则表达式索引
+              while ((earnedMatch = earnedPointsRegex.exec(messageText)) !== null) {
+                const points = parseInt(earnedMatch[1]);
+                earnedPoints += points;
+                console.log(`淘宝应用发现获得点数: ${points}`);
+              }
+
+              // 提取消耗点数
+              let spentMatch;
+              spentPointsRegex.lastIndex = 0; // 重置正则表达式索引
+              while ((spentMatch = spentPointsRegex.exec(messageText)) !== null) {
+                const points = parseInt(spentMatch[1]);
+                spentPoints += points;
+                console.log(`淘宝应用发现消耗点数: ${points}`);
+              }
+            } catch (error) {
+              console.error('解析消息时出错:', error);
+            }
+          });
+        }
+
+        // 计算净点数
+        this.userPoints = earnedPoints - spentPoints;
+        console.log(`淘宝应用点数计算(DOM方式): 获得${earnedPoints} - 消耗${spentPoints} = 剩余${this.userPoints}`);
+
+        // 更新点数显示
+        this.updatePointsDisplay();
+
+        return this.userPoints;
+      } catch (error) {
+        console.error('DOM方式计算点数也失败:', error);
+        this.userPoints = 0;
+        this.updatePointsDisplay();
+        return 0;
       }
     },
 
@@ -169,13 +248,25 @@
     },
 
     // 刷新商品数据 - 保持原本的后端逻辑
-    refreshProducts: function () {
+    refreshProducts: function (e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       this.sendToChat('{{停止角色扮演}}刷新商品');
       alert('刷新商品请求已发送！');
     },
 
     // 刷新点数数据 - 保持原本的后端逻辑
-    refreshPoints: async function () {
+    refreshPoints: async function (e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       await this.calculateUserPoints();
       alert('点数已刷新！');
     },
@@ -391,7 +482,7 @@
                 <div class="taobao-header">
                     <div class="header-left">
                         <h1 class="app-title">淘宝</h1>
-                        <button class="points-display-btn" onclick="TaobaoApp.refreshPoints()" title="点击刷新点数">
+                        <button class="points-display-btn" onclick="TaobaoApp.refreshPoints(event)" title="点击刷新点数">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                             </svg>
@@ -399,7 +490,7 @@
                         </button>
                     </div>
                     <div class="header-right">
-                        <button class="header-btn refresh-products-btn" onclick="TaobaoApp.refreshProducts()" title="刷新商品">
+                        <button class="header-btn refresh-products-btn" onclick="TaobaoApp.refreshProducts(event)" title="刷新商品">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
                                 <path d="M21 3v5h-5"/>
@@ -407,7 +498,7 @@
                                 <path d="M3 21v-5h5"/>
                             </svg>
                         </button>
-                        <button class="header-btn cart-btn" onclick="TaobaoApp.showCartPage()" title="购物车">
+                        <button class="header-btn cart-btn" onclick="TaobaoApp.showCartPage(event)" title="购物车">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="9" cy="21" r="1"/>
                                 <circle cx="20" cy="21" r="1"/>
@@ -415,7 +506,7 @@
                             </svg>
                             <span class="cart-badge" id="cart_badge_count" style="display: none;"></span>
                         </button>
-                        <button class="header-btn search-btn" onclick="TaobaoApp.toggleSearch()" title="搜索商品">
+                        <button class="header-btn search-btn" onclick="TaobaoApp.toggleSearch(event)" title="搜索商品">
                             <i class="fas fa-search"></i>
                         </button>
                         <button class="header-btn taobao-home-btn" onclick="TaobaoApp.goHome()" title="返回手机首页">
@@ -432,7 +523,7 @@
                         <div class="taobao-search-container" id="search_container" style="display: none;">
                             <div class="search-input-wrapper">
                                 <input type="text" id="product_search" placeholder="搜索商品..." class="search-input">
-                                <button class="search-close-btn" onclick="TaobaoApp.toggleSearch()">
+                                <button class="search-close-btn" onclick="TaobaoApp.toggleSearch(event)">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -462,7 +553,7 @@
                 <div class="taobao-cart-page" id="cart_page" style="display: none;">
                                         <!-- 购物车头部 -->
                     <div class="cart-header">
-                        <button class="back-btn" onclick="TaobaoApp.showProductsPage()">
+                        <button class="back-btn" onclick="TaobaoApp.showProductsPage(event)">
                             <i class="fas fa-arrow-left"></i>
                             返回
                         </button>
@@ -485,7 +576,7 @@
                                 <div class="points-info" id="points_info">需要点数: 0 | 当前点数: 0</div>
                                 </div>
                         </div>
-                        <button class="checkout-btn" id="checkout_btn" onclick="TaobaoApp.checkout()">
+                        <button class="checkout-btn" id="checkout_btn" onclick="TaobaoApp.checkout(event)">
                             立即结算
                         </button>
                             </div>
@@ -506,6 +597,10 @@
                     </div>
                 `);
 
+        // 首先计算并更新用户点数
+        await this.calculateUserPoints();
+        console.log('📊 用户点数已更新:', this.userPoints);
+
         // 使用数据提取器获取商品数据
         const products = await window['HQDataExtractor'].extractProducts();
         console.log('📦 获取到商品数据:', products.length, '件');
@@ -524,6 +619,9 @@
 
         // 更新购物车显示
         this.updateCartBadge();
+
+        // 确保点数显示已更新
+        this.updatePointsDisplay();
 
         // 刷新统一按钮样式
         if (window.UnifiedButtons) {
@@ -631,7 +729,7 @@
                                     : ''
                                 }
                                     </div>
-                            <button class="add-to-cart-btn" onclick="TaobaoApp.addToCart(${index})">
+                            <button class="add-to-cart-btn" onclick="TaobaoApp.addToCart(${index}, event)">
                                 加入购物车
                             </button>
                                     </div>
@@ -730,7 +828,13 @@
     },
 
     // 添加到购物车 - 保持原有逻辑
-    addToCart: function (productIndex) {
+    addToCart: function (productIndex, e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       const product = this.allProducts[productIndex];
       if (!product) {
         console.error('商品不存在:', productIndex);
@@ -792,7 +896,13 @@
     },
 
     // 显示购物车页面
-    showCartPage: function () {
+    showCartPage: function (e) {
+      // 防止事件冒泡导致手机界面关闭
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       this.currentPage = 'cart';
       $('#products_page').hide();
       $('#cart_page').show();
@@ -800,7 +910,13 @@
     },
 
     // 显示商品页面
-    showProductsPage: function () {
+    showProductsPage: function (e) {
+      // 防止事件冒泡导致手机界面关闭
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       this.currentPage = 'products';
       $('#cart_page').hide();
       $('#products_page').show();
@@ -817,7 +933,7 @@
                         <div class="cart-empty-icon">🛒</div>
                         <h3>购物车是空的</h3>
                         <p>快去挑选心仪的商品吧</p>
-                        <button class="go-shopping-btn" onclick="TaobaoApp.showProductsPage()">
+                        <button class="go-shopping-btn" onclick="TaobaoApp.showProductsPage(event)">
                             去购物
                         </button>
                     </div>
@@ -843,13 +959,13 @@
                                 <div class="quantity-controls">
                                     <button class="quantity-btn" onclick="TaobaoApp.updateQuantity('${item.name}', ${
             item.quantity - 1
-          })">-</button>
+          }, event)">-</button>
                                     <span class="quantity-display">${item.quantity}</span>
                                     <button class="quantity-btn" onclick="TaobaoApp.updateQuantity('${item.name}', ${
             item.quantity + 1
-          })">+</button>
+          }, event)">+</button>
                                     </div>
-                                <button class="remove-btn" onclick="TaobaoApp.removeFromCart('${item.name}')">
+                                <button class="remove-btn" onclick="TaobaoApp.removeFromCart('${item.name}', event)">
                                     移除
                                 </button>
                                     </div>
@@ -889,7 +1005,13 @@
     },
 
     // 更新商品数量 - 保持原有逻辑
-    updateQuantity: function (productName, newQuantity) {
+    updateQuantity: function (productName, newQuantity, e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       if (newQuantity <= 0) {
         this.removeFromCart(productName);
         return;
@@ -905,7 +1027,13 @@
     },
 
     // 从购物车移除商品 - 保持原有逻辑
-    removeFromCart: function (productName) {
+    removeFromCart: function (productName, e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       this.cart = this.cart.filter(item => item.name !== productName);
       this.saveCart();
       this.renderCartContent();
@@ -920,7 +1048,13 @@
     },
 
     // 结算功能 - 保持原有逻辑
-    checkout: function () {
+    checkout: function (e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       if (this.cart.length === 0) {
         alert('购物车是空的，无法结算！');
         return;
@@ -997,7 +1131,14 @@
 
     // 更新点数显示
     updatePointsDisplay: function () {
-      // 如果有点数显示元素，更新它
+      // 更新主页头部的点数显示
+      const $userPoints = $('#user_points');
+      if ($userPoints.length > 0) {
+        $userPoints.text(this.userPoints);
+        console.log('淘宝应用: 已更新主页点数显示为', this.userPoints);
+      }
+
+      // 更新购物车页面的点数显示
       $('.points-info').each(function () {
         const $this = $(this);
         const text = $this.text();
@@ -1091,7 +1232,13 @@
     },
 
     // 切换搜索栏的显示状态
-    toggleSearch: function () {
+    toggleSearch: function (e) {
+      // 防止事件冒泡
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
       const $searchContainer = $('#search_container');
       const $categoryTabs = $('#category_tabs');
       const $scrollbar = $('#category_scrollbar');
