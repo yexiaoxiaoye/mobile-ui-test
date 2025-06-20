@@ -1,0 +1,390 @@
+/**
+ * QQ表情包功能样式
+ * 在mobile-ui-test扩展中的样式定义
+ */
+
+/* 表情包图片基础样式 */
+.qq-emoji {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 2px;
+    border: none;
+    background: transparent;
+}
+
+/* 表情包按钮样式 */
+.emoji-picker-btn {
+    background: var(--SmartThemeBodyColor, #1a1a1a);
+    border: 1px solid var(--SmartThemeBorderColor, #444);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--SmartThemeEmColor, #fff);
+    transition: all 0.2s ease;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.emoji-picker-btn:hover {
+    background: var(--SmartThemeQuoteColor, #2a2a2a);
+    border-color: var(--SmartThemeCheckboxBorderColor, #666);
+    transform: translateY(-1px);
+}
+
+.emoji-picker-btn:active {
+    transform: translateY(0);
+}
+
+/* 表情包选择器容器 */
+.qq-emoji-picker {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 400px;
+    max-height: 500px;
+    background: var(--SmartThemeBodyColor, #1a1a1a);
+    border: 1px solid var(--SmartThemeBorderColor, #444);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    animation: emojiPickerSlideIn 0.3s ease-out;
+}
+
+@keyframes emojiPickerSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 表情包选择器头部 */
+.emoji-picker-header {
+    background: var(--SmartThemeQuoteColor, #2a2a2a);
+    padding: 12px 16px;
+    font-weight: bold;
+    color: var(--SmartThemeEmColor, #fff);
+    border-bottom: 1px solid var(--SmartThemeBorderColor, #444);
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 关闭按钮 */
+.emoji-picker-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--SmartThemeEmColor, #fff);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.emoji-picker-close:hover {
+    opacity: 1;
+    background: var(--SmartThemeBorderColor, #444);
+}
+
+/* 表情包选择器内容区域 */
+.emoji-picker-content {
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+/* 自定义滚动条 */
+.emoji-picker-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.emoji-picker-content::-webkit-scrollbar-track {
+    background: var(--SmartThemeBodyColor, #1a1a1a);
+    border-radius: 4px;
+}
+
+.emoji-picker-content::-webkit-scrollbar-thumb {
+    background: var(--SmartThemeBorderColor, #444);
+    border-radius: 4px;
+}
+
+.emoji-picker-content::-webkit-scrollbar-thumb:hover {
+    background: var(--SmartThemeCheckboxBorderColor, #666);
+}
+
+/* 表情包项目 */
+.emoji-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: 1px solid transparent;
+    min-height: 60px;
+    justify-content: center;
+}
+
+.emoji-item:hover {
+    background: var(--SmartThemeQuoteColor, #2a2a2a);
+    border-color: var(--SmartThemeBorderColor, #444);
+    transform: translateY(-2px);
+}
+
+.emoji-item:active {
+    transform: translateY(0);
+    background: var(--SmartThemeCheckboxBorderColor, #666);
+}
+
+.emoji-item img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+    border: none;
+    background: transparent;
+}
+
+.emoji-item .emoji-text {
+    font-size: 10px;
+    color: var(--SmartThemeEmColor, #fff);
+    text-align: center;
+    opacity: 0.8;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 表情包预览区域 */
+.emoji-preview {
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    background: var(--SmartThemeBodyColor, #1a1a1a);
+    border: 1px solid var(--SmartThemeBorderColor, #444);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--SmartThemeEmColor, #fff);
+    animation: previewFadeIn 0.2s ease-out;
+}
+
+@keyframes previewFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.emoji-preview .qq-emoji {
+    width: 20px;
+    height: 20px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .qq-emoji-picker {
+        width: 90vw;
+        max-width: 350px;
+        right: 5vw;
+        bottom: 60px;
+    }
+    
+    .emoji-picker-content {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 6px;
+        padding: 12px;
+    }
+    
+    .emoji-item {
+        min-height: 50px;
+        padding: 6px;
+    }
+    
+    .emoji-item img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .emoji-item .emoji-text {
+        font-size: 9px;
+    }
+    
+    .emoji-picker-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .qq-emoji-picker {
+        width: 95vw;
+        right: 2.5vw;
+        bottom: 50px;
+    }
+    
+    .emoji-picker-content {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 4px;
+        padding: 8px;
+    }
+    
+    .emoji-item {
+        min-height: 45px;
+        padding: 4px;
+    }
+    
+    .emoji-item img {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .emoji-item .emoji-text {
+        font-size: 8px;
+    }
+    
+    .emoji-picker-btn {
+        min-width: 32px;
+        height: 32px;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* 深色主题适配 */
+@media (prefers-color-scheme: dark) {
+    .qq-emoji-picker {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+    }
+    
+    .emoji-preview {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* 聊天消息中的表情包样式 */
+.mes .qq-emoji {
+    width: 28px;
+    height: 28px;
+    margin: 0 3px;
+}
+
+/* 输入框区域的表情包按钮定位 */
+#send_form .send_buttons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 表情包按钮在不同状态下的样式 */
+.emoji-picker-btn.active {
+    background: var(--SmartThemeCheckboxBorderColor, #666);
+    color: var(--SmartThemeBodyColor, #1a1a1a);
+}
+
+/* 表情包加载失败时的样式 */
+.qq-emoji[src=""],
+.qq-emoji:not([src]) {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    background: none;
+    font-size: inherit;
+}
+
+/* 避免重复处理的标记 */
+.emoji-processed {
+    /* 这个类用于标记已处理的元素，避免重复转换 */
+}
+
+/* 移动端优化 */
+@media (hover: none) and (pointer: coarse) {
+    .emoji-item:hover {
+        background: transparent;
+        border-color: transparent;
+        transform: none;
+    }
+    
+    .emoji-item:active {
+        background: var(--SmartThemeQuoteColor, #2a2a2a);
+        border-color: var(--SmartThemeBorderColor, #444);
+    }
+    
+    .emoji-picker-btn:hover {
+        background: var(--SmartThemeBodyColor, #1a1a1a);
+        border-color: var(--SmartThemeBorderColor, #444);
+        transform: none;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .qq-emoji-picker {
+        border-width: 2px;
+    }
+    
+    .emoji-item {
+        border-width: 2px;
+    }
+    
+    .emoji-picker-btn {
+        border-width: 2px;
+    }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+    .qq-emoji-picker {
+        animation: none;
+    }
+    
+    .emoji-preview {
+        animation: none;
+    }
+    
+    .emoji-item {
+        transition: none;
+    }
+    
+    .emoji-picker-btn {
+        transition: none;
+    }
+} 

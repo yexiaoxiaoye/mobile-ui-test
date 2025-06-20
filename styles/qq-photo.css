@@ -1,0 +1,273 @@
+/* QQ照片功能样式 */
+
+/* 图片选择对话框样式 */
+.image-choice-dialog {
+    animation: choice-dialog-fade-in 0.3s ease-out;
+}
+
+@keyframes choice-dialog-fade-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.choice-sillytavern:hover {
+    background: #1e7e34 !important;
+    transform: scale(1.02);
+}
+
+.choice-builtin:hover {
+    background: #0056b3 !important;
+    transform: scale(1.02);
+}
+
+.choice-cancel:hover {
+    background: #545b62 !important;
+}
+
+/* SillyTavern附件提示样式 */
+.sillytavern-attachment-tip {
+    animation: attachment-tip-slide-down 0.4s ease-out;
+}
+
+@keyframes attachment-tip-slide-down {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* 照片面板基础样式 */
+.qq-photo-panel {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 450px !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+    z-index: 99999 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    animation: photo-panel-slide-up 0.3s ease-out;
+}
+
+@keyframes photo-panel-slide-up {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 上传按钮样式 */
+.upload-btn:hover {
+    background: #0056b3 !important;
+    transform: scale(1.02);
+}
+
+.camera-btn:hover,
+.sillytavern-attach-btn:hover {
+    background: #1e7e34 !important;
+    transform: scale(1.02);
+}
+
+/* 拖拽区域悬停效果 */
+.drag-drop-area:hover {
+    border-color: #007bff !important;
+    background: #f8f9ff !important;
+}
+
+/* 照片预览项悬停效果 */
+.photo-preview-item:hover {
+    transform: scale(1.05);
+    border-color: #007bff !important;
+}
+
+/* 照片遮罩层样式 */
+.photo-overlay {
+    transition: opacity 0.2s ease;
+}
+
+.photo-preview-item:hover .photo-overlay {
+    opacity: 1 !important;
+}
+
+/* 删除按钮悬停效果 */
+.remove-photo-btn:hover {
+    background: #c82333 !important;
+    transform: scale(1.1);
+}
+
+/* 操作按钮悬停效果 */
+.clear-all-btn:hover {
+    background: #545b62 !important;
+}
+
+.send-photos-btn:hover:not(:disabled) {
+    background: #1e7e34 !important;
+    transform: scale(1.02);
+}
+
+.send-photos-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 关闭按钮悬停效果 */
+.close-photo-panel:hover {
+    background: #c82333 !important;
+    transform: scale(1.1);
+}
+
+/* 大图预览样式 */
+.photo-large-preview {
+    animation: photo-preview-fade-in 0.3s ease-out;
+}
+
+@keyframes photo-preview-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.close-preview-btn:hover {
+    background: rgba(255,255,255,0.4) !important;
+    transform: scale(1.1);
+}
+
+/* 照片网格样式 */
+.photos-grid img {
+    transition: all 0.2s ease;
+}
+
+.photos-grid img:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
+}
+
+/* 照片消息样式 */
+.photo-message {
+    animation: message-slide-in 0.3s ease-out;
+}
+
+@keyframes message-slide-in {
+    from {
+        transform: translateX(50%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 成功提示样式 */
+.photo-send-toast {
+    animation: toast-bounce 0.4s ease-out;
+}
+
+@keyframes toast-bounce {
+    0% {
+        transform: translateX(-50%) scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .qq-photo-panel {
+        width: 95% !important;
+        max-width: none !important;
+    }
+    
+    .photo-preview-item {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .upload-buttons button {
+        padding: 10px 18px !important;
+        font-size: 13px !important;
+    }
+    
+    .drag-drop-area {
+        padding: 20px !important;
+    }
+    
+    .image-choice-dialog {
+        width: 95% !important;
+        max-width: none !important;
+        padding: 20px !important;
+    }
+    
+    .sillytavern-attachment-tip {
+        width: 95% !important;
+        max-width: none !important;
+        padding: 15px 20px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* 暗黑模式支持 */
+@media (prefers-color-scheme: dark) {
+    .qq-photo-panel {
+        background: #2c2c2c !important;
+        color: white !important;
+    }
+    
+    .photo-upload-area {
+        background: #1e1e1e !important;
+    }
+    
+    .drag-drop-area {
+        background: #333 !important;
+        border-color: #555 !important;
+        color: #ccc !important;
+    }
+    
+    .photo-preview-area {
+        background: #333 !important;
+    }
+    
+    .upload-tips {
+        color: #aaa !important;
+    }
+    
+    .image-choice-dialog {
+        background: #2c2c2c !important;
+        color: white !important;
+    }
+    
+    .image-choice-dialog h3 {
+        color: white !important;
+    }
+} 

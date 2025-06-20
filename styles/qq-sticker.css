@@ -1,0 +1,291 @@
+/* QQ表情包功能样式 */
+
+/* QQ表情包面板样式 */
+.qq-sticker-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #ddd;
+    z-index: 100000;
+    max-height: 60vh;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+.qq-sticker-panel.show {
+    transform: translateY(0);
+}
+
+.qq-sticker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.qq-sticker-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.qq-sticker-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.qq-sticker-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.qq-sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 20px;
+}
+
+.qq-sticker-item {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.qq-sticker-item:hover {
+    border-color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.qq-sticker-item.selected {
+    border-color: #28a745;
+    background: #e8f5e9;
+}
+
+.qq-sticker-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.qq-sticker-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 12px;
+    padding: 4px 8px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.qq-sticker-item:hover .qq-sticker-label {
+    opacity: 1;
+}
+
+.qq-sticker-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.qq-sticker-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.qq-sticker-preview-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.qq-sticker-preview-btn:hover {
+    background: #138496;
+    transform: translateY(-1px);
+}
+
+.qq-sticker-preview-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.qq-sticker-send-btn {
+    background: #28a745;
+    color: white;
+}
+
+.qq-sticker-send-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.qq-sticker-send-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 大图预览样式 */
+.qq-sticker-large-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.qq-sticker-large-preview img {
+    max-width: 90%;
+    max-height: 70%;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.qq-sticker-large-preview .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.qq-sticker-large-preview .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.qq-sticker-info {
+    color: white;
+    text-align: center;
+    margin-top: 20px;
+    padding: 15px;
+}
+
+.qq-sticker-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.qq-sticker-info p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.qq-sticker-send-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.qq-sticker-preview-send-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.qq-sticker-preview-send-btn.send {
+    background: #28a745;
+    color: white;
+}
+
+.qq-sticker-preview-send-btn.send:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.qq-sticker-preview-send-btn.cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.qq-sticker-preview-send-btn.cancel:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .qq-sticker-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        padding: 15px;
+    }
+    
+    .qq-sticker-actions {
+        padding: 15px;
+    }
+    
+    .qq-sticker-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .qq-sticker-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 6px;
+        padding: 12px;
+    }
+    
+    .qq-sticker-header {
+        padding: 12px 15px;
+    }
+    
+    .qq-sticker-title {
+        font-size: 15px;
+    }
+} 

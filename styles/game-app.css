@@ -1,0 +1,154 @@
+/* 游戏应用样式 */
+:root {
+    --game-primary: #667eea;
+    --game-secondary: #764ba2;
+    --bubble-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    --text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 游戏界面容器 */
+#game_interface {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 游戏头部样式 */
+.game-header {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 标签页样式 */
+.game-tabs {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.game-tab {
+    transition: all 0.3s ease;
+}
+
+.game-tab:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.game-tab.active {
+    background-color: rgba(255,255,255,0.15);
+}
+
+/* 气泡动画 */
+@keyframes float {
+    0% {
+        transform: translateX(-50%) translateY(-50%) translateY(0px) rotate(0deg);
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-50%) translateY(-10px) rotate(2deg);
+    }
+    100% {
+        transform: translateX(-50%) translateY(-50%) translateY(-20px) rotate(-2deg);
+        opacity: 0.8;
+    }
+}
+
+/* 气泡基础样式 */
+.bubble {
+    will-change: transform;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 气泡悬停效果 */
+.bubble:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 8px 25px rgba(255,255,255,0.2) !important;
+}
+
+/* 气泡点击效果 */
+.bubble:active {
+    transform: scale(0.95) !important;
+}
+
+/* 气泡容器 */
+.bubbles-container {
+    background: url(../images/5kqdkh.jpg) center center no-repeat !important;
+    background-size: cover !important;
+}
+
+/* 游戏面板切换动画 */
+.game-panel {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .game-header h2 {
+        font-size: 16px !important;
+    }
+
+    .game-tab {
+        font-size: 14px;
+    }
+
+    .bubble {
+        min-width: 50px !important;
+        min-height: 50px !important;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .bubble:hover {
+        transform: none;
+        box-shadow: var(--bubble-shadow);
+    }
+
+    .bubble:active {
+        transform: scale(1.1);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* 高对比度主题支持 */
+@media (prefers-contrast: high) {
+    .game-header,
+    .game-tabs {
+        background: rgba(0,0,0,0.8);
+        border-bottom-color: white;
+    }
+
+    .bubble {
+        border: 2px solid white;
+    }
+}
+
+/* 减少动画主题支持 */
+@media (prefers-reduced-motion: reduce) {
+    .bubble {
+        animation: none !important;
+    }
+
+    .game-tab,
+    .game-panel {
+        transition: none !important;
+    }
+}
+
+/* 暗色主题优化 */
+@media (prefers-color-scheme: dark) {
+    .game-header,
+    .game-tabs {
+        background: rgba(0,0,0,0.3);
+    }
+
+    .bubbles-container {
+        background: url(../images/table-bg.jpg) center center no-repeat !important;
+        background-size: cover !important;
+    }
+}
+.card{background: url(../images/card-bg.jpg) center center no-repeat !important;background-size: 100% 100% !important;overflow: hidden;}
+.card.love-mode{background: url(../images/card-bg2.jpg) center center no-repeat !important;background-size: 100% 100% !important;}
+.card.theater-mode{background: url(../images/card-bg3.jpg) center center no-repeat !important;background-size: 100% 100% !important;}

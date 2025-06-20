@@ -1,0 +1,375 @@
+/**
+ * QQ语音功能CSS样式
+ * 补充qq-voice.js中的内联样式
+ */
+
+/* 语音消息气泡 - 移除hover动画效果 */
+.qq-voice-message {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex !important;
+    flex-direction: column; /* 改回垂直排列，因为有多个元素 */
+    align-items: flex-start;
+    gap: 4px; /* 添加间距 */
+}
+
+/* 移除hover动画效果 
+.qq-voice-message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.qq-voice-message:hover::before {
+    left: 100%;
+}
+*/
+
+/* 移除语音波形的hover动画
+.qq-voice-message:hover .voice-waveform span {
+    animation-duration: 0.8s;
+}
+*/
+
+/* 语音面板的入场动画 */
+.qq-voice-panel {
+    animation: fadeInVoicePanel 0.3s ease-out;
+}
+
+@keyframes fadeInVoicePanel {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.voice-panel-content {
+    animation: slideInVoiceContent 0.3s ease-out;
+}
+
+@keyframes slideInVoiceContent {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 输入框聚焦效果 */
+#voice-text-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: scale(1.01);
+}
+
+/* 按钮点击效果 */
+.voice-send-btn:active,
+.voice-cancel-btn:active {
+    transform: scale(0.98);
+}
+
+/* 语音消息的发送状态指示器 */
+.qq-voice-message.sending {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* 语音内容容器 */
+.voice-content {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.qq-voice-message.sending .voice-waveform span {
+    animation: voice-wave-sending 0.5s ease-in-out infinite;
+}
+
+@keyframes voice-wave-sending {
+    0%, 100% {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        background: rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* 移除语音时长的脉冲效果
+.qq-voice-message:hover .voice-duration {
+    animation: pulse-duration 1s ease-in-out infinite;
+}
+
+@keyframes pulse-duration {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+*/
+
+/* 语音预览的实时更新效果 */
+.voice-message-preview .voice-text {
+    transition: all 0.2s ease;
+}
+
+.voice-message-preview .voice-duration {
+    transition: all 0.2s ease;
+    font-weight: bold;
+}
+
+/* 成功提示的入场动画 */
+.qq-voice-success-toast {
+    animation: slideInToast 0.3s ease-out;
+}
+
+@keyframes slideInToast {
+    from {
+        transform: translate(-50%, -60%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+/* 播放提示的弹性动画 */
+.qq-voice-play-toast {
+    animation: bounceInToast 0.4s ease-out;
+}
+
+@keyframes bounceInToast {
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* 🌟 新增：语音文本显示样式（"转"字） */
+.voice-text {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: transparent;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    /* 移除transition效果 */
+}
+
+/* 移除hover效果
+.voice-text:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+*/
+
+.voice-text.expanded {
+    width: auto;
+    height: auto;
+    border-radius: 16px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    white-space: nowrap;
+    min-width: 60px;
+}
+
+/* 🌟 新增：语音内容文本样式 */
+.voice-content-text {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 200px;
+    word-wrap: break-word;
+    margin-top: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeInText 0.3s ease-in;
+}
+
+/* 语音内容文本淡入动画 */
+@keyframes fadeInText {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+    .voice-panel-content {
+        background: #2b2b2b;
+        color: #e0e0e0;
+    }
+    
+    .voice-panel-body {
+        background: #2b2b2b;
+    }
+    
+    .voice-panel-footer {
+        background: #1e1e1e;
+    }
+    
+    #voice-text-input {
+        background: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+    }
+    
+    #voice-text-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    }
+    
+    .voice-preview-container {
+        background: #1e1e1e;
+    }
+    
+    .voice-char-count {
+        color: #aaa;
+    }
+}
+
+/* 移动设备优化 */
+@media (max-width: 768px) {
+    .qq-voice-panel {
+        padding: 10px;
+    }
+    
+    .voice-panel-content {
+        width: 100%;
+        max-width: none;
+        border-radius: 8px;
+    }
+    
+    .voice-panel-header {
+        padding: 12px 16px;
+    }
+    
+    .voice-panel-body {
+        padding: 16px;
+    }
+    
+    .voice-panel-footer {
+        padding: 12px 16px;
+    }
+    
+    #voice-text-input {
+        font-size: 16px; /* 防止iOS缩放 */
+    }
+    
+    .qq-voice-message {
+        max-width: 85%;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .qq-voice-message {
+        border: 2px solid #ffffff;
+    }
+    
+    .voice-send-btn,
+    .voice-cancel-btn {
+        border: 1px solid currentColor;
+    }
+    
+    #voice-text-input:focus {
+        border-width: 3px;
+    }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+    .qq-voice-panel,
+    .voice-panel-content,
+    .qq-voice-success-toast,
+    .qq-voice-play-toast {
+        animation: none;
+    }
+    
+    .qq-voice-message::before {
+        display: none;
+    }
+    
+    .voice-waveform span {
+        animation: none;
+    }
+    
+    .qq-voice-message:hover .voice-duration {
+        animation: none;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .qq-voice-panel,
+    .qq-voice-success-toast,
+    .qq-voice-play-toast {
+        display: none !important;
+    }
+    
+    .qq-voice-message {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .qq-voice-message .voice-waveform {
+        display: none;
+    }
+    
+    .qq-voice-message::after {
+        content: " [语音消息]";
+        font-size: 10px;
+        opacity: 0.7;
+    }
+} 
+.voice-content,.voice-text,.voice-content-text{background: none !important;}
+.custom-received .voice-content,.custom-received .voice-text,.custom-received .voice-content-text{
+    color: #333 !important;
+}
+.custom-received .voice-waveform span,.custom-qun-cont-item .voice-waveform span{background:rgba(0,0,0,0.2) !important}
+.custom-received .qq-voice-message{background: #fff !important;}
+.custom-received .voice-text,.custom-qun-cont-item .voice-text{border:1px solid #999 !important;}
+.custom-qun-cont-item .qq-voice-message{background: #fff !important;}
+.custom-qun-cont-item .voice-text{color: #666 !important;}
+.custom-qun-cont-item .voice-content-text{box-shadow: none !important;background: rgba(0,0,0,0.05) !important;}

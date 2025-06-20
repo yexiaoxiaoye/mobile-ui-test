@@ -1,0 +1,90 @@
+/* SillyTavern移动UI测试套件主样式文件 */
+
+/* 手机界面样式 */
+#phone_interface {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 300px;
+    height: 600px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 1000;
+    border: 2px solid #444;
+    overflow: hidden;
+}
+
+/* 自动刷新管理器控制面板样式 */
+#auto-refresh-panel {
+    position: fixed !important;
+    top: 10px !important;
+    right: 320px !important; /* 避免与手机界面冲突 */
+    background: rgba(30, 30, 30, 0.95) !important;
+    border: 1px solid #555 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    z-index: 999 !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 12px !important;
+    min-width: 250px !important;
+}
+
+/* 通用应用样式 */
+.app-interface {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #ddd;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-content {
+    padding: 16px;
+}
+
+/* 按钮样式 */
+.mobile-ui-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.mobile-ui-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #phone_interface {
+        width: 90vw;
+        height: 80vh;
+        top: 5px;
+        right: 5px;
+    }
+    
+    #auto-refresh-panel {
+        right: 5px !important;
+        top: calc(80vh + 20px) !important;
+        width: calc(90vw - 20px) !important;
+    }
+} 
