@@ -57,9 +57,6 @@
     // 调试模式开关，减少不必要的日志输出
     debugMode: false,
 
-    // 自动恢复状态标志
-    isRecovering: false,
-
     // 新增：头像数据缓存和版本控制
     avatarDataCache: {
       data: {},
@@ -88,1150 +85,9 @@
         this.bindEvents();
         this.loadData();
 
-        // 🔧 确保映射表在初始化时创建，避免后续重复创建
-        console.log('🔄 [初始化] 创建联系人名称映射...');
-        this.createContactNameMappingSync();
-
-        // 设置页面可见性监听，用于跨设备同步
-        this.setupVisibilityListener();
-
-        // 🔥 新增：启用实时更新系统
-        this.setupRealtimeUpdates();
-
         setTimeout(() => this.updateUserDisplay(), CONFIG.DELAYS.UPDATE_USER_DISPLAY);
       } catch (error) {
         console.error('QQ应用初始化失败:', error);
-      }
-    },
-
-    // 设置实时更新系统
-    setupRealtimeUpdates() {
-      try {
-        console.log('🔄 设置QQ应用实时更新系统...');
-
-        // 初始化实时更新状态
-        this.lastRealtimeUpdateTime = null;
-        this.isUpdating = false;
-
-        // 检查数据提取器是否可用
-        if (!window.HQDataExtractor) {
-          console.warn('⚠️ HQDataExtractor不可用，延迟重试...');
-          // 延迟重试
-          setTimeout(() => {
-            this.setupRealtimeUpdates();
-          }, 1000);
-          return;
-        }
-
-        // 定义更新回调函数
-        const updateCallback = updateData => {
-          console.log('🔄 [QQ实时更新] 检测到新消息，来源:', updateData.source);
-
-          // 🎯 优化防抖处理：首次更新立即执行，后续更新防抖
-          if (this.realtimeUpdateTimer) {
-            clearTimeout(this.realtimeUpdateTimer);
-          }
-
-          // 检查是否是首次更新（没有正在进行的更新）
-          const isFirstUpdate = !this.isUpdating && !this.lastRealtimeUpdateTime;
-
-          if (isFirstUpdate) {
-            // 首次更新立即执行，减少延迟
-            console.log('🚀 [QQ实时更新] 首次更新，立即执行');
-            this.lastRealtimeUpdateTime = Date.now();
-            this.handleRealtimeUpdate();
-          } else {
-            // 后续更新使用防抖，避免频繁更新
-            const isInGroupChat = this.isCurrentlyInGroupChat();
-            const debounceDelay = isInGroupChat ? 1000 : 500; // 减少防抖延迟：群聊1秒，私聊500ms
-
-            this.realtimeUpdateTimer = setTimeout(() => {
-              this.lastRealtimeUpdateTime = Date.now();
-              this.handleRealtimeUpdate();
-            }, debounceDelay);
-          }
-        };
-
-        // 保存回调函数引用，用于后续管理
-        this.realtimeUpdateCallback = updateCallback;
-
-        // 确保实时更新器已初始化并启动
-        const setupUpdater = () => {
-          try {
-            const updater = window.HQDataExtractor.realtimeUpdater;
-
-            // 如果未初始化，先初始化
-            if (!updater.isInitialized) {
-              console.log('🚀 初始化实时更新器...');
-              updater.initialize();
-            }
-
-            // 如果未监听，强制启动监听
-            if (!updater.isMonitoring) {
-              console.log('🔧 强制启动实时更新监听器...');
-              updater.isMonitoring = true;
-
-              // 重新启动各种监听器
-              if (typeof updater.startDOMObserver === 'function') {
-                updater.startDOMObserver();
-              }
-              if (typeof updater.startEventListeners === 'function') {
-                updater.startEventListeners();
-              }
-              if (typeof updater.startIntervalCheck === 'function') {
-                updater.startIntervalCheck();
-              }
-            }
-
-            // 注册实时更新回调
-            if (typeof updater.onUpdate === 'function') {
-              updater.onUpdate(updateCallback);
-              console.log('✅ QQ应用实时更新回调已注册');
-              console.log(
-                `📊 当前监听状态: 已初始化=${updater.isInitialized}, 正在监听=${updater.isMonitoring}, 回调数量=${updater.updateCallbacks.size}`,
-              );
-              this.realtimeUpdateEnabled = true;
-            } else {
-              console.warn('⚠️ 实时更新接口不可用');
-            }
-          } catch (error) {
-            console.error('❌ 设置实时更新器失败:', error);
-          }
-        };
-
-        // 立即尝试设置，如果失败则延迟重试
-        setupUpdater();
-
-        // 延迟验证和重试机制
-        setTimeout(() => {
-          const updater = window.HQDataExtractor.realtimeUpdater;
-          if (!updater.isMonitoring || updater.updateCallbacks.size === 0) {
-            console.log('🔄 实时更新器状态异常，重新设置...');
-            setupUpdater();
-          }
-        }, 2000);
-
-        // 定期状态检查和自动修复
-        this.statusCheckInterval = setInterval(() => {
-          if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater) {
-            const updater = window.HQDataExtractor.realtimeUpdater;
-
-            // 检查状态并自动修复
-            if (updater.checkAndFixStatus) {
-              const status = updater.checkAndFixStatus();
-
-              // 如果回调丢失，重新注册
-              if (status.isMonitoring && status.callbackCount === 0 && this.realtimeUpdateCallback) {
-                console.log('🔧 检测到回调丢失，重新注册...');
-                updater.onUpdate(this.realtimeUpdateCallback);
-              }
-            }
-          }
-        }, 30000); // 每30秒检查一次
-
-        // 也监听全局事件作为备用
-        document.addEventListener('mobile_plugin_data_updated', event => {
-          console.log('🔄 [QQ全局事件] 收到数据更新事件');
-          updateCallback(event.detail);
-        });
-      } catch (error) {
-        console.error('⚠️ 设置实时更新系统失败:', error);
-      }
-    },
-
-    // 处理实时更新
-    handleRealtimeUpdate() {
-      try {
-        console.log('🔄 [QQ实时更新] 开始处理QQ应用数据更新...');
-
-        // 检查当前是否在QQ应用界面
-        const isQQAppVisible = this.isQQAppCurrentlyVisible();
-
-        if (!isQQAppVisible) {
-          console.log('📱 QQ应用当前不可见，跳过更新');
-          return;
-        }
-
-        // 防止重复更新 - 添加更新锁
-        if (this.isUpdating) {
-          console.log('🔒 [QQ实时更新] 正在更新中，跳过重复更新');
-          return;
-        }
-
-        this.isUpdating = true;
-
-        // 检查当前是否在聊天详情页
-        const isInChatDetail = this.isCurrentlyInChatDetail();
-
-        if (isInChatDetail) {
-          console.log('💬 [QQ实时更新] 当前在聊天详情页，执行智能更新...');
-          this.updateChatDetailOnly();
-
-          // 解锁
-          setTimeout(() => {
-            this.isUpdating = false;
-          }, 100);
-        } else {
-          console.log('🏠 [QQ实时更新] 当前在主页，执行完整更新...');
-
-          // 重新加载消息数据 - 但不重新加载头像数据（避免循环）
-          this.loadMessagesWithoutAvatarReload()
-            .then(() => {
-              console.log('✅ [QQ实时更新] QQ消息数据更新完成');
-
-              // 🎯 智能滚动：保持当前滚动位置，不自动滚动到底部
-              console.log('📜 [QQ实时更新] 主页更新完成，保持当前滚动位置');
-            })
-            .catch(error => {
-              console.error('⚠️ [QQ实时更新] 更新QQ消息数据失败:', error);
-            })
-            .finally(() => {
-              // 解锁
-              this.isUpdating = false;
-            });
-        }
-      } catch (error) {
-        console.error('⚠️ [QQ实时更新] 处理更新失败:', error);
-        // 确保在出错时也能解锁
-        this.isUpdating = false;
-      }
-    },
-
-    // 检查当前是否在聊天详情页
-    isCurrentlyInChatDetail() {
-      try {
-        // 检查是否有显示的聊天页面
-        const $activeChatPage = $('.chat-page.show');
-        return $activeChatPage.length > 0;
-      } catch (error) {
-        console.warn('⚠️ 检查聊天详情页状态失败:', error);
-        return false;
-      }
-    },
-
-    // 检查当前是否在群聊环境
-    isCurrentlyInGroupChat() {
-      try {
-        // 方法1: 检查DOM结构
-        const hasGroupElements =
-          document.querySelector('.qq-group-wrapper') ||
-          document.querySelector('[data-group-id]') ||
-          document.querySelector('.custom-qq-qun') ||
-          document.querySelector('.qq-group-wrapper.active');
-
-        // 方法2: 检查最近的消息内容
-        const recentMessages = document.querySelectorAll('.mes_text');
-        let hasGroupKeywords = false;
-        if (recentMessages.length > 0) {
-          const lastMessage = recentMessages[recentMessages.length - 1];
-          const messageText = lastMessage?.textContent || '';
-          hasGroupKeywords =
-            messageText.includes('群聊') ||
-            messageText.includes('发送群聊') ||
-            messageText.includes('群里') ||
-            messageText.includes('群成员') ||
-            messageText.includes('群组');
-        }
-
-        // 方法3: 检查当前活动的聊天页面
-        const $activeChatPage = $('.chat-page.show');
-        const isGroupChatActive = $activeChatPage.closest('.qq-group-wrapper').length > 0;
-
-        const result = hasGroupElements || hasGroupKeywords || isGroupChatActive;
-
-        if (result) {
-          console.log('🔍 [群聊检测] 当前在群聊环境');
-        }
-
-        return result;
-      } catch (error) {
-        console.warn('⚠️ 检测群聊环境失败:', error);
-        return false;
-      }
-    },
-
-    // 只更新聊天详情页内容（不重建整个界面）
-    updateChatDetailOnly() {
-      try {
-        console.log('💬 [智能更新] 开始更新聊天详情页内容...');
-
-        // 获取当前显示的聊天页面
-        const $activeChatPage = $('.chat-page.show');
-        if ($activeChatPage.length === 0) {
-          console.log('⚠️ [智能更新] 未找到活动的聊天页面');
-          return;
-        }
-
-        // 获取聊天消息容器
-        const $chatMessages = $activeChatPage.find('.chat-messages');
-        if ($chatMessages.length === 0) {
-          console.log('⚠️ [智能更新] 未找到聊天消息容器');
-          return;
-        }
-
-        // 获取当前聊天的ID（从包装容器或其他标识中获取）
-        const chatId = this.getCurrentChatId($activeChatPage);
-        if (!chatId) {
-          console.log('⚠️ [智能更新] 无法确定当前聊天ID');
-          return;
-        }
-
-        console.log(`💬 [智能更新] 当前聊天ID: ${chatId}`);
-
-        // 重新提取该聊天的消息数据
-        this.updateSpecificChatMessages(chatId, $chatMessages);
-      } catch (error) {
-        console.error('⚠️ [智能更新] 更新聊天详情页失败:', error);
-      }
-    },
-
-    // 获取当前聊天ID
-    getCurrentChatId($activeChatPage) {
-      try {
-        // 尝试从包装容器获取聊天ID
-        const $wrapper = $activeChatPage.closest('.qq-contact-wrapper, .qq-group-wrapper');
-
-        if ($wrapper.length > 0) {
-          if ($wrapper.hasClass('qq-contact-wrapper')) {
-            // 联系人聊天 - 从data-qq-number属性获取
-            const qqNumber = $wrapper.attr('data-qq-number');
-            if (qqNumber) {
-              console.log(`💬 [识别] 联系人聊天: ${qqNumber}`);
-              return `contact_${qqNumber}`;
-            }
-
-            // 备用方案：从custom-qqhao类名获取
-            const $qqHao = $wrapper.find('.custom-qqhao');
-            const classMatch = $qqHao.attr('class')?.match(/custom-qqhao-(\d+)/);
-            if (classMatch) {
-              console.log(`💬 [识别备用] 联系人聊天: ${classMatch[1]}`);
-              return `contact_${classMatch[1]}`;
-            }
-          } else if ($wrapper.hasClass('qq-group-wrapper')) {
-            // 群组聊天 - 从data-group-id属性获取
-            const groupId = $wrapper.attr('data-group-id');
-            if (groupId) {
-              console.log(`💬 [识别] 群组聊天: ${groupId}`);
-              return `group_${groupId}`;
-            }
-
-            // 备用方案：从custom-qq-group类名获取
-            const $groupElement = $wrapper.find('.custom-qq-group');
-            const classMatch = $groupElement.attr('class')?.match(/custom-qq-group-(\d+)/);
-            if (classMatch) {
-              console.log(`💬 [识别备用] 群组聊天: ${classMatch[1]}`);
-              return `group_${classMatch[1]}`;
-            }
-          }
-        }
-
-        console.log('⚠️ [识别] 无法获取聊天ID，包装容器:', $wrapper.length);
-        return null;
-      } catch (error) {
-        console.error('⚠️ 获取聊天ID失败:', error);
-        return null;
-      }
-    },
-
-    // 更新特定聊天的消息
-    async updateSpecificChatMessages(chatId, $chatMessages) {
-      try {
-        console.log(`💬 [智能更新] 更新聊天 ${chatId} 的消息...`);
-
-        // 🔍 记录更新前的消息状态
-        const beforeUpdate = this.captureCurrentMessageState($chatMessages);
-        console.log(`📊 [消息状态] 更新前: ${beforeUpdate.messageCount} 条消息`);
-
-        let filteredMessages = [];
-
-        if (chatId.startsWith('contact_')) {
-          // 联系人聊天
-          const qqNumber = chatId.replace('contact_', '');
-          console.log(`💬 [智能更新] 提取联系人 ${qqNumber} 的消息...`);
-
-          // 重新提取所有QQ消息
-          const allMessages = await window.HQDataExtractor.extractQQMessages();
-          filteredMessages = allMessages.filter(msg => msg.qqNumber === qqNumber);
-
-          console.log(`💬 [智能更新] 联系人消息筛选结果: ${filteredMessages.length} 条`);
-        } else if (chatId.startsWith('group_')) {
-          // 群组聊天
-          const groupId = chatId.replace('group_', '');
-          console.log(`💬 [智能更新] 提取群组 ${groupId} 的消息...`);
-
-          // 重新提取群组数据
-          const allGroups = await window.HQDataExtractor.extractQQGroups();
-          const targetGroup = allGroups.find(group => group.id === groupId);
-
-          if (targetGroup) {
-            filteredMessages = targetGroup.messages || [];
-            console.log(`💬 [智能更新] 群组消息筛选结果: ${filteredMessages.length} 条`);
-          } else {
-            console.log(`⚠️ [智能更新] 未找到群组 ${groupId}`);
-          }
-        }
-
-        console.log(`💬 [智能更新] 最终找到 ${filteredMessages.length} 条消息`);
-
-        // 🎯 智能重建消息HTML（支持新消息识别和动态显示）
-        await this.rebuildChatMessagesWithAnimation($chatMessages, filteredMessages, chatId, beforeUpdate);
-
-        console.log('✅ [智能更新] 聊天消息更新完成');
-      } catch (error) {
-        console.error('⚠️ [智能更新] 更新特定聊天消息失败:', error);
-      }
-    },
-
-    // 🔍 捕获当前消息状态（用于新消息识别）
-    captureCurrentMessageState($chatMessages) {
-      try {
-        const $messages = $chatMessages.find('.custom-message');
-        const messageCount = $messages.length;
-
-        // 获取最后一条消息的内容作为标识
-        let lastMessageContent = '';
-        if ($messages.length > 0) {
-          const $lastMessage = $messages.last();
-          lastMessageContent = $lastMessage.find('.message-text').text().trim();
-        }
-
-        return {
-          messageCount: messageCount,
-          lastMessageContent: lastMessageContent,
-          timestamp: Date.now(),
-        };
-      } catch (error) {
-        console.error('⚠️ 捕获消息状态失败:', error);
-        return { messageCount: 0, lastMessageContent: '', timestamp: Date.now() };
-      }
-    },
-
-    // 🎯 智能重建聊天消息HTML（支持新消息识别和动态显示）
-    async rebuildChatMessagesWithAnimation($chatMessages, messages, chatId, beforeUpdate) {
-      try {
-        if (messages.length === 0) {
-          $chatMessages.html('<div class="no-messages">暂无聊天记录</div>');
-          return;
-        }
-
-        // 🔍 识别新消息
-        const newMessages = this.identifyNewMessages(messages, beforeUpdate);
-        console.log(`🆕 [新消息识别] 发现 ${newMessages.length} 条新消息`);
-
-        // 清空现有消息
-        $chatMessages.empty();
-
-        // 构建所有消息HTML
-        messages.forEach((message, index) => {
-          const messageHtml = this.createMessageHTML(message, chatId);
-          const $messageElement = $(messageHtml);
-
-          // 🎭 如果是新消息，先隐藏
-          const isNewMessage = newMessages.some(
-            newMsg =>
-              newMsg.content === message.content && newMsg.time === message.time && newMsg.type === message.type,
-          );
-
-          if (isNewMessage) {
-            $messageElement.addClass('new-message-hidden');
-            $messageElement.attr('data-new-message', 'true');
-          }
-
-          $chatMessages.append($messageElement);
-        });
-
-        console.log(`💬 [智能重建] 重新构建了 ${messages.length} 条消息`);
-
-        // 🎯 智能滚动定位
-        await this.smartScrollToNewMessages($chatMessages, newMessages.length);
-
-        // 🎭 动态显示新消息
-        if (newMessages.length > 0) {
-          await this.animateNewMessages($chatMessages);
-        }
-      } catch (error) {
-        console.error('⚠️ 智能重建聊天消息失败:', error);
-      }
-    },
-
-    // 重新构建聊天消息HTML（原版，保持兼容性）
-    rebuildChatMessages($chatMessages, messages, chatId) {
-      try {
-        // 清空现有消息
-        $chatMessages.empty();
-
-        if (messages.length === 0) {
-          $chatMessages.html('<div class="no-messages">暂无聊天记录</div>');
-          return;
-        }
-
-        // 构建消息HTML
-        messages.forEach(message => {
-          const messageHtml = this.createMessageHTML(message, chatId);
-          $chatMessages.append(messageHtml);
-        });
-
-        console.log(`💬 [智能更新] 重新构建了 ${messages.length} 条消息`);
-      } catch (error) {
-        console.error('⚠️ 重新构建聊天消息失败:', error);
-      }
-    },
-
-    // 🔍 识别新消息
-    identifyNewMessages(allMessages, beforeUpdate) {
-      try {
-        if (!beforeUpdate || beforeUpdate.messageCount === 0) {
-          // 如果之前没有消息，所有消息都是新的
-          return allMessages;
-        }
-
-        // 如果消息数量没有增加，说明没有新消息
-        if (allMessages.length <= beforeUpdate.messageCount) {
-          console.log(`📊 [新消息识别] 消息数量未增加: ${allMessages.length} <= ${beforeUpdate.messageCount}`);
-          return [];
-        }
-
-        // 获取新增的消息（从原有数量之后的消息）
-        const newMessages = allMessages.slice(beforeUpdate.messageCount);
-
-        console.log(`🆕 [新消息识别] 识别到 ${newMessages.length} 条新消息`);
-        newMessages.forEach((msg, index) => {
-          console.log(`  📝 新消息 ${index + 1}: ${msg.content?.substring(0, 30)}...`);
-        });
-
-        return newMessages;
-      } catch (error) {
-        console.error('⚠️ 识别新消息失败:', error);
-        return [];
-      }
-    },
-
-    // 🎯 智能滚动到新消息位置（优化版：减少延迟）
-    async smartScrollToNewMessages($chatMessages, newMessageCount) {
-      try {
-        if (newMessageCount === 0) {
-          console.log('📜 [智能滚动] 没有新消息，保持当前滚动位置');
-          return;
-        }
-
-        // 🎯 移除DOM等待延迟，立即执行滚动
-        const $container = $chatMessages;
-        const $allMessages = $container.find('.custom-message');
-
-        if ($allMessages.length === 0) {
-          console.log('📜 [智能滚动] 没有找到消息元素');
-          return;
-        }
-
-        // 计算第一条新消息的位置
-        const firstNewMessageIndex = $allMessages.length - newMessageCount;
-        const $firstNewMessage = $allMessages.eq(firstNewMessageIndex);
-
-        if ($firstNewMessage.length > 0) {
-          // 滚动到第一条新消息的位置
-          const containerHeight = $container.height();
-          const messageTop = $firstNewMessage.position().top;
-          const currentScrollTop = $container.scrollTop();
-
-          // 计算目标滚动位置（让第一条新消息显示在容器顶部附近）
-          const targetScrollTop = currentScrollTop + messageTop - 20; // 20px的边距
-
-          // 🎯 使用立即滚动，无动画延迟
-          $container.css('scroll-behavior', 'auto');
-          $container[0].scrollTop = targetScrollTop;
-
-          console.log(`📜 [智能滚动] 立即滚动到第一条新消息位置 (索引: ${firstNewMessageIndex})`);
-        } else {
-          console.log('📜 [智能滚动] 未找到第一条新消息元素');
-        }
-      } catch (error) {
-        console.error('⚠️ 智能滚动失败:', error);
-      }
-    },
-
-    // 🔊 播放消息通知音效
-    playMessageNotificationSound() {
-      try {
-        // 创建更明显的通知音效（类似QQ/微信）
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        // 创建双音调通知音效
-        const playTone = (frequency, duration, delay = 0) => {
-          setTimeout(() => {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            oscillator.type = 'sine';
-
-            // 音量包络（淡入淡出效果）
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
-          }, delay);
-        };
-
-        // 播放双音调：高音-低音（类似QQ通知音）
-        playTone(800, 0.15, 0); // 第一个音调：800Hz，持续150ms
-        playTone(600, 0.2, 100); // 第二个音调：600Hz，持续200ms，延迟100ms
-
-        console.log('🔊 [通知音效] 播放消息通知音效');
-      } catch (error) {
-        console.warn('⚠️ [通知音效] 播放音效失败，使用备用方案:', error);
-        // 备用方案：使用系统beep
-        try {
-          // 创建短促的beep音效
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
-
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-
-          oscillator.frequency.setValueAtTime(750, audioContext.currentTime);
-          oscillator.type = 'square';
-
-          gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.3);
-        } catch (fallbackError) {
-          console.warn('⚠️ [通知音效] 备用音效也失败:', fallbackError);
-        }
-      }
-    },
-
-    // 🎭 动态显示新消息动画
-    async animateNewMessages($chatMessages) {
-      try {
-        const $newMessages = $chatMessages.find('[data-new-message="true"]');
-
-        if ($newMessages.length === 0) {
-          console.log('🎭 [动画显示] 没有找到新消息');
-          return;
-        }
-
-        console.log(`🎭 [动画显示] 开始显示 ${$newMessages.length} 条新消息`);
-
-        // 🔊 播放消息通知音效（只在有新消息时播放一次）
-        this.playMessageNotificationSound();
-
-        // 逐条显示新消息
-        for (let i = 0; i < $newMessages.length; i++) {
-          const $message = $newMessages.eq(i);
-
-          // 🎯 第一条消息立即显示，后续消息有间隔
-          if (i > 0) {
-            await new Promise(resolve => setTimeout(resolve, 800)); // 每条消息间隔800ms
-          }
-
-          // 显示消息动画
-          $message.removeClass('new-message-hidden');
-          $message.addClass('new-message-appearing');
-
-          // 播放淡入动画（使用CSS transition）
-          $message.css({
-            opacity: 0,
-            transform: 'translateY(20px)',
-            transition: 'opacity 0.4s ease, transform 0.4s ease',
-          });
-
-          // 🎯 第一条消息无延迟显示，后续消息正常延迟
-          const animationDelay = i === 0 ? 0 : 50;
-          setTimeout(() => {
-            $message.css({
-              opacity: 1,
-              transform: 'translateY(0)',
-            });
-          }, animationDelay);
-
-          console.log(`✨ [动画显示] 显示第 ${i + 1} 条新消息${i === 0 ? '（立即显示）' : ''}`);
-        }
-
-        // 动画完成后清理标记
-        setTimeout(() => {
-          $newMessages.removeClass('new-message-appearing').removeAttr('data-new-message');
-          console.log('🎭 [动画显示] 所有新消息显示完成');
-        }, 500);
-      } catch (error) {
-        console.error('⚠️ 新消息动画显示失败:', error);
-      }
-    },
-
-    // 创建单条消息的HTML
-    createMessageHTML(message, chatId) {
-      // 判断是否为我的消息
-      const isMyMessage = message.type === 'sent' || message.isMyMessage === true;
-
-      // 获取发送者名称
-      let senderName = '';
-      if (isMyMessage) {
-        senderName = '我';
-      } else {
-        senderName = message.name || message.sender || '对方';
-      }
-
-      const messageClass = isMyMessage ? 'sent' : 'received';
-
-      // 获取头像 - 应用变换配置
-      let avatarHtml = '';
-      if (!isMyMessage) {
-        // 对于群组消息，尝试通过发送者名称找QQ号
-        let qqNumber = message.qqNumber;
-        let avatarUrl = null;
-        let avatarConfig = null;
-
-        if (qqNumber) {
-          // 如果有明确的QQ号，直接使用
-          avatarUrl = this.getAvatarUrl(qqNumber);
-          avatarConfig = this.avatarData[`${qqNumber}_config`];
-        } else if (chatId.startsWith('group_')) {
-          // 在群组中，优先使用映射表查找QQ号
-          // 方法1: 使用预建的映射表
-          if (this.senderNameToQqNumberMap && this.senderNameToQqNumberMap[message.sender]) {
-            qqNumber = this.senderNameToQqNumberMap[message.sender];
-            avatarUrl = this.getAvatarUrl(qqNumber);
-            avatarConfig = this.avatarData[`${qqNumber}_config`];
-          } else {
-            // 方法2: 通过联系人名称查找
-            qqNumber = this.findQQNumberByName(message.sender);
-            if (qqNumber) {
-              avatarUrl = this.getAvatarUrl(qqNumber);
-              avatarConfig = this.avatarData[`${qqNumber}_config`];
-            }
-          }
-        }
-
-        if (avatarUrl) {
-          const avatarStyle = this.buildAvatarStyle(avatarUrl, avatarConfig);
-          // 为每个消息头像添加唯一的数据属性，便于精确更新
-          avatarHtml = `<div class="message-avatar received-avatar" data-qq-number="${qqNumber}" data-sender="${message.sender}" style="${avatarStyle}"></div>`;
-        } else {
-          avatarHtml = `<div class="message-avatar-placeholder">${senderName.charAt(0)}</div>`;
-        }
-      } else {
-        // 我的消息显示用户头像
-        const userAvatarUrl = this.userData.avatar;
-        if (userAvatarUrl) {
-          // 获取用户头像配置并应用变换
-          const userConfig = this.getUserAvatarConfig();
-          const avatarStyle = this.buildAvatarStyle(userAvatarUrl, userConfig);
-          avatarHtml = `<div class="message-avatar sent-avatar" style="${avatarStyle}"></div>`;
-        } else {
-          avatarHtml = `<div class="message-avatar-placeholder">${this.userData.name.charAt(0)}</div>`;
-        }
-      }
-
-      // 构建消息时间
-      const messageTime =
-        message.time ||
-        new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-
-      return `
-        <div class="custom-message custom-${messageClass}">
-          ${!isMyMessage ? `<div class="message-avatar-container">${avatarHtml}</div>` : ''}
-          <div class="message-bubble">
-            ${chatId.startsWith('group_') && !isMyMessage ? `<div class="sender-name">${senderName}</div>` : ''}
-            <div class="message-text">${message.content}</div>
-            <div class="message-time">${messageTime}</div>
-          </div>
-          ${isMyMessage ? `<div class="message-avatar-container">${avatarHtml}</div>` : ''}
-        </div>
-      `;
-    },
-
-    // 构建头像样式字符串
-    buildAvatarStyle(avatarUrl, avatarConfig) {
-      let style = `background-image: url(${avatarUrl}); background-color: transparent;`;
-
-      // 应用变换配置
-      if (avatarConfig && avatarConfig.transform) {
-        const transform = avatarConfig.transform;
-        const safeScale = Math.max(0.1, Math.min(5, transform.scale || 1));
-        const safeX = Math.max(-200, Math.min(200, transform.translateX || 0));
-        const safeY = Math.max(-200, Math.min(200, transform.translateY || 0));
-        const safeRotation = (transform.rotate || 0) % 360;
-
-        const backgroundSize = `${safeScale * 100}%`;
-        const backgroundPositionX = `${50 - safeX * 0.5}%`;
-        const backgroundPositionY = `${50 - safeY * 0.5}%`;
-
-        style += ` background-size: ${backgroundSize}; background-position: ${backgroundPositionX} ${backgroundPositionY}; background-repeat: no-repeat;`;
-
-        if (safeRotation !== 0) {
-          style += ` transform: rotate(${safeRotation}deg) translateZ(0); transform-origin: center center;`;
-        } else {
-          style += ` transform: translateZ(0);`;
-        }
-      } else {
-        style +=
-          ' background-size: cover; background-position: center; background-repeat: no-repeat; transform: translateZ(0);';
-      }
-
-      // 添加图像质量优化
-      style +=
-        ' image-rendering: -webkit-optimize-contrast; -webkit-backface-visibility: hidden; backface-visibility: hidden; -webkit-transform-style: preserve-3d; transform-style: preserve-3d;';
-
-      return style;
-    },
-
-    // 通过联系人名称查找QQ号
-    findQQNumberByName(contactName) {
-      if (!contactName) {
-        return null;
-      }
-
-      // 首先检查缓存的映射表
-      if (this.contactNameMap && this.contactNameMap[contactName]) {
-        return this.contactNameMap[contactName];
-      }
-
-      // 🔧 修复：只在映射表未创建且不在创建中时，才尝试创建
-      if (
-        !this.mappingCreated &&
-        !this.isMappingCreating &&
-        (!this.contactNameMap || Object.keys(this.contactNameMap).length === 0)
-      ) {
-        console.log(`🔍 [查找] ${contactName} 未找到，映射表为空，尝试创建映射表...`);
-        this.createContactNameMappingSync();
-
-        // 创建后再次检查
-        if (this.contactNameMap && this.contactNameMap[contactName]) {
-          return this.contactNameMap[contactName];
-        }
-      }
-
-      // 如果映射表中仍然没有，尝试从头像数据中查找
-      const qqNumber = this.findQQNumberFromAvatarData(contactName);
-      if (qqNumber) {
-        // 将找到的映射添加到缓存中
-        if (!this.contactNameMap) {
-          this.contactNameMap = {};
-        }
-        this.contactNameMap[contactName] = qqNumber;
-        console.log(`🔍 [缓存] 将 ${contactName} -> ${qqNumber} 添加到映射表`);
-        return qqNumber;
-      }
-
-      return null;
-    },
-
-    // 从头像数据中直接查找QQ号（兜底机制）
-    findQQNumberFromAvatarData(contactName) {
-      try {
-        // 🔧 优化：首先检查已加载的头像数据，避免重复扫描聊天记录
-        if (this.avatarData && Object.keys(this.avatarData).length > 0) {
-          for (const key of Object.keys(this.avatarData)) {
-            if (key.endsWith('_config')) {
-              const config = this.avatarData[key];
-              if (config && config.contactName === contactName) {
-                const qqNumber = key.replace('_config', '');
-                console.log(`🔍 [快速查找] 从头像数据找到 ${contactName} -> ${qqNumber}`);
-                return qqNumber;
-              }
-            }
-          }
-        }
-
-        // 如果头像数据中没有找到，再扫描聊天记录（但限制扫描范围）
-        const context = this.getSillyTavernContext();
-        if (!context) return null;
-
-        const chatData = context.getContext();
-        if (!chatData || !chatData.chat) return null;
-
-        // 只搜索最近的20条聊天记录，减少性能影响
-        const searchRange = Math.min(20, chatData.chat.length);
-        for (let i = chatData.chat.length - 1; i >= chatData.chat.length - searchRange; i--) {
-          const message = chatData.chat[i];
-          const messageText = message.mes || '';
-
-          // 查找头像增强数据: [头像增强|QQ号|配置信息]
-          const avatarMatches = messageText.matchAll(/\[头像增强\|(\d+)\|([^]]*?)\]/g);
-          for (const match of avatarMatches) {
-            const [, qqNumber, configData] = match;
-            try {
-              // 解析配置数据，查找联系人名称
-              if (configData.includes(`"contactName":"${contactName}"`)) {
-                console.log(`🔍 [聊天扫描] 找到 ${contactName} -> ${qqNumber}`);
-                return qqNumber;
-              }
-            } catch (error) {
-              // 忽略解析错误，继续查找
-            }
-          }
-        }
-
-        return null;
-      } catch (error) {
-        console.error(`❌ 从头像数据查找QQ号失败:`, error);
-        return null;
-      }
-    },
-
-    // 创建联系人名称到QQ号的映射（异步版本）
-    async createContactNameMapping() {
-      if (this.contactNameMap && Object.keys(this.contactNameMap).length > 0) {
-        return; // 已经创建过了
-      }
-
-      console.log('🔄 [异步] 创建联系人名称映射...');
-      this.contactNameMap = {};
-
-      try {
-        // 方法1: 从已提取的联系人数据中获取
-        if (window.HQDataExtractor) {
-          const contacts = await window.HQDataExtractor.extractQQContacts();
-          contacts.forEach(contact => {
-            if (contact.name && contact.number) {
-              this.contactNameMap[contact.name] = contact.number;
-            }
-          });
-        }
-
-        // 方法2: 从头像增强数据中提取（如果方法1没有足够数据）
-        if (Object.keys(this.contactNameMap).length === 0) {
-          this.extractContactMappingFromChatData();
-        }
-
-        console.log(
-          `✅ [异步] 创建联系人名称映射完成，共${Object.keys(this.contactNameMap).length}个映射:`,
-          this.contactNameMap,
-        );
-      } catch (error) {
-        console.error('❌ [异步] 创建联系人名称映射失败:', error);
-        this.contactNameMap = {};
-      }
-    },
-
-    // 创建联系人名称到QQ号的映射（同步版本）
-    createContactNameMappingSync() {
-      // 添加创建锁，避免重复创建
-      if (this.isMappingCreating) {
-        console.log('🔒 [同步] 映射创建中，跳过重复请求');
-        return;
-      }
-
-      if (this.contactNameMap && Object.keys(this.contactNameMap).length > 0) {
-        console.log(`✅ [同步] 映射表已存在，共${Object.keys(this.contactNameMap).length}个映射`);
-        return; // 已经创建过了
-      }
-
-      this.isMappingCreating = true;
-      console.log('🔄 [同步] 创建联系人名称映射...');
-      this.contactNameMap = {};
-
-      try {
-        // 直接从聊天数据中提取映射信息
-        this.extractContactMappingFromChatData();
-
-        console.log(
-          `✅ [同步] 创建联系人名称映射完成，共${Object.keys(this.contactNameMap).length}个映射:`,
-          this.contactNameMap,
-        );
-
-        // 立即暴露映射表给全局使用
-        this.senderNameToQqNumberMap = { ...this.contactNameMap };
-        if (window.QQApp) {
-          window.QQApp.senderNameToQqNumberMap = this.senderNameToQqNumberMap;
-        }
-
-        // 🔧 设置映射表创建完成标记，避免后续重复创建
-        this.mappingCreated = true;
-      } catch (error) {
-        console.error('❌ [同步] 创建联系人名称映射失败:', error);
-        this.contactNameMap = {};
-      } finally {
-        this.isMappingCreating = false;
-      }
-    },
-
-    // 从聊天数据中提取联系人映射
-    extractContactMappingFromChatData() {
-      const context = this.getSillyTavernContext();
-      if (!context) {
-        console.log('❌ [映射提取] SillyTavern上下文不可用');
-        return;
-      }
-
-      const chatData = context.getContext();
-      if (!chatData || !chatData.chat) {
-        console.log('❌ [映射提取] 聊天数据不可用');
-        return;
-      }
-
-      // 遍历最近的聊天记录
-      const recentMessages = chatData.chat.slice(-100); // 只查看最近100条消息，提升性能
-      let foundMappings = 0;
-
-      recentMessages.forEach((message, index) => {
-        const messageText = message.mes || '';
-
-        // 检查是否包含头像增强数据
-        if (messageText.includes('[头像增强|')) {
-          // 方法1: 提取头像增强数据中的联系人信息
-          const avatarMatches = messageText.matchAll(/\[头像增强\|(\d+)\|([^]]*?)\]/g);
-          for (const match of avatarMatches) {
-            const [fullMatch, qqNumber, configData] = match;
-
-            try {
-              // 从配置数据中提取联系人名称
-              const contactNameMatch = configData.match(/"contactName":"([^"]+)"/);
-              if (contactNameMatch && qqNumber) {
-                const contactName = contactNameMatch[1];
-                this.contactNameMap[contactName] = qqNumber;
-                foundMappings++;
-              }
-            } catch (error) {
-              // 静默处理解析错误
-            }
-          }
-        }
-
-        // 检查是否包含群聊消息
-        if (messageText.includes('[群聊消息|')) {
-          // 方法3: 从群聊消息中提取发送者与头像的关联
-          const groupMsgMatches = messageText.matchAll(/\[群聊消息\|\d+\|([^|]+)\|/g);
-          for (const match of groupMsgMatches) {
-            const [, sender] = match;
-
-            // 在同一条消息中查找该发送者的头像数据
-            const senderAvatarMatch = messageText.match(
-              new RegExp(`\\[头像增强\\|(\\d+)\\|[^]]*?"contactName":"${sender}"`),
-            );
-            if (senderAvatarMatch) {
-              const qqNumber = senderAvatarMatch[1];
-              this.contactNameMap[sender] = qqNumber;
-              foundMappings++;
-            }
-          }
-        }
-
-        // 方法2: 从用户信息标签中提取
-        if (messageText.includes('[用户信息|')) {
-          const userInfoMatches = messageText.matchAll(/\[用户信息\|([^|]+)\|[^]]*?\]/g);
-          for (const match of userInfoMatches) {
-            const [, userName] = match;
-
-            // 查找同一条消息中是否有对应的头像增强数据
-            const userAvatarMatch = messageText.match(
-              new RegExp(`\\[头像增强\\|(\\d+)\\|[^]]*?"contactName":"${userName}"`),
-            );
-            if (userAvatarMatch) {
-              const qqNumber = userAvatarMatch[1];
-              this.contactNameMap[userName] = qqNumber;
-              foundMappings++;
-            }
-          }
-        }
-      });
-
-      console.log(`📊 [映射提取] 从${recentMessages.length}条消息中提取到${foundMappings}个映射关系`);
-    },
-
-    // 检查QQ应用是否当前可见
-    isQQAppCurrentlyVisible() {
-      try {
-        // 检查是否在手机界面模式
-        const isInPhoneMode = $('#phone_interface').hasClass('show-qq-app-content');
-
-        if (isInPhoneMode) {
-          // 手机界面模式：检查手机界面是否显示且QQ应用容器有内容
-          const phoneVisible = $('#phone_interface').is(':visible');
-          const qqContainerHasContent = $('#phone_interface .qq-app-container').children().length > 0;
-          return phoneVisible && qqContainerHasContent;
-        } else {
-          // 独立模式：检查QQ对话框是否可见
-          return $('#chat_history_dialog').is(':visible');
-        }
-      } catch (error) {
-        console.warn('⚠️ 检查QQ应用可见性失败:', error);
-        return false;
-      }
-    },
-
-    // 获取当前历史内容容器
-    getCurrentHistoryContent() {
-      const isInPhoneMode = $('#phone_interface').hasClass('show-qq-app-content');
-
-      if (isInPhoneMode) {
-        return $('#phone_interface .qq-app-container #history_content');
-      } else {
-        return $('#chat_history_dialog #history_content');
-      }
-    },
-
-    // 清理实时更新系统
-    cleanupRealtimeUpdates() {
-      try {
-        console.log('🧹 清理QQ应用实时更新系统...');
-
-        if (this.realtimeUpdateTimer) {
-          clearTimeout(this.realtimeUpdateTimer);
-          this.realtimeUpdateTimer = null;
-        }
-
-        // 清除状态检查定时器
-        if (this.statusCheckInterval) {
-          clearInterval(this.statusCheckInterval);
-          this.statusCheckInterval = null;
-        }
-
-        // 移除回调
-        if (window.HQDataExtractor && this.realtimeUpdateCallback) {
-          window.HQDataExtractor.realtimeUpdater.offUpdate(this.realtimeUpdateCallback);
-          this.realtimeUpdateCallback = null;
-        }
-
-        if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater && this.realtimeUpdateEnabled) {
-          window.HQDataExtractor.realtimeUpdater.stop();
-          this.realtimeUpdateEnabled = false;
-        }
-
-        console.log('✅ QQ应用实时更新系统清理完成');
-      } catch (error) {
-        console.error('⚠️ 清理实时更新系统失败:', error);
-      }
-    },
-
-    // 设置页面可见性监听
-    setupVisibilityListener() {
-      // 当页面重新获得焦点时，检查头像数据
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          // 页面变为可见，延迟检查头像数据
-          setTimeout(() => {
-            this.checkAndRecoverAvatars();
-          }, 1000);
-        }
-      });
-
-      // 窗口获得焦点时也检查
-      window.addEventListener('focus', () => {
-        setTimeout(() => {
-          this.checkAndRecoverAvatars();
-        }, 1000);
-      });
-    },
-
-    // 检查并恢复头像数据
-    checkAndRecoverAvatars() {
-      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
-
-      // 如果头像数据为空或很少，尝试恢复
-      if (contactCount === 0) {
-        console.log('🔄 [自动检查] 检测到头像数据为空，尝试自动恢复');
-        this.autoRecoverAvatarData();
       }
     },
 
@@ -1281,53 +137,8 @@
 
     // 加载所有数据
     loadData() {
-      // 优先从聊天记录加载，确保跨设备一致性
-      this.loadAvatarDataFromChat();
+      this.loadAvatarDataEnhanced();
       this.loadUserData();
-    },
-
-    // 仅加载消息数据，不重新加载头像数据（用于实时更新避免循环）
-    async loadMessagesWithoutAvatarReload() {
-      try {
-        console.log('🔄 [轻量更新] 开始重新加载消息数据...');
-
-        // 不重新创建映射，使用现有的映射数据
-        // this.createContactNameMappingSync(); // 移除这行，避免重复调用
-
-        // 重新创建界面
-        this.createInterface();
-
-        console.log('✅ [轻量更新] 消息数据重新加载完成');
-      } catch (error) {
-        console.error('❌ [轻量更新] 加载消息数据失败:', error);
-        throw error;
-      }
-    },
-
-    // 从聊天记录加载头像数据（跨设备兼容）
-    loadAvatarDataFromChat() {
-      console.log('🔄 [数据加载] 从聊天记录加载头像数据（跨设备模式）');
-      this.avatarData = {};
-      this.extractAvatarDataFromChatEnhanced();
-
-      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
-      console.log(`🔄 [数据加载] 从聊天记录加载完成，联系人数量: ${contactCount}`);
-
-      // 如果成功加载了数据，更新缓存
-      if (contactCount > 0) {
-        this.avatarDataCache = {
-          data: { ...this.avatarData },
-          version: this.avatarDataCache.version + 1,
-          lastLoadTime: Date.now(),
-          isValid: true,
-        };
-        this.saveAvatarCacheToStorage();
-      }
-
-      // 延迟更新显示，确保DOM已准备好
-      setTimeout(() => {
-        this.updateAllAvatarDisplaysFromData();
-      }, 300);
     },
 
     // 加载头像数据（增强版）- 添加智能缓存
@@ -1502,16 +313,6 @@
 
       console.log(`🔄 [数据提取] 找到 ${chatData.chat.length} 条聊天记录，开始处理`);
       this.processMessagesForAvatarsEnhanced(chatData.chat);
-
-      // 输出提取结果摘要
-      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
-      console.log(`🔍 [数据提取] 提取完成，共找到 ${contactCount} 个联系人的头像数据`);
-      if (contactCount > 0) {
-        console.log(
-          '🔍 [数据提取] 联系人QQ号列表:',
-          Object.keys(this.avatarData).filter(k => !k.endsWith('_config')),
-        );
-      }
     },
 
     // 处理消息提取头像（增强版）
@@ -1539,10 +340,9 @@
 
     // 从文本提取头像信息（增强版）
     extractAvatarsFromTextEnhanced(text) {
-      // 提取增强格式的头像 - 创建新的正则表达式实例
+      // 提取增强格式的头像
       const enhancedRegex = /\[头像增强\|(\d+)\|([^\]]+)\]/g;
       let match;
-      let foundEnhanced = false;
 
       while ((match = enhancedRegex.exec(text)) !== null) {
         const [, qqNumber, configJson] = match;
@@ -1550,22 +350,19 @@
           const avatarConfig = JSON.parse(configJson);
           this.avatarData[qqNumber] = avatarConfig.url;
           this.avatarData[`${qqNumber}_config`] = avatarConfig;
-          foundEnhanced = true;
 
           console.log('🔍 [数据读取] 提取到头像增强配置:', {
             qqNumber,
-            url: avatarConfig.url.substring(0, 50) + '...',
-            hasTransform: !!avatarConfig.transform,
+            avatarConfig,
+            transform: avatarConfig.transform,
           });
         } catch (error) {
-          console.error(`解析QQ号 ${qqNumber} 的头像配置失败:`, error);
+          console.error('解析头像配置失败:', error);
         }
       }
 
-      // 兼容旧格式 - 只有在没有找到增强格式时才处理旧格式
-      if (!foundEnhanced) {
-        this.extractAvatarsFromText(text);
-      }
+      // 兼容旧格式
+      this.extractAvatarsFromText(text);
     },
 
     // 从文本提取用户头像（增强版）
@@ -1663,13 +460,11 @@
 
     // 从文本提取头像信息
     extractAvatarsFromText(text) {
-      // 创建新的正则表达式实例，避免全局状态问题
-      const avatarRegex = /\[头像\|(\d+)\|([^\]]+)\]/g;
+      CONFIG.REGEX.AVATAR.lastIndex = 0;
       let match;
-      while ((match = avatarRegex.exec(text)) !== null) {
+      while ((match = CONFIG.REGEX.AVATAR.exec(text)) !== null) {
         const [, qqNumber, avatarUrl] = match;
         this.avatarData[qqNumber] = avatarUrl;
-        // 静默提取头像数据
       }
     },
 
@@ -1691,49 +486,12 @@
       }
     },
 
-    // 获取头像URL - 移除过多调试日志
+    // 获取头像URL
     getAvatarUrl(qqNumber) {
-      // 如果头像数据不存在，自动尝试恢复
       if (!this.avatarData[qqNumber]) {
-        this.autoRecoverAvatarData();
+        this.extractAvatarDataFromChat();
       }
-
       return this.avatarData[qqNumber] || '';
-    },
-
-    // 自动恢复头像数据 - 添加频率限制
-    autoRecoverAvatarData() {
-      // 检查是否已经在恢复过程中，避免重复执行
-      if (this.isRecovering) {
-        return;
-      }
-
-      // 添加频率限制，避免过度执行
-      const now = Date.now();
-      const lastRecoveryTime = this.lastAutoRecoveryTime || 0;
-      const recoveryInterval = 3000; // 3秒内最多恢复一次
-
-      if (now - lastRecoveryTime < recoveryInterval) {
-        return;
-      }
-
-      this.isRecovering = true;
-      this.lastAutoRecoveryTime = now;
-      console.log('🔄 [自动恢复] 检测到头像数据缺失，开始自动恢复');
-
-      // 强制重新提取数据，不依赖缓存
-      this.avatarData = {};
-      this.extractAvatarDataFromChatEnhanced();
-
-      // 恢复完成
-      this.isRecovering = false;
-
-      const contactCount = Object.keys(this.avatarData).filter(k => !k.endsWith('_config')).length;
-      if (contactCount > 0) {
-        console.log(`✅ [自动恢复] 成功恢复 ${contactCount} 个联系人的头像数据`);
-      } else {
-        console.log('⚠️ [自动恢复] 未找到头像数据，可能聊天记录中没有头像信息');
-      }
     },
 
     // 加载用户数据
@@ -2803,10 +1561,9 @@
           setTimeout(() => {
             const $historyContent = this.getCurrentHistoryContent();
             if ($historyContent.length > 0 && $historyContent[0]) {
-              // 直接设置滚动位置，无动画效果
-              $historyContent[0].scrollTop = $historyContent[0].scrollHeight;
+              $historyContent.scrollTop($historyContent[0].scrollHeight);
             }
-          }, 100); // 减少延迟
+          }, 200); // 增加延迟以确保内容克隆完成
         })
         .catch(error => {
           console.error('❌ 加载消息失败:', error);
@@ -2967,9 +1724,6 @@
     hide: function () {
       console.log('正在隐藏QQ应用...');
 
-      // 清理实时更新系统
-      this.cleanupRealtimeUpdates();
-
       // 清空手机界面容器（因为我们使用克隆，不需要移回）
       const $qqContainer = $('#phone_interface .qq-app-container');
       $qqContainer.empty();
@@ -2986,7 +1740,7 @@
       console.log('QQ应用已隐藏');
     },
 
-    // 加载消息（完整版，包含头像数据加载）
+    // 加载消息
     loadMessages: async function () {
       try {
         console.log('📊 开始从聊天记录抓取数据...');
@@ -2995,27 +1749,6 @@
         this.loadAvatarDataEnhanced(false); // 不强制重新加载，保持已有的头像变换配置
         this.loadUserData();
 
-        return this.loadMessagesCore();
-      } catch (error) {
-        console.error('加载消息失败:', error);
-      }
-    },
-
-    // 加载消息（轻量版，不重新加载头像数据）
-    loadMessagesWithoutAvatarReload: async function () {
-      try {
-        console.log('📊 [轻量更新] 开始更新聊天消息...');
-
-        // 不重新加载头像数据，使用现有缓存
-        return this.loadMessagesCore();
-      } catch (error) {
-        console.error('轻量更新消息失败:', error);
-      }
-    },
-
-    // 消息加载核心逻辑
-    loadMessagesCore: async function () {
-      try {
         // 确保原始对话框存在
         let $originalDialog = $('#chat_history_dialog');
         console.log('🏠 原始对话框存在:', $originalDialog.length > 0);
@@ -3055,14 +1788,7 @@
             senderNameToQqNumberMap[contact.name] = contact.number;
           }
         });
-
-        // 将映射表暴露给全局，供数据提取器使用
-        this.senderNameToQqNumberMap = senderNameToQqNumberMap;
-        window.QQApp = window.QQApp || {};
-        window.QQApp.senderNameToQqNumberMap = senderNameToQqNumberMap;
-
         console.log('[AvatarDebug] Created senderNameToQqNumberMap:', senderNameToQqNumberMap);
-        console.log('🔗 [映射暴露] 映射表已暴露给数据提取器使用');
 
         // 创建联系人HTML - 使用新的包装容器结构
         contacts.forEach(contact => {
@@ -3479,10 +2205,9 @@
           setTimeout(function () {
             const $cont = $(e.currentTarget).find('.custom-qq-cont');
             if ($cont.length > 0) {
-              // 直接设置滚动位置，无动画效果
-              $cont[0].scrollTop = $cont[0].scrollHeight;
+              $cont.scrollTop($cont[0].scrollHeight);
             }
-          }, 50);
+          }, 100);
         });
     },
 
@@ -3514,10 +2239,9 @@
           setTimeout(function () {
             const $cont = $(e.currentTarget).find('.custom-qun-cont');
             if ($cont.length > 0) {
-              // 直接设置滚动位置，无动画效果
-              $cont[0].scrollTop = $cont[0].scrollHeight;
+              $cont.scrollTop($cont[0].scrollHeight);
             }
-          }, 50);
+          }, 100);
         });
     },
 
@@ -3897,14 +2621,14 @@
             window.QQApp.hideMainPageDecorations();
           }
 
-          // 🎯 首次打开聊天页面时直接定位到底部（无动画，无延迟）
-          const $messagesContainer = $chatPage.find('.chat-messages');
-          if ($messagesContainer.length > 0) {
-            // 立即设置滚动位置，完全无动画效果
-            $messagesContainer.css('scroll-behavior', 'auto');
-            $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
-            console.log('📜 [首次打开] 已立即定位到消息底部');
-          }
+          // 滚动到消息底部
+          setTimeout(() => {
+            const $messagesContainer = $chatPage.find('.chat-messages');
+            if ($messagesContainer.length > 0) {
+              $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
+              console.log('已滚动到消息底部');
+            }
+          }, 100);
         });
 
       // QQ群组包装容器点击事件
@@ -3941,14 +2665,14 @@
             window.QQApp.hideMainPageDecorations();
           }
 
-          // 🎯 首次打开群聊页面时直接定位到底部（无动画，无延迟）
-          const $messagesContainer = $chatPage.find('.chat-messages');
-          if ($messagesContainer.length > 0) {
-            // 立即设置滚动位置，完全无动画效果
-            $messagesContainer.css('scroll-behavior', 'auto');
-            $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
-            console.log('📜 [首次打开] 已立即定位到群聊底部');
-          }
+          // 滚动到消息底部
+          setTimeout(() => {
+            const $messagesContainer = $chatPage.find('.chat-messages');
+            if ($messagesContainer.length > 0) {
+              $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
+              console.log('已滚动到消息底部');
+            }
+          }, 100);
         });
 
       // 小房子按钮点击事件（聊天页面内）
@@ -4047,12 +2771,9 @@
 
               $input.val('');
 
-              // 🎯 发送消息后直接定位到新消息位置
+              // 滚动到底部
               const $messagesContainer = $sendBtn.closest('.chat-page').find('.chat-messages');
-              setTimeout(() => {
-                $messagesContainer[0].scrollTop = $messagesContainer[0].scrollHeight;
-                console.log('📜 [发送消息] 已定位到新消息位置');
-              }, 50);
+              $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
 
               // 显示发送成功提示
               console.log(`消息已发送到${targetInfo.isGroup ? '群聊' : '私聊'}: ${targetInfo.target}`);
@@ -4746,17 +3467,58 @@
       // 检查是否需要更新（避免重复更新）
       const updateKey = `${qqNumber}_${avatarUrl}_${JSON.stringify(transform)}`;
       if (this.lastMessageAvatarUpdate === updateKey) {
+        console.log(`⏭️ 跳过重复的消息头像更新: ${qqNumber}`);
         return;
       }
       this.lastMessageAvatarUpdate = updateKey;
 
-      // 使用精确的选择器，只更新特定QQ号的头像
-      const targetSelector = `.message-avatar.received-avatar[data-qq-number="${qqNumber}"]`;
-      const $targetElements = $(targetSelector);
+      console.log(`🔄 更新角色 ${qqNumber} 消息头像`);
 
-      if ($targetElements.length > 0) {
-        this.batchUpdateMessageAvatars($targetElements, qqNumber, avatarUrl, transform);
-        console.log(`✅ 更新了 ${$targetElements.length} 个角色 ${qqNumber} 的消息头像`);
+      // 查找所有可能的角色消息头像选择器
+      const contactAvatarSelectors = [
+        `.message-avatar.received-avatar`, // 通用的接收消息头像
+        `.received-avatar`, // 简化的接收头像
+        `.custom-message.custom-received .message-avatar`, // 接收消息中的头像
+      ];
+
+      let foundAvatars = 0;
+      const elementsToUpdate = []; // 批量收集需要更新的元素
+
+      contactAvatarSelectors.forEach(selector => {
+        const $elements = $(selector);
+
+        $elements.each((elementIndex, element) => {
+          const $this = $(element);
+          const $contactWrapper = $this.closest('.qq-contact-wrapper');
+          const $groupWrapper = $this.closest('.qq-group-wrapper');
+
+          // 检查是否是目标联系人的头像
+          let isTargetContact = false;
+
+          if ($contactWrapper.length > 0) {
+            const wrapperQQNumber = $contactWrapper.data('qq-number');
+            if (wrapperQQNumber == qqNumber) {
+              isTargetContact = true;
+            }
+          } else if ($groupWrapper.length > 0) {
+            // 对于群聊，检查消息是否来自目标联系人
+            const $messageContainer = $this.closest('.custom-message.custom-received');
+            if ($messageContainer.length > 0) {
+              isTargetContact = true;
+            }
+          }
+
+          if (isTargetContact && avatarUrl) {
+            foundAvatars++;
+            elementsToUpdate.push($this);
+          }
+        });
+      });
+
+      // 批量更新元素，减少DOM操作次数
+      if (elementsToUpdate.length > 0) {
+        this.batchUpdateMessageAvatars(elementsToUpdate, qqNumber, avatarUrl, transform);
+        console.log(`✅ 批量更新了 ${foundAvatars} 个角色 ${qqNumber} 消息头像`);
       }
     },
 
@@ -4803,7 +3565,11 @@
           css['transform'] = 'translateZ(0)';
         }
 
-        // 变换效果已应用
+        console.log(`🎨 应用角色 ${qqNumber} 消息头像变换:`, {
+          scale: safeScale,
+          translate: { x: safeX, y: safeY },
+          rotate: safeRotation,
+        });
       } else {
         // 默认样式
         css['background-size'] = 'cover';
@@ -4839,39 +3605,9 @@
           window.applyAvatarQualityOptimization();
         }
 
-        // 确保实时更新系统已启动
-        setTimeout(() => {
-          if (window.QQApp && !window.QQApp.realtimeUpdateEnabled) {
-            console.log('🔄 [延迟启动] 启动实时更新系统...');
-            window.QQApp.setupRealtimeUpdates();
-          }
-        }, 200);
-
         // 触发QQ应用加载完成事件，用于统一按钮样式刷新
         console.log('🎉 QQ应用初始化完成，触发事件');
         $(document).trigger('qq-app-loaded');
-
-        // 最终检查实时更新系统
-        setTimeout(() => {
-          if (window.HQDataExtractor && window.QQApp) {
-            const isRealtimeActive = window.HQDataExtractor.realtimeUpdater.isMonitoring;
-            const isQQRealtimeEnabled = window.QQApp.realtimeUpdateEnabled;
-
-            console.log('🔍 [最终检查] 实时更新状态:', {
-              HQDataExtractor监听中: isRealtimeActive,
-              QQ应用实时更新已启用: isQQRealtimeEnabled,
-            });
-
-            if (!isRealtimeActive || !isQQRealtimeEnabled) {
-              console.log('⚠️ [最终检查] 实时更新未正常启动，强制启动...');
-              if (typeof window.forceStartRealtimeUpdates === 'function') {
-                window.forceStartRealtimeUpdates();
-              }
-            } else {
-              console.log('✅ [最终检查] 实时更新系统运行正常');
-            }
-          }
-        }, 1000);
       }, 500);
     }, 1000); // 延迟1秒，确保聊天记录加载完成
   });
@@ -4889,173 +3625,12 @@
     }
   };
 
-  // 添加群聊头像调试函数
-  window.debugGroupAvatars = function () {
-    if (!window.QQApp) {
-      console.error('QQ应用未加载');
-      return;
-    }
-
-    console.log('=== 群聊头像调试信息 ===');
-    console.log('映射表 contactNameMap:', window.QQApp.contactNameMap);
-    console.log('映射表 senderNameToQqNumberMap:', window.QQApp.senderNameToQqNumberMap);
-    console.log(
-      '头像数据 avatarData:',
-      Object.keys(window.QQApp.avatarData).filter(k => !k.endsWith('_config')),
-    );
-
-    // 检查当前页面的消息头像
-    const messageAvatars = $('.message-avatar.received-avatar');
-    console.log(`找到 ${messageAvatars.length} 个接收消息头像`);
-
-    messageAvatars.each(function (index) {
-      const $this = $(this);
-      const qqNumber = $this.data('qq-number');
-      const sender = $this.data('sender');
-      const backgroundImage = $this.css('background-image');
-
-      console.log(`头像 ${index + 1}: 发送者=${sender}, QQ号=${qqNumber}, 背景图=${backgroundImage ? '有' : '无'}`);
-    });
-  };
-
-  // 添加实时更新调试函数
-  window.debugRealtimeUpdates = function () {
-    console.log('=== 实时更新系统调试信息 ===');
-
-    if (!window.HQDataExtractor) {
-      console.error('❌ HQDataExtractor 未加载');
-      return;
-    }
-
-    const updater = window.HQDataExtractor.realtimeUpdater;
-
-    // 使用新的状态检查方法
-    if (updater.checkAndFixStatus) {
-      const status = updater.checkAndFixStatus();
-      console.log('详细状态信息:', status);
-    } else {
-      console.log('实时更新器状态:');
-      console.log('- 已初始化:', updater.isInitialized);
-      console.log('- 正在监听:', updater.isMonitoring);
-      console.log('- 回调数量:', updater.updateCallbacks.size);
-      console.log('- 最后消息数量:', updater.lastMessageCount);
-      console.log('- 最后聊天ID:', updater.lastChatId);
-    }
-
-    if (window.QQApp) {
-      console.log('QQ应用实时更新状态:');
-      console.log('- 实时更新已启用:', window.QQApp.realtimeUpdateEnabled);
-      console.log('- 正在更新中:', window.QQApp.isUpdating);
-      console.log('- 状态检查定时器:', !!window.QQApp.statusCheckInterval);
-    }
-
-    // 检查性能状态
-    console.log('性能状态:');
-    console.log('- 手机插件可见:', updater.isMobilePluginVisible ? updater.isMobilePluginVisible() : '未知');
-    console.log('- 页面可见:', !document.hidden);
-    console.log('- 定时器运行:', !!updater.checkInterval);
-
-    // 手动触发一次更新测试
-    console.log('🧪 手动触发更新测试...');
-    if (updater.forceUpdate) {
-      updater.forceUpdate();
-    }
-  };
-
   window.refreshQQAvatars = function () {
     if (window.QQApp) {
       console.log('🔄 手动刷新QQ头像数据');
       window.QQApp.refreshAvatarData();
     } else {
       console.error('QQ应用未加载');
-    }
-  };
-
-  // 强制启动实时更新
-  window.forceStartRealtimeUpdates = function () {
-    console.log('🚀 强制启动实时更新系统...');
-
-    if (!window.HQDataExtractor) {
-      console.error('❌ HQDataExtractor 未加载');
-      return;
-    }
-
-    // 停止现有的监听器
-    if (window.HQDataExtractor.realtimeUpdater.isMonitoring) {
-      window.HQDataExtractor.realtimeUpdater.stop();
-    }
-
-    // 重新初始化
-    window.HQDataExtractor.realtimeUpdater.initialize();
-
-    // 如果QQ应用存在，重新设置其实时更新
-    if (window.QQApp && typeof window.QQApp.setupRealtimeUpdates === 'function') {
-      window.QQApp.setupRealtimeUpdates();
-    }
-
-    console.log('✅ 实时更新系统已强制重启');
-  };
-
-  // 测试实时更新系统
-  window.testRealtimeUpdates = function () {
-    console.log('🧪 测试实时更新系统...');
-
-    if (!window.HQDataExtractor) {
-      console.error('❌ HQDataExtractor 未加载');
-      return;
-    }
-
-    const updater = window.HQDataExtractor.realtimeUpdater;
-
-    // 检查基本状态
-    console.log('基本状态检查:');
-    console.log('- 已初始化:', updater.isInitialized);
-    console.log('- 正在监听:', updater.isMonitoring);
-    console.log('- 已暂停:', updater.isPaused);
-    console.log('- 回调数量:', updater.updateCallbacks.size);
-
-    // 测试回调注册
-    let testCallbackCalled = false;
-    const testCallback = data => {
-      testCallbackCalled = true;
-      console.log('✅ 测试回调被调用:', data.source);
-    };
-
-    updater.onUpdate(testCallback);
-    console.log('已注册测试回调，当前回调数量:', updater.updateCallbacks.size);
-
-    // 手动触发更新测试
-    setTimeout(() => {
-      console.log('手动触发更新测试...');
-      updater.forceUpdate();
-
-      setTimeout(() => {
-        if (testCallbackCalled) {
-          console.log('✅ 实时更新系统工作正常');
-        } else {
-          console.log('❌ 实时更新系统可能有问题');
-        }
-
-        // 清理测试回调
-        updater.offUpdate(testCallback);
-        console.log('测试完成，已清理测试回调');
-      }, 1000);
-    }, 500);
-  };
-
-  // 手动暂停实时更新
-  window.pauseRealtimeUpdates = function () {
-    if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater) {
-      window.HQDataExtractor.realtimeUpdater.pauseMonitoring();
-      console.log('⏸️ 实时更新已手动暂停');
-    }
-  };
-
-  // 手动恢复实时更新
-  window.resumeRealtimeUpdates = function () {
-    if (window.HQDataExtractor && window.HQDataExtractor.realtimeUpdater) {
-      window.HQDataExtractor.realtimeUpdater.resumeMonitoring();
-      console.log('▶️ 实时更新已手动恢复');
     }
   };
 
@@ -5119,7 +3694,4 @@
     console.log(`✅ [全局] 图像质量优化完成，优化了 ${optimizedCount} 个头像元素`);
     return optimizedCount;
   };
-
-  // 暴露到全局
-  window.QQApp = QQApp;
 })(window);

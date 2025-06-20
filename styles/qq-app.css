@@ -232,141 +232,6 @@ body.chat-detail-active .dialog-head {
   overflow: hidden !important;
 }
 
-/* 实时更新消息样式 */
-.message {
-  display: flex;
-  margin-bottom: 12px;
-  align-items: flex-end;
-}
-
-.message.sent {
-  flex-direction: row-reverse;
-}
-
-.message.received {
-  flex-direction: row;
-}
-
-.message-avatar-container {
-  margin: 0 8px;
-  flex-shrink: 0;
-}
-
-.message-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.message-avatar-placeholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #4a90e2;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.message-content {
-  max-width: 70%;
-  display: flex;
-  flex-direction: column;
-}
-
-.message.sent .message-content {
-  align-items: flex-end;
-}
-
-.message.received .message-content {
-  align-items: flex-start;
-}
-
-.message-bubble {
-  padding: 8px 12px;
-  border-radius: 18px;
-  word-wrap: break-word;
-  max-width: 100%;
-}
-
-.message.sent .message-bubble {
-  background: #007aff;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.message.received .message-bubble {
-  background: #e5e5ea;
-  color: #000;
-  border-bottom-left-radius: 4px;
-}
-
-.message-time {
-  font-size: 11px;
-  color: #8e8e93;
-  margin-top: 2px;
-  padding: 0 4px;
-}
-
-.no-messages {
-  text-align: center;
-  color: #8e8e93;
-  padding: 40px 20px;
-  font-size: 14px;
-}
-
-/* 🎭 新消息动态显示动画样式 */
-.new-message-hidden {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: translateY(20px) !important;
-  transition: none !important;
-}
-
-.new-message-appearing {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translateY(0) !important;
-  transition: opacity 0.4s ease, transform 0.4s ease !important;
-}
-
-/* 新消息淡入动画关键帧 */
-@keyframes newMessageFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  50% {
-    opacity: 0.7;
-    transform: translateY(10px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* 新消息出现动画 */
-.custom-message[data-new-message='true'] {
-  animation: newMessageFadeIn 0.6s ease-out forwards;
-}
-
-/* 消息容器滚动优化 */
-.chat-messages {
-  scroll-behavior: smooth;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* 智能滚动时的平滑过渡 */
-.chat-messages.smart-scrolling {
-  scroll-behavior: smooth;
-}
-
 /* QQ装饰栏隐藏类 - 保持原有display属性 */
 .qq-decoration-hidden {
   visibility: hidden !important;
@@ -421,7 +286,7 @@ body.chat-detail-active .dialog-head {
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  border: none !important; /* 移除白边 */
+  border: 2px solid #ddd !important; /* 添加边框 */
 
   /* 图像渲染优化 - 提升清晰度 */
   image-rendering: -webkit-optimize-contrast !important;
@@ -710,17 +575,10 @@ body.chat-detail-active .dialog-head {
   width: 48px !important;
   height: 48px !important;
   border-radius: 50% !important;
-  border: none !important; /* 移除白边 */
-  transition: transform 0.2s ease !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  transition: transform 0.2s ease, border-color 0.2s ease !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   cursor: pointer !important;
-
-  /* 图像质量优化 */
-  image-rendering: -webkit-optimize-contrast !important;
-  -webkit-backface-visibility: hidden !important;
-  backface-visibility: hidden !important;
-  -webkit-transform-style: preserve-3d !important;
-  transform-style: preserve-3d !important;
 }
 
 /* 删除头像悬停效果，避免干扰旋转变换 */
@@ -1009,18 +867,11 @@ body.chat-detail-active .dialog-head {
   font-weight: bold;
   overflow: hidden;
   color: black;
-  border: none; /* 移除白边 */
+  border: 2px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
-  /* 图像质量优化 */
-  image-rendering: -webkit-optimize-contrast;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
 }
 
 .message-avatar img {
